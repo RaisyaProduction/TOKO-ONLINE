@@ -583,9 +583,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 <!-- ===== AKHIR BAGIAN 5 ===== -->
 <!-- ===== BAGIAN 6 - JAVASCRIPT SIDEBAR & NAVIGASI ===== -->
 
-<!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
-<script>            
-    // ===== BLOK 6.1.1 - MEMBANGUN SIDEBAR BERDASARKAN ROLE PENGGUNA (VERSI TERBARU) =====
+// ===== BLOK 6.1.1 - MEMBANGUN SIDEBAR BERDASARKAN ROLE PENGGUNA (VERSI LENGKAP) =====
 function buatSidebarHTML(role) {
     // Ambil data pengguna yang sedang login
     var dataPengguna = JSON.parse(localStorage.getItem('2r_user') || '{}');
@@ -601,7 +599,7 @@ function buatSidebarHTML(role) {
         }
     }
 
-    // ---------- MENU UNTUK ROLE SUPERADMIN (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE SUPERADMIN ----------
     var menuSuperAdmin = [
         {
             judulBagian: 'Menu Utama',
@@ -628,7 +626,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE CUSTOMER (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE CUSTOMER ----------
     var menuCustomer = [
         {
             judulBagian: 'Menu Belanja',
@@ -664,7 +662,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE OJEK (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE OJEK ----------
     var menuOjek = [
         {
             judulBagian: 'Menu Utama',
@@ -689,7 +687,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE STAF ADMIN (SAMA PERSIS, MENU PENGAJUAN HAPUS TETAP ADA) ----------
+    // ---------- MENU UNTUK ROLE STAF ADMIN (PENGAJUAN HAPUS TETAP ADA) ----------
     var menuStafAdmin = [
         {
             judulBagian: 'Menu Utama',
@@ -708,7 +706,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE CUSTOMER SERVICE (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE CUSTOMER SERVICE ----------
     var menuCustomerService = [
         {
             judulBagian: 'Menu Utama',
@@ -726,7 +724,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE STAF OWNER TOKO (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE STAF OWNER TOKO ----------
     var menuStafOwnerToko = [
         {
             judulBagian: 'Menu Utama',
@@ -747,7 +745,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE STAF OWNER OJEK (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE STAF OWNER OJEK ----------
     var menuStafOwnerOjek = [
         {
             judulBagian: 'Menu Utama',
@@ -766,7 +764,7 @@ function buatSidebarHTML(role) {
         }
     ];
 
-    // ---------- MENU UNTUK ROLE SPONSOR (SAMA PERSIS) ----------
+    // ---------- MENU UNTUK ROLE SPONSOR ----------
     var menuSponsor = [
         {
             judulBagian: 'Menu Utama',
@@ -785,7 +783,6 @@ function buatSidebarHTML(role) {
     ];
 
     // ---------- MENU DINAMIS UNTUK TOKO, PEDAGANG, COD SELLER ----------
-    // Menggunakan fungsi sidebarDinamisUntukRole yang didefinisikan di BLOK 8.16
     var menuToko = sidebarDinamisUntukRole('toko', dataPengguna);
     var menuPedagang = sidebarDinamisUntukRole('pedagang', dataPengguna);
     var menuCodseller = sidebarDinamisUntukRole('codseller', dataPengguna);
@@ -805,7 +802,7 @@ function buatSidebarHTML(role) {
         'codseller': menuCodseller
     };
 
-    // Ambil menu yang sesuai dengan role pengguna, jika tidak ada gunakan menu customer
+    // Ambil menu yang sesuai dengan role pengguna
     var menuTerpilih = daftarMenu[role] || menuCustomer;
 
     // ---------- BANGUN HTML SIDEBAR ----------
@@ -815,12 +812,10 @@ function buatSidebarHTML(role) {
         hasilHTML += '<div class="sidebar-menu-title">' + bagian.judulBagian + '</div>';
         for (var indeksItem = 0; indeksItem < bagian.daftarItem.length; indeksItem++) {
             var item = bagian.daftarItem[indeksItem];
-            // Tandai item yang sedang aktif (misal halaman dashboard)
             var kelasAktif = '';
             if (item.halaman === 'dashboard' || item.halaman === 'dashboardCustomer') {
                 kelasAktif = ' active';
             }
-            // Tambahkan badge notifikasi jika ada
             var badgeHTML = '';
             if (item.halaman === 'notifikasi' && notifikasiBelumDibaca > 0) {
                 badgeHTML = '<span class="notif-badge">' + notifikasiBelumDibaca + '</span>';
@@ -4662,6 +4657,8 @@ function bukaChat(targetId) {
 <!-- ===== AKHIR BLOK 8.15 ===== -->
     <!-- ===== BLOK 8.16 - JS_PAKET_TRANSAKSI & TRANSFER MENU ===== -->
 <script>
+<!-- ===== BLOK 8.16 - JS_PAKET_TRANSAKSI & TRANSFER MENU (LENGKAP) ===== -->
+<script>
 // ===== BLOK 8.16.1 - INISIALISASI DATA DUMMY PAKET =====
 function inisialisasiPaketTransaksi() {
     var dataPaket = JSON.parse(localStorage.getItem('2r_paket_transaksi') || '[]');
@@ -4949,7 +4946,7 @@ function sidebarDinamisUntukRole(role, user) {
         }
     }
 
-    // Menu Dasar untuk Toko/Pedagang/COD Seller (sama seperti sebelumnya)
+    // Menu Dasar untuk Toko/Pedagang/COD Seller
     var menu = [
         {
             judul: 'Menu Utama',
@@ -4983,7 +4980,7 @@ function sidebarDinamisUntukRole(role, user) {
         menu.push({ judul: 'Menu Transaksi', items: menuTransaksi });
     }
 
-    // Menu Kelola Produk (tetap ada)
+    // Menu Kelola Produk (tetap ada, tidak peduli paket)
     var menuLokal = [];
     if (role === 'toko' || role === 'pedagang' || role === 'codseller') {
         menuLokal.push({ halaman: 'kelolaProduk', ikon: 'fa-box', label: 'Kelola Produk' });
