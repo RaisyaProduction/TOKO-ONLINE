@@ -5461,6 +5461,7 @@ function renderTransaksiPenjualan() {
             html += '    <button class="button button-primary button-extra-small" onclick="bukaEditTransaksi(\'' + t.id + '\')"><i class="fas fa-edit"></i> Edit</button>';
             html += '    <button class="button button-danger button-extra-small" onclick="hapusTransaksiPenjualan(\'' + t.id + '\')"><i class="fas fa-trash"></i> Hapus</button>';
             html += '    <button class="button button-success button-extra-small" onclick="cetakNota(\'' + t.id + '\')"><i class="fas fa-print"></i> Cetak</button>';
+            html += '    <button class="button button-warning button-extra-small" onclick="bagikanNotaWA(\'' + t.id + '\')"><i class="fab fa-whatsapp"></i> WA</button>';
             html += '  </td></tr>';
         }
         html += '  </tbody></table></div>';
@@ -6058,6 +6059,69 @@ function simpanEditTransaksi() {
     renderTransaksiPenjualan();
 }
 // ===== AKHIR BLOK 8.16.8 =====
+    // ===== BLOK 8.16.9 - BAGIKAN NOTA VIA WHATSAPP =====
+
+// --- Helper: Ambil data nota dan format ke teks ---
+function ambilDataNotaWA(trxId) {
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksi = null;
+    for (var i = 0; i < semuaTransaksi.length; i++) {
+        if (semuaTransaksi[i].id === trxId) {
+            transaksi = semuaTransaksi[i];
+            break;
+        }
+    }
+    if (!transaksi) return null;
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var namaToko = user.nama || 'Toko Online 2R';
+    
+    // Bangun teks struk
+    var teks = '═══════════════════════════\n';
+    teks += '     ' + namaToko + '\n';
+    teks += '═══════════════════════════\n';
+    teks += 'ID Transaksi: ' + transaksi.id + '\n';
+    teks += 'Tanggal: ' + new Date(transaksi.tanggal).toLocaleDateString('id-ID') + '\n';
+    teks += '───────────────────────────\n';
+    
+    for (var i = 0; i < transaksi.items.length; i++) {
+        var item = transaksi.items[i];
+        teks += item.nama + ' x' + item.jumlah + '\n';
+        teks += '   Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
+    }
+    
+    teks += '───────────────────────────\n';
+    teks += 'Total      : Rp ' + transaksi.total.toLocaleString('id-ID') + '\n';
+    
+    var diskon = transaksi.diskon || 0;
+    if (diskon > 0) {
+        teks += 'Diskon     : -Rp ' + diskon.toLocaleString('id-ID') + '\n';
+    }
+    teks += '═══════════════════════════\n';
+    teks += 'BAYAR      : Rp ' + transaksi.grandTotal.toLocaleString('id-ID') + '\n';
+    teks += 'Metode     : ' + transaksi.metodePembayaran + '\n';
+    if (transaksi.catatan) {
+        teks += 'Catatan    : ' + transaksi.catatan + '\n';
+    }
+    teks += '═══════════════════════════\n';
+    teks += 'Terima kasih sudah berbelanja!';
+
+    return teks;
+}
+
+// --- Fungsi utama Bagikan WA ---
+function bagikanNotaWA(trxId) {
+    var teks = ambilDataNotaWA(trxId);
+    if (!teks) { tampilkanToast('Transaksi tidak ditemukan!', 'error'); return; }
+
+    // Encode teks agar aman untuk URL
+    var urlWA = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(teks);
+    
+    // Buka di tab baru
+    window.open(urlWA, '_blank');
+    tampilkanToast('Nota sedang dibuka di WhatsApp!', 'success');
+}
+// ===== AKHIR BLOK 8.16.9 =====  
 // ===== AKHIR BLOK 8.16 =====
 // ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
 // Fitur ini hanya bisa diakses oleh SuperAdmin
