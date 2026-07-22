@@ -640,7 +640,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                 { halaman: 'uploadProdukPublik', icon: 'fa-upload', label: 'Upload Produk Publik' },
                 { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                 { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
-                { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' }    
+                
             ];
             var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
             if (paket.includes('paket1')) {
@@ -649,6 +649,8 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                     { halaman: 'rekapPenjualan', icon: 'fa-chart-line', label: 'Rekap Penjualan' },
                     { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                     { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' }
+                    { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' }
+                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }    
                 );
             }
             if (paket.includes('paket2')) {
@@ -823,13 +825,15 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
-    else if (namaHalaman === 'logStok') renderLogStok();
+    
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
+    else if (namaHalaman === 'logStok') renderLogStok();
+    else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
     // ------------------------------------------------
     
     else renderPlaceholder(namaHalaman);
@@ -6711,6 +6715,198 @@ function tolakPengajuanUpload(idPengajuan) {
     renderPengajuanUploadProduk();
 }
 // ===== AKHIR BLOK 8.18 =====
+// ===== BLOK 8.19 - JS_HUTANG_PIUTANG =====
+
+// --- 1. MODIFIKASI RENDER TRANSAKSI (Tambahkan input Nama Pelanggan saat pilih Hutang) ---
+// CATATAN: Anda HARUS mengganti bagian dropdown Metode Pembayaran di fungsi renderTransaksiPenjualan() (BLOK 8.16.6)
+// dengan kode di bawah ini. Saya tulis di sini agar Abang gampang copy-paste-nya.
+
+/* 
+GANTI KODE INI DI renderTransaksiPenjualan():
+<div><label class="form-label">Metode Pembayaran</label><select id="trxMetode" class="form-input"><option value="Tunai">Tunai</option><option value="Transfer">Transfer</option></select></div>
+
+MENJADI:
+<div><label class="form-label">Metode Pembayaran</label>
+    <select id="trxMetode" class="form-input" onchange="toggleHutangInput()">
+        <option value="Tunai">Tunai</option>
+        <option value="Transfer">Transfer</option>
+        <option value="Hutang">Hutang</option>
+    </select>
+</div>
+<div id="trxHutangContainer" style="display:none; margin-top:10px;">
+    <label class="form-label">Nama Pelanggan (Hutang)</label>
+    <input type="text" id="trxNamaPelanggan" class="form-input" placeholder="Nama pelanggan berhutang">
+</div>
+*/
+
+// --- Fungsi toggle input hutang ---
+function toggleHutangInput() {
+    var metode = document.getElementById('trxMetode').value;
+    var container = document.getElementById('trxHutangContainer');
+    if (container) {
+        if (metode === 'Hutang') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+            document.getElementById('trxNamaPelanggan').value = '';
+        }
+    }
+}
+
+// --- 2. MODIFIKASI SIMPAN TRANSAKSI (Sisipkan logika hutang) ---
+// CATATAN: Di dalam fungsi simpanTransaksiPenjualan() (BLOK 8.16.6), 
+// ganti bagian // Update modal cash dengan kode di bawah ini:
+
+/* 
+GANTI BAGIAN INI:
+    // Update modal cash (jika pembayaran tunai)
+    if (metode === 'Tunai') {
+        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
+        modalData.saldo = (modalData.saldo || 0) + grandTotal;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Penjualan',
+            jumlah: grandTotal,
+            saldoSetelah: modalData.saldo,
+            keterangan: 'Transaksi #' + transaksiBaru.id
+        });
+        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
+    }
+
+MENJADI:
+    // Update modal cash (jika pembayaran tunai) / Hutang
+    if (metode === 'Tunai') {
+        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
+        modalData.saldo = (modalData.saldo || 0) + grandTotal;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Penjualan',
+            jumlah: grandTotal,
+            saldoSetelah: modalData.saldo,
+            keterangan: 'Transaksi #' + transaksiBaru.id
+        });
+        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
+    } 
+    else if (metode === 'Hutang') {
+        var namaPelanggan = document.getElementById('trxNamaPelanggan').value.trim();
+        if (!namaPelanggan) {
+            tampilkanToast('Nama pelanggan wajib diisi untuk pembayaran Hutang!', 'warning');
+            return; // Batalkan simpan
+        }
+        
+        // Simpan data hutang
+        var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+        dataHutang.push({
+            id: 'HUT-' + Date.now(),
+            tokoId: user.id,
+            transaksiId: transaksiBaru.id,
+            namaPelanggan: namaPelanggan,
+            jumlahHutang: grandTotal,
+            sisaHutang: grandTotal,
+            tanggalTransaksi: tanggal,
+            status: 'Belum Lunas',
+            catatan: catatan || 'Hutang transaksi',
+            createdAt: new Date().toISOString()
+        });
+        localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataHutang));
+        tampilkanToast('Transaksi Hutang berhasil dicatat untuk ' + namaPelanggan, 'info');
+    }
+*/
+
+// --- 3. RENDER HALAMAN MANAJEMEN HUTANG PIUTANG ---
+function renderHutangPiutang() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+    var hutangSaya = dataHutang.filter(function(h) { return h.tokoId === user.id; });
+    hutangSaya.sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+
+    var totalPiutang = 0;
+    for (var i = 0; i < hutangSaya.length; i++) {
+        if (hutangSaya[i].status === 'Belum Lunas') {
+            totalPiutang += hutangSaya[i].sisaHutang;
+        }
+    }
+
+    var html = '<div class="page-header"><h2>Hutang Piutang Pelanggan</h2><p>Total Piutang Belum Lunas: <strong style="color:#d32f2f; font-size:20px;">Rp ' + totalPiutang.toLocaleString('id-ID') + '</strong></p></div>';
+
+    if (hutangSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-hand-holding-usd"></i><h3>Belum ada data hutang</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Pelanggan</th><th>Total Hutang</th><th>Sisa Hutang</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < hutangSaya.length; i++) {
+            var h = hutangSaya[i];
+            var badge = h.status === 'Lunas' ? 'badge-success' : 'badge-warning';
+            var disabled = h.status === 'Lunas' ? 'disabled style="opacity:0.5;"' : '';
+            
+            html += '<tr><td>' + new Date(h.tanggalTransaksi).toLocaleDateString('id-ID') + '</td>';
+            html += '<td>' + escapeHtml(h.namaPelanggan) + '</td>';
+            html += '<td>Rp ' + h.jumlahHutang.toLocaleString('id-ID') + '</td>';
+            html += '<td>Rp ' + h.sisaHutang.toLocaleString('id-ID') + '</td>';
+            html += '<td><span class="badge ' + badge + '">' + h.status + '</span></td>';
+            html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+            html += '  <button class="button button-success button-extra-small" onclick="bayarHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-check"></i> Bayar</button>';
+            html += '  <button class="button button-danger button-extra-small" onclick="hapusHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-trash"></i> Hapus</button>';
+            html += '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// --- 4. FUNGSI BAYAR HUTANG ---
+function bayarHutang(idHutang) {
+    var nominalBayar = prompt('Masukkan nominal yang akan dibayarkan (Rp):');
+    if (nominalBayar === null) return;
+    var bayar = parseFloat(nominalBayar);
+    if (isNaN(bayar) || bayar <= 0) { tampilkanToast('Nominal tidak valid!', 'warning'); return; }
+
+    var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+    var index = -1;
+    for (var i = 0; i < dataHutang.length; i++) {
+        if (dataHutang[i].id === idHutang) { index = i; break; }
+    }
+    if (index === -1) { tampilkanToast('Data hutang tidak ditemukan!', 'error'); return; }
+
+    var hutang = dataHutang[index];
+    if (hutang.status === 'Lunas') { tampilkanToast('Hutang sudah lunas!', 'warning'); return; }
+
+    if (bayar > hutang.sisaHutang) {
+        if (!confirm('Nominal bayar (' + bayar + ') melebihi sisa hutang (' + hutang.sisaHutang + '). Apakah akan membayar lunas?')) return;
+        bayar = hutang.sisaHutang;
+    }
+
+    hutang.sisaHutang -= bayar;
+    if (hutang.sisaHutang <= 0) {
+        hutang.status = 'Lunas';
+        hutang.sisaHutang = 0;
+        tampilkanToast('Hutang atas nama ' + hutang.namaPelanggan + ' telah LUNAS!', 'success');
+    } else {
+        tampilkanToast('Pembayaran Rp ' + bayar.toLocaleString('id-ID') + ' berhasil. Sisa hutang: Rp ' + hutang.sisaHutang.toLocaleString('id-ID'), 'success');
+    }
+    
+    localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataHutang));
+    renderHutangPiutang();
+}
+
+// --- 5. FUNGSI HAPUS HUTANG ---
+function hapusHutang(idHutang) {
+    if (!confirm('Yakin ingin menghapus data hutang ini? Data tidak dapat dikembalikan.')) return;
+    
+    var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+    var dataBaru = [];
+    for (var i = 0; i < dataHutang.length; i++) {
+        if (dataHutang[i].id !== idHutang) {
+            dataBaru.push(dataHutang[i]);
+        }
+    }
+    localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataBaru));
+    tampilkanToast('Data hutang berhasil dihapus!', 'success');
+    renderHutangPiutang();
+}
+// ===== AKHIR BLOK 8.19 =====    
     
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
