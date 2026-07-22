@@ -3515,15 +3515,15 @@ function tampilkanDashboard(user) {
 // ===== AKHIR BLOK 8.6.1 =====
 
     // ===== BLOK 8.6.2 - DOMContentLoaded =====
-    document.addEventListener('DOMContentLoaded', async function() {
-        await inisialisasiSuperAdmin();
-        var dataUser = localStorage.getItem('2r_user');
-        if (dataUser) {
-            var user = JSON.parse(dataUser);
-            tampilkanDashboard(user);
-        }
-    });
-    // ===== AKHIR BLOK 8.6.2 =====
+document.addEventListener('DOMContentLoaded', async function() {
+    await inisialisasiSuperAdmin();
+    var dataUser = localStorage.getItem('2r_user');
+    if (dataUser) {
+        var user = JSON.parse(dataUser);
+        tampilkanDashboard(user);
+    }
+});
+// ===== AKHIR BLOK 8.6.2 =====
 </script>
 <!-- ===== AKHIR BLOK 8.6 ===== -->
 
@@ -6982,7 +6982,275 @@ function downloadLaporanCSV() {
     URL.revokeObjectURL(url);
     tampilkanToast('Laporan CSV berhasil didownload!', 'success');
 }
-// ===== AKHIR BLOK 8.22 =====    
+// ===== AKHIR BLOK 8.22 =====
+// ===== BLOK 8.23 - LOGIKA STATUS AKUN, TAGIHAN, & SUSPEN =====
+
+// --- 1. Inisialisasi Data Tagihan & Status (Saat Login) ---
+// Kita akan panggil fungsi ini di dalam tampilkanDashboard() nanti
+function inisialisasiSistemTagihan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            userData = dataAkun[i];
+            break;
+        }
+    }
+    if (!userData) return;
+
+    // 1. Cek dan Update Status PRO jika belum ada (default: false)
+    if (!userData.isPro) userData.isPro = false;
+    
+    // 2. Cek Status SUSPEN
+    var sekarang = new Date();
+    var hariIni = sekarang.getDate();
+    var bulanIni = sekarang.getMonth() + 1;
+    var tahunIni = sekarang.getFullYear();
+
+    // Ambil data tagihan akun ini
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihanBulanIni = null;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && 
+            dataTagihan[i].bulan === bulanIni && 
+            dataTagihan[i].tahun === tahunIni) {
+            tagihanBulanIni = dataTagihan[i];
+            break;
+        }
+    }
+
+    // --- LOGIKA TANGGAL 5: BUAT TAGIHAN ---
+    if (hariIni >= 5 && !tagihanBulanIni) {
+        // Jika tanggal >= 5 dan belum ada tagihan bulan ini, buat tagihan baru!
+        var totalTagihan = 0;
+        
+        // Jika Akun Pro, tambahkan 50.000
+        if (userData.isPro) {
+            var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
+            totalTagihan += hargaPro;
+        }
+
+        // Hitung item penagihan (Upload Produk > 5)
+        // Ambil data produk publik milik user
+        var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+        var produkSaya = produkPublik.filter(function(p) { return p.ownerId === user.id; });
+        var jmlProduk = produkSaya.length;
+        var batasDasar = userData.isPro ? 50 : 5;
+
+        if (jmlProduk > batasDasar) {
+            var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+            var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+            // Cari paket harga yang sesuai dengan jumlah produk
+            var ketemuPaket = false;
+            for (var k = 0; k < keys.length; k++) {
+                var jmlKey = parseInt(keys[k]);
+                if (jmlProduk <= jmlKey) {
+                    totalTagihan += hargaUpload[keys[k]];
+                    ketemuPaket = true;
+                    break;
+                }
+            }
+            if (!ketemuPaket) {
+                // Jika melebihi paket terbesar, pakai harga paket terakhir
+                totalTagihan += hargaUpload[keys[keys.length - 1]];
+            }
+        }
+
+        if (totalTagihan > 0) {
+            dataTagihan.push({
+                id: 'TAG-' + Date.now(),
+                akunId: user.id,
+                bulan: bulanIni,
+                tahun: tahunIni,
+                jumlahTagihan: totalTagihan,
+                status: 'BELUM_BAYAR'
+            });
+            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+            tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihan.toLocaleString('id-ID'), 'info');
+            tagihanBulanIni = dataTagihan[dataTagihan.length - 1];
+        }
+    }
+
+    // --- LOGIKA TANGGAL 10: SUSPEN AKUN ---
+    if (hariIni >= 10 && tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
+        // Ubah status user menjadi SUSPEN
+        if (userData.status !== 'SUSPEN') {
+            userData.status = 'SUSPEN';
+            // Update data di localStorage user dan dataAkun
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === user.id) {
+                    dataAkun[i].status = 'SUSPEN';
+                    break;
+                }
+            }
+            localStorage.setItem('2r_user', JSON.stringify(userData));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Status akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
+            location.reload(); // Reload agar status SUSPEN terbaca di UI
+        }
+    } else {
+        // Jika status SUSPEN tapi tagihan sudah lunas (atau belum tanggal 10), kembalikan ke AKTIF
+        if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
+            userData.status = 'AKTIF';
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === user.id) {
+                    dataAkun[i].status = 'AKTIF';
+                    break;
+                }
+            }
+            localStorage.setItem('2r_user', JSON.stringify(userData));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Selamat! Status akun Anda telah kembali AKTIF.', 'success');
+            location.reload();
+        }
+    }
+}
+
+// --- 2. Modifikasi Fungsi Render Dashboard (Tambahkan Pengecekan SUSPEN) ---
+// Ganti fungsi tampilkanDashboard di BLOK 8.6.1 dengan versi ini:
+function tampilkanDashboard(user) {
+    if (!user || !user.nama) {
+        localStorage.removeItem('2r_user');
+        localStorage.removeItem('2r_user_role');
+        location.reload();
+        return;
+    }
+
+    // CEK STATUS SUSPEN SEBELUM MENAMPILKAN APAPUN
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    
+    // Jika status SUSPEN, arahkan ke halaman Status Akun & Tagihan
+    if (userData && userData.status === 'SUSPEN') {
+        document.getElementById('pageAuthentication').style.display = 'none';
+        document.getElementById('pageDashboard').style.display = 'block';
+        document.getElementById('userNama').textContent = user.nama;
+        document.getElementById('roleBadge').textContent = user.role;
+        // Ganti sidebar dengan menu terbatas (Hanya Pengajuan)
+        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
+        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
+        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
+        document.getElementById('mainContent').innerHTML = ''; // Kosongkan konten
+        renderStatusAkun(); // Tampilkan halaman status
+        return; // STOP proses, jangan tampilkan dashboard biasa
+    }
+
+    // --- JIKA AKUN AKTIF, LANJUTKAN SEperti BIASA ---
+    document.getElementById('pageAuthentication').style.display = 'none';
+    document.getElementById('pageDashboard').style.display = 'block';
+    document.getElementById('userNama').textContent = user.nama;
+    var daftarRole = { superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek', pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service', staf_owner_toko: 'Staf Owner Toko', staf_owner_ojek: 'Staf Owner Ojek', sponsor: 'Sponsor' };
+    document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
+
+    document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
+    setupNavigasiSidebar();
+
+    var avatar = document.getElementById('userAvatar');
+    var placeholder = document.getElementById('userAvatarPlaceholder');
+    if (user.fotoProfil) { avatar.src = user.fotoProfil; avatar.style.display = 'block'; placeholder.style.display = 'none'; } 
+    else { avatar.style.display = 'none'; placeholder.style.display = 'block'; }
+
+    // Panggil logika tagihan saat dashboard ditampilkan!
+    inisialisasiSistemTagihan();
+
+    renderDashboard();
+}
+
+// --- 3. Halaman Status Akun & Tagihan (Untuk User SUSPEN / Lihat Tagihan) ---
+function renderStatusAkun() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
+    tagihanSaya.sort(function(a,b) { return new Date(b.id) - new Date(a.id); });
+
+    var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
+    if (userData && userData.status === 'SUSPEN') {
+        html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-header">Info Akun</div>';
+    html += '<div class="grid-2"><div><strong>ID Akun:</strong> ' + user.id + '</div>';
+    html += '<div><strong>Role:</strong> ' + user.role + '</div>';
+    html += '<div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div>';
+    html += '<div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div></div></div>';
+
+    html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
+    if (tagihanSaya.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
+        for (var i = 0; i < tagihanSaya.length; i++) {
+            var t = tagihanSaya[i];
+            var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+            html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    // --- TOMBOL BAYAR (HANYA UNTUK STATUS SUSPEN) ---
+    if (userData && userData.status === 'SUSPEN') {
+        html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
+        html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
+        var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
+        html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
+        html += '<strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
+        html += '<strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
+        html += '<strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
+        html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
+        html += '</div>';
+    }
+
+    areaKonten.innerHTML = html;
+}
+
+// --- 4. Fungsi Konfirmasi Pembayaran (Hanya untuk Demo) ---
+function konfirmasiPembayaran() {
+    if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+
+    // Cari tagihan yang belum bayar, jadikan LUNAS
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
+            dataTagihan[i].status = 'LUNAS';
+            break;
+        }
+    }
+
+    // Update status akun menjadi AKTIF
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+
+    localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+    simpanDataAkun(dataAkun);
+    // Update user yang sedang login
+    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+    userLogin.status = 'AKTIF';
+    localStorage.setItem('2r_user', JSON.stringify(userLogin));
+
+    tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
+    location.reload();
+}
+// ===== AKHIR BLOK 8.23 =====
+
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
