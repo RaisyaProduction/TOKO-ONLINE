@@ -2287,7 +2287,7 @@ function nonaktifkanUploadPublik(id) {
     tampilkanToast('Fitur Upload Produk Publik telah dinonaktifkan!', 'success');
 }
 
-// --- 3. SUBMENU PAKET TRANSAKSI (VERSI LENGKAP DENGAN CHECKBOX & PENYIMPANAN) ---
+// --- 3. SUBMENU PAKET TRANSAKSI (VERSI LENGKAP + SETUP DUMMY) ---
 function renderTransferTransaksi() {
     var role = localStorage.getItem('2r_user_role');
     if (role !== 'superadmin') {
@@ -2298,7 +2298,6 @@ function renderTransferTransaksi() {
     if (!areaKonten) return;
 
     var dataAkun = getDataAkun();
-    // Filter akun target: Toko, Pedagang, COD Seller
     var daftarTarget = [];
     for (var i = 0; i < dataAkun.length; i++) {
         var a = dataAkun[i];
@@ -2310,15 +2309,14 @@ function renderTransferTransaksi() {
     var html = '';
     html += '<div class="page-header">';
     html += '  <h2>Transfer Menu – Paket Transaksi</h2>';
-    html += '  <p>Pilih paket transaksi yang akan diaktifkan untuk akun Toko, Pedagang Pasar, dan COD Seller. <strong>Klik "Simpan" untuk menyimpan perubahan.</strong></p>';
+    html += '  <p>Pilih paket transaksi dan setup data dummy untuk akun target. <strong>Klik "Simpan" untuk menyimpan perubahan paket.</strong></p>';
     html += '  <button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button>';
     html += '</div>';
 
-    // --- Daftar Paket (untuk informasi) ---
+    // --- Daftar Paket ---
     html += '<div class="card">';
     html += '  <div class="card-header">Daftar Paket Transaksi yang Tersedia</div>';
     html += '  <div class="grid-2">';
-    // Paket 1
     html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
     html += '      <h4 style="color:#FF6B00; margin:0 0 5px 0;">Paket Transaksi 1</h4>';
     html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Langsung (Offline) – Pelanggan datang ke toko.</p>';
@@ -2329,7 +2327,6 @@ function renderTransferTransaksi() {
     html += '        <li>Modal Cash & Belanja</li>';
     html += '      </ul>';
     html += '    </div>';
-    // Paket 2
     html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
     html += '      <h4 style="color:#2196F3; margin:0 0 5px 0;">Paket Transaksi 2</h4>';
     html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Pembayaran langsung ke rekening toko.</p>';
@@ -2337,7 +2334,6 @@ function renderTransferTransaksi() {
     html += '        <li>Transaksi Online 1 (Daftar Pesanan & Konfirmasi Manual)</li>';
     html += '      </ul>';
     html += '    </div>';
-    // Paket 3
     html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
     html += '      <h4 style="color:#4CAF50; margin:0 0 5px 0;">Paket Transaksi 3</h4>';
     html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Pembayaran melalui sistem aplikasi (Saldo 2R).</p>';
@@ -2348,7 +2344,7 @@ function renderTransferTransaksi() {
     html += '  </div>';
     html += '</div>';
 
-    // --- Tabel Akun Target dengan Checkbox ---
+    // --- Tabel Akun Target dengan Checkbox Paket + Tombol Setup Dummy ---
     html += '<div class="card">';
     html += '  <div class="card-header">';
     html += '    <span>Daftar Akun Target (Toko, Pedagang, COD Seller)</span>';
@@ -2361,15 +2357,13 @@ function renderTransferTransaksi() {
         html += '  <form id="formTransferPaket">';
         html += '  <div class="table-container">';
         html += '    <table class="table">';
-        html += '      <thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th style="text-align:center;">Paket 1</th><th style="text-align:center;">Paket 2</th><th style="text-align:center;">Paket 3</th></tr></thead>';
+        html += '      <thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th style="text-align:center;">Paket 1</th><th style="text-align:center;">Paket 2</th><th style="text-align:center;">Paket 3</th><th style="text-align:center;">Setup Data</th></tr></thead>';
         html += '      <tbody>';
 
         for (var i = 0; i < daftarTarget.length; i++) {
             var a = daftarTarget[i];
             var namaRole = a.role === 'toko' ? 'Toko' : (a.role === 'pedagang' ? 'Pedagang Pasar' : 'COD Seller');
-            // Ambil paket aktif saat ini
             var paketAktif = a.fitur && a.fitur.paketTransaksi ? a.fitur.paketTransaksi : [];
-            // Pastikan array
             if (!Array.isArray(paketAktif)) paketAktif = [];
             var cek1 = paketAktif.includes('paket1') ? 'checked' : '';
             var cek2 = paketAktif.includes('paket2') ? 'checked' : '';
@@ -2383,6 +2377,7 @@ function renderTransferTransaksi() {
             html += '        <td style="text-align:center;"><input type="checkbox" name="paket1" value="' + a.id + '" ' + cek1 + '></td>';
             html += '        <td style="text-align:center;"><input type="checkbox" name="paket2" value="' + a.id + '" ' + cek2 + '></td>';
             html += '        <td style="text-align:center;"><input type="checkbox" name="paket3" value="' + a.id + '" ' + cek3 + '></td>';
+            html += '        <td style="text-align:center;"><button class="button button-success button-extra-small" onclick="setupDummyAkunTarget(\'' + a.id + '\')"><i class="fas fa-database"></i> Setup Dummy</button></td>';
             html += '      </tr>';
         }
         html += '      </tbody></table></div>';
@@ -2390,68 +2385,34 @@ function renderTransferTransaksi() {
         html += '  </form>';
     }
     html += '</div>';
-
-    // --- Catatan Pengembangan (opsional) ---
-    html += '<div class="card" style="background:#fff3cd; border:1px solid #ffc107;">';
-    html += '  <div class="card-header" style="color:#856404;">Catatan</div>';
-    html += '  <p style="font-size:13px; color:#856404; margin:0;">Paket yang dipilih akan langsung tersimpan ke dalam data akun. Sidebar akun target akan diperbarui secara otomatis saat login berikutnya.</p>';
-    html += '</div>';
-
     areaKonten.innerHTML = html;
 }
 
 // --- HELPER: SIMPAN PAKET TRANSAKSI ---
 function simpanPaketTransaksi() {
-    // Kumpulkan checkbox yang dicentang untuk setiap paket
     var dataAkun = getDataAkun();
     var paket1 = document.querySelectorAll('input[name="paket1"]:checked');
     var paket2 = document.querySelectorAll('input[name="paket2"]:checked');
     var paket3 = document.querySelectorAll('input[name="paket3"]:checked');
 
-    // Buat mapping: id akun -> array paket
     var mapPaket = {};
-
-    // Fungsi tambah paket ke akun
     function tambahPaket(idAkun, namaPaket) {
         if (!mapPaket[idAkun]) mapPaket[idAkun] = [];
         if (!mapPaket[idAkun].includes(namaPaket)) {
             mapPaket[idAkun].push(namaPaket);
         }
     }
-
     paket1.forEach(function(cb) { tambahPaket(cb.value, 'paket1'); });
     paket2.forEach(function(cb) { tambahPaket(cb.value, 'paket2'); });
     paket3.forEach(function(cb) { tambahPaket(cb.value, 'paket3'); });
 
-    // Update data akun
-    var berubah = false;
-    for (var id in mapPaket) {
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].id === id) {
-                if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
-                dataAkun[i].fitur.paketTransaksi = mapPaket[id];
-                berubah = true;
-                break;
-            }
-        }
-    }
-
-    // Untuk akun yang tidak dicentang sama sekali, pastikan paketTransaksi dihapus atau kosong
-    // Tapi kita hanya update yang ada di map. Untuk yang tidak ada, kita bisa biarkan atau hapus?
-    // Lebih aman: kita reset semua akun target menjadi kosong dulu, lalu isi ulang.
-    // Tapi kita akan lakukan pendekatan: hapus semua paket dari akun target, lalu isi ulang.
-    // Ini lebih bersih.
+    // Reset dan isi ulang
     for (var i = 0; i < dataAkun.length; i++) {
         var a = dataAkun[i];
         if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
-            if (a.fitur) {
-                // Hapus paketTransaksi
-                delete a.fitur.paketTransaksi;
-            }
+            if (a.fitur) delete a.fitur.paketTransaksi;
         }
     }
-
-    // Sekarang isi ulang dari map
     for (var id in mapPaket) {
         for (var i = 0; i < dataAkun.length; i++) {
             if (dataAkun[i].id === id) {
@@ -2461,13 +2422,24 @@ function simpanPaketTransaksi() {
             }
         }
     }
-
     simpanDataAkun(dataAkun);
     tampilkanToast('Paket transaksi berhasil disimpan!', 'success');
-    renderTransferTransaksi(); // Refresh tampilan
+    renderTransferTransaksi();
 }
 
-// --- 4. SUBMENU MENU LAINNYA (SAMA PERSIS ASLI) ---
+// --- HELPER: SETUP DATA DUMMY UNTUK AKUN TARGET (HANYA SUPERADMIN) ---
+function setupDummyAkunTarget(idAkun) {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') { tampilkanToast('Hanya SuperAdmin yang dapat melakukan setup ini!', 'error'); return; }
+    if (!confirm('Yakin ingin mengisi data dummy (produk & modal cash) untuk akun ' + idAkun + '?')) return;
+
+    // Panggil fungsi inisialisasi dengan target ID
+    inisialisasiDataDummyTransaksi(idAkun);
+    tampilkanToast('Data dummy berhasil dibuat untuk ' + idAkun + '!', 'success');
+    renderTransferTransaksi();
+}
+
+// --- 4. SUBMENU MENU LAINNYA ---
 function renderTransferLainnya() {
     var areaKonten = document.getElementById('mainContent');
     var html = '<div class="page-header"><h2>Transfer Menu Lainnya</h2><p>Halaman ini sedang dalam pengembangan.</p>';
@@ -4753,6 +4725,46 @@ function bukaChat(targetId) {
     // ===== AKHIR BLOK 8.15.4 =====
 </script>
 <!-- ===== AKHIR BLOK 8.15 ===== -->
+    // ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY UNTUK PENGUJIAN =====
+// Fungsi ini akan membuat contoh produk gudang dan modal cash jika belum ada
+function inisialisasiDataDummyTransaksi(targetId) {
+    // Jika targetId tidak diberikan, gunakan user yang sedang login
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var idTarget = targetId || user.id;
+    if (!idTarget) return;
+
+    // Cek apakah user/target memiliki produk gudang
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === idTarget; });
+    if (produkSaya.length === 0) {
+        // Buat 3 produk dummy
+        var dummy = [
+            { id: Date.now() + 1, tokoId: idTarget, namaProduk: 'Beras 5kg', kodeProduk: 'BR-001', hargaBeli: 55000, hargaJual: 65000, jumlahStok: 20, jenis: 'Makanan', satuan: 'Kardus', tanggalKadaluarsa: '2027-01-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
+            { id: Date.now() + 2, tokoId: idTarget, namaProduk: 'Minyak Goreng 1L', kodeProduk: 'MG-002', hargaBeli: 13000, hargaJual: 15000, jumlahStok: 50, jenis: 'Makanan', satuan: 'Liter', tanggalKadaluarsa: '2026-12-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
+            { id: Date.now() + 3, tokoId: idTarget, namaProduk: 'Gula Pasir 1kg', kodeProduk: 'GP-003', hargaBeli: 14000, hargaJual: 17000, jumlahStok: 30, jenis: 'Makanan', satuan: 'Kg', tanggalKadaluarsa: '2027-06-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 }
+        ];
+        semuaProdukGudang = semuaProdukGudang.concat(dummy);
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        
+        // Setup modal cash untuk target (jika belum ada)
+        var modalKey = '2r_modal_cash_' + idTarget;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        if (modalData.saldo === 0) {
+            modalData.saldo = 1000000;
+            modalData.riwayat.push({
+                tanggal: new Date().toISOString(),
+                jenis: 'Tambahan Modal',
+                jumlah: 1000000,
+                saldoSetelah: 1000000,
+                keterangan: 'Modal awal dari SuperAdmin'
+            });
+            localStorage.setItem(modalKey, JSON.stringify(modalData));
+        }
+        tampilkanToast('Data dummy produk dan modal cash telah dibuat untuk target ID: ' + idTarget, 'info');
+    }
+}
+// ===== AKHIR BLOK 8.16.5 =====
+</script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
 </body>
