@@ -632,7 +632,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
             ],
             // === TOKO (FREE DEFAULT) ===
 'toko': [
-    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
+    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
     { 
         judul: 'Menu Toko', 
         items: (function() {
@@ -670,7 +670,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 // === PEDAGANG PASAR (DISAMAKAN DENGAN TOKO FREE) ===
 'pedagang': [
-    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
+    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },{ halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
     { 
         judul: 'Menu Pedagang', 
         items: (function() {
@@ -704,7 +704,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 // === COD SELLER (DISAMAKAN DENGAN TOKO FREE) ===
 'codseller': [
-    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
+    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },{ halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
     { 
         judul: 'Menu COD Seller', 
         items: (function() {
@@ -801,8 +801,10 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'daftarAkun') renderDaftarAkun();
     else if (namaHalaman === 'persetujuan') renderPersetujuanAkun();
     else if (namaHalaman === 'kelolaAkun') renderKelolaAkun();
+    else if (namaHalaman === 'transfermenu') renderKelolaAkun();
     else if (namaHalaman === 'settingRekening') renderSettingRekening();
     else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'belanja') renderBelanja();
     else if (namaHalaman === 'pesananSaya') renderPesananSaya();
     else if (namaHalaman === 'kelolaIklan') renderMenuIklan();
@@ -832,7 +834,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
     else if (namaHalaman === 'dataPenagihan') renderDataPenagihan();
-    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
+    
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -842,6 +844,9 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'modalCash') renderModalCash();
     else if (namaHalaman === 'logStok') renderLogStok();
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
+    else if { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+            
+            
     // ------------------------------------------------
     
     else renderPlaceholder(namaHalaman);
