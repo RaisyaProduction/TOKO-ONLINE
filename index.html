@@ -5118,7 +5118,7 @@ function hapusPengeluaran(index) {
 }
 // ===== AKHIR BLOK 8.16.3 =====
 
-// ===== BLOK 8.16.4 - RENDER MODAL CASH & BELANJA =====
+// ===== BLOK 8.16.4 - RENDER MODAL CASH & BELANJA (LENGKAP: TAMBAH, EDIT, HAPUS) =====
 function renderModalCash() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
@@ -5131,7 +5131,7 @@ function renderModalCash() {
     html += '<div class="page-header"><h2>Modal Cash & Belanja</h2>';
     html += '<p>Saldo Kas Saat Ini: <strong style="font-size:24px; color:#FF6B00;">Rp ' + (modalData.saldo || 0).toLocaleString('id-ID') + '</strong></p></div>';
 
-    // Form tambah modal
+    // --- Form Tambah Modal ---
     html += '<div class="card"><div class="card-header">Tambah Modal Kas</div>';
     html += '  <div class="grid-2">';
     html += '    <div><label class="form-label">Jumlah Tambahan</label><input type="number" id="modalTambah" class="form-input" placeholder="0"></div>';
@@ -5140,7 +5140,7 @@ function renderModalCash() {
     html += '  <button class="button button-primary margin-top-10" onclick="tambahModalCash()"><i class="fas fa-plus"></i> Tambah Modal</button>';
     html += '</div>';
 
-    // Form catat belanja modal (mengurangi saldo)
+    // --- Form Catat Belanja Modal (Mengurangi Saldo) ---
     html += '<div class="card"><div class="card-header">Catat Belanja Modal (Mengurangi Kas)</div>';
     html += '  <div class="grid-2">';
     html += '    <div><label class="form-label">Jumlah Belanja</label><input type="number" id="modalBelanja" class="form-input" placeholder="0"></div>';
@@ -5149,27 +5149,48 @@ function renderModalCash() {
     html += '  <button class="button button-primary margin-top-10" onclick="catatBelanjaModal()"><i class="fas fa-minus"></i> Catat Belanja</button>';
     html += '</div>';
 
-    // Riwayat transaksi modal
+    // --- Riwayat Kas (Dengan Tombol Edit & Hapus) ---
     html += '<div class="card"><div class="card-header">Riwayat Kas</div>';
     if (modalData.riwayat && modalData.riwayat.length === 0) {
         html += '  <div class="empty-state"><i class="fas fa-coins"></i><h3>Belum ada riwayat</h3></div>';
     } else {
-        html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Saldo Setelah</th><th>Keterangan</th></tr></thead><tbody>';
+        html += '  <div class="table-container">';
+        html += '    <table class="table">';
+        html += '      <thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Saldo Setelah</th><th>Keterangan</th><th>Aksi</th></tr></thead>';
+        html += '      <tbody>';
+
         var riwayat = modalData.riwayat || [];
         riwayat.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+
         for (var i = 0; i < riwayat.length; i++) {
             var r = riwayat[i];
             var sign = (r.jenis === 'Penjualan' || r.jenis === 'Tambahan Modal') ? '+' : '-';
             var color = (sign === '+') ? 'green' : 'red';
-            html += '<tr><td>' + new Date(r.tanggal).toLocaleDateString('id-ID') + '</td><td>' + r.jenis + '</td><td style="color:' + color + ';">' + sign + ' Rp ' + r.jumlah.toLocaleString('id-ID') + '</td><td>Rp ' + r.saldoSetelah.toLocaleString('id-ID') + '</td><td>' + escapeHtml(r.keterangan || '-') + '</td></tr>';
+            html += '      <tr>';
+            html += '        <td>' + new Date(r.tanggal).toLocaleDateString('id-ID') + '</td>';
+            html += '        <td>' + r.jenis + '</td>';
+            html += '        <td style="color:' + color + ';">' + sign + ' Rp ' + r.jumlah.toLocaleString('id-ID') + '</td>';
+            html += '        <td>Rp ' + r.saldoSetelah.toLocaleString('id-ID') + '</td>';
+            html += '        <td>' + escapeHtml(r.keterangan || '-') + '</td>';
+            // Tombol Edit & Hapus hanya untuk Tambahan Modal dan Belanja Modal (bukan Penjualan)
+            if (r.jenis === 'Tambahan Modal' || r.jenis === 'Belanja Modal') {
+                html += '        <td>';
+                html += '          <button class="button button-primary button-extra-small" onclick="editModalCash(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
+                html += '          <button class="button button-danger button-extra-small" onclick="hapusModalCash(' + i + ')"><i class="fas fa-trash"></i> Hapus</button>';
+                html += '        </td>';
+            } else {
+                html += '        <td><span style="color:#999; font-size:12px;">Otomatis</span></td>';
+            }
+            html += '      </tr>';
         }
-        html += '</tbody></table></div>';
+        html += '      </tbody></table></div>';
     }
     html += '</div>';
 
     areaKonten.innerHTML = html;
 }
 
+// --- TAMBAH MODAL CASH ---
 function tambahModalCash() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var jumlah = parseFloat(document.getElementById('modalTambah').value) || 0;
@@ -5184,13 +5205,14 @@ function tambahModalCash() {
         jenis: 'Tambahan Modal',
         jumlah: jumlah,
         saldoSetelah: modalData.saldo,
-        keterangan: keterangan
+        keterangan: keterangan || 'Tambahan modal'
     });
     localStorage.setItem(modalKey, JSON.stringify(modalData));
     tampilkanToast('Modal berhasil ditambahkan!', 'success');
     renderModalCash();
 }
 
+// --- CATAT BELANJA MODAL (MENGURANGI SALDO) ---
 function catatBelanjaModal() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var jumlah = parseFloat(document.getElementById('modalBelanja').value) || 0;
@@ -5209,10 +5231,85 @@ function catatBelanjaModal() {
         jenis: 'Belanja Modal',
         jumlah: jumlah,
         saldoSetelah: modalData.saldo,
-        keterangan: keterangan
+        keterangan: keterangan || 'Belanja modal'
     });
     localStorage.setItem(modalKey, JSON.stringify(modalData));
     tampilkanToast('Belanja modal berhasil dicatat!', 'success');
+    renderModalCash();
+}
+
+// --- EDIT MODAL CASH (UNTUK ITEM RIWAYAT) ---
+function editModalCash(index) {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if (!modalData.riwayat || index >= modalData.riwayat.length) {
+        tampilkanToast('Data tidak ditemukan!', 'error');
+        return;
+    }
+    var item = modalData.riwayat[index];
+    // Hanya bisa edit jenis Tambahan Modal atau Belanja Modal
+    if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
+        tampilkanToast('Item ini tidak dapat diedit!', 'warning');
+        return;
+    }
+
+    // Tampilkan prompt untuk mengedit
+    var newJumlah = prompt('Edit jumlah (Rp):', item.jumlah);
+    if (newJumlah === null) return;
+    newJumlah = parseFloat(newJumlah);
+    if (isNaN(newJumlah) || newJumlah <= 0) {
+        tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+        return;
+    }
+    var newKeterangan = prompt('Edit keterangan:', item.keterangan || '');
+    if (newKeterangan === null) return;
+
+    // Hitung ulang saldo: saldo sekarang dikurangi nilai lama, ditambah nilai baru
+    // Karena saldo saat ini sudah mencakup transaksi ini, kita perlu "rollback" dulu
+    var selisih = newJumlah - item.jumlah;
+    modalData.saldo = (modalData.saldo || 0) + selisih;
+
+    // Update item
+    item.jumlah = newJumlah;
+    item.saldoSetelah = modalData.saldo;
+    item.keterangan = newKeterangan.trim() || item.keterangan;
+
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Riwayat berhasil diperbarui!', 'success');
+    renderModalCash();
+}
+
+// --- HAPUS MODAL CASH (UNTUK ITEM RIWAYAT) ---
+function hapusModalCash(index) {
+    if (!confirm('Yakin ingin menghapus riwayat ini?')) return;
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if (!modalData.riwayat || index >= modalData.riwayat.length) {
+        tampilkanToast('Data tidak ditemukan!', 'error');
+        return;
+    }
+    var item = modalData.riwayat[index];
+    // Hanya bisa hapus Tambahan Modal atau Belanja Modal
+    if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
+        tampilkanToast('Item ini tidak dapat dihapus!', 'warning');
+        return;
+    }
+
+    // Rollback saldo
+    if (item.jenis === 'Tambahan Modal') {
+        modalData.saldo = (modalData.saldo || 0) - item.jumlah;
+    } else { // Belanja Modal
+        modalData.saldo = (modalData.saldo || 0) + item.jumlah;
+    }
+
+    // Hapus item dari riwayat
+    modalData.riwayat.splice(index, 1);
+
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Riwayat berhasil dihapus!', 'success');
     renderModalCash();
 }
 // ===== AKHIR BLOK 8.16.4 =====
