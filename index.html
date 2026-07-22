@@ -886,6 +886,9 @@ function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
 
+    // Baris debug untuk mengecek apa yang diklik (bisa dilihat di F12 > Console)
+    console.log('Navigasi ke halaman: ' + namaHalaman);
+
     if (namaHalaman === 'dashboard') renderDashboard();
     else if (namaHalaman === 'profile') renderProfil();
     else if (namaHalaman === 'daftarAkun') renderDaftarAkun();
@@ -893,13 +896,14 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'kelolaAkun') renderKelolaAkun();
     else if (namaHalaman === 'settingRekening') renderSettingRekening();
     else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
+    else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun(); // <-- BAGIAN INI
     else if (namaHalaman === 'belanja') renderBelanja();
     else if (namaHalaman === 'pesananSaya') renderPesananSaya();
     else if (namaHalaman === 'kelolaIklan') renderMenuIklan();
     else if (namaHalaman === 'menuIklan') renderMenuIklan();
     else if (namaHalaman === 'pengajuanHapus') renderPengajuanHapusAkun();
     else if (namaHalaman === 'uploadProdukPublik') renderUploadProdukPublik();
-    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'manajemenStokGudang') renderManajemenStokGudang();
     else if (namaHalaman === 'kelolaProduk') renderKelolaProduk();
     else if (namaHalaman === 'helloFriends') renderHelloFriends();
@@ -921,15 +925,10 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'notifikasi') renderNotifikasi();
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
-    else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
-    
-    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
-    // ------------------------------------------------
-    
     else renderPlaceholder(namaHalaman);
 }
 // ===== AKHIR BLOK 6.2.1 =====
