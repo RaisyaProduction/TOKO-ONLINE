@@ -7284,12 +7284,27 @@ base.push(
 // --- 3. Perbarui fungsi renderStatusAkun (tambah tombol Upgrade) ---
 // Ganti seluruh fungsi renderStatusAkun yang lama (di BLOK 8.23) dengan versi ini:
 function renderStatusAkun() {
+    // --- TAMBAHKAN 2 BARIS INI DI PALING ATAS ---
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+    // ---------------------------------------------
+
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var dataAkun = getDataAkun();
     var userData = null;
     for (var i = 0; i < dataAkun.length; i++) {
         if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
     }
+
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
+    tagihanSaya.sort(function(a,b) { return new Date(b.id) - new Date(a.id); });
+
+    var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
+    // ... (kode selanjutnya tetap sama persis seperti yang Abang copy-paste tadi) ...
+    
+    areaKonten.innerHTML = html; // baris ini sekarang sudah aman karena areaKonten sudah didefinisikan
+}
 
     var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
     var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
