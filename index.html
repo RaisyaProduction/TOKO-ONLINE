@@ -5373,6 +5373,116 @@ function inisialisasiDataDummyTransaksi(targetId) {
     }
 }
 // ===== AKHIR BLOK 8.16.5 =====
+    // ===== BLOK 8.16.7 - CETAK NOTA STRUK =====
+function cetakNota(trxId) {
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksi = null;
+    for (var i = 0; i < semuaTransaksi.length; i++) {
+        if (semuaTransaksi[i].id === trxId) {
+            transaksi = semuaTransaksi[i];
+            break;
+        }
+    }
+    if (!transaksi) { tampilkanToast('Transaksi tidak ditemukan!', 'error'); return; }
+
+    // Ambil nama toko dari user
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var namaToko = user.nama || 'Toko Online 2R';
+    var alamatToko = user.alamat || '';
+
+    // Bangun HTML Struk
+    var htmlStruk = `
+    <html>
+    <head>
+        <style>
+            body { font-family: 'Courier New', monospace; width: 80mm; margin: 0 auto; padding: 10px; }
+            .header { text-align: center; margin-bottom: 15px; }
+            .header h2 { margin: 0; font-size: 18px; }
+            .header p { margin: 2px 0; font-size: 12px; }
+            hr { border: 0; border-top: 1px dashed #000; margin: 10px 0; }
+            .item-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+            .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 5px; }
+            .footer { text-align: center; font-size: 11px; margin-top: 15px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h2>` + escapeHtml(namaToko) + `</h2>
+            <p>` + escapeHtml(alamatToko) + `</p>
+            <p>Tanggal: ` + new Date(transaksi.tanggal).toLocaleDateString('id-ID') + `</p>
+            <p>ID Transaksi: ` + transaksi.id + `</p>
+        </div>
+        <hr>
+    `;
+
+    // Daftar item
+    for (var i = 0; i < transaksi.items.length; i++) {
+        var item = transaksi.items[i];
+        htmlStruk += `
+        <div class="item-row">
+            <span>` + escapeHtml(item.nama) + ` x` + item.jumlah + `</span>
+            <span>Rp ` + item.subtotal.toLocaleString('id-ID') + `</span>
+        </div>
+        `;
+    }
+
+    // Total dan Diskon
+    var diskon = transaksi.diskon || 0;
+    htmlStruk += `
+        <hr>
+        <div class="total-row">
+            <span>Total</span>
+            <span>Rp ` + transaksi.total.toLocaleString('id-ID') + `</span>
+        </div>
+    `;
+    if (diskon > 0) {
+        htmlStruk += `
+        <div class="item-row">
+            <span>Diskon</span>
+            <span>- Rp ` + diskon.toLocaleString('id-ID') + `</span>
+        </div>
+        `;
+    }
+    htmlStruk += `
+        <div class="total-row">
+            <span>BAYAR</span>
+            <span>Rp ` + transaksi.grandTotal.toLocaleString('id-ID') + `</span>
+        </div>
+        <div class="item-row">
+            <span>Metode</span>
+            <span>` + transaksi.metodePembayaran + `</span>
+        </div>
+        <div class="footer">
+            <p>Terima kasih telah berbelanja!</p>
+            <p>Barang yang sudah dibeli tidak dapat dikembalikan.</p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    // Buat iframe untuk mencetak
+    var iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    var doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(htmlStruk);
+    doc.close();
+
+    // Tunggu iframe load lalu print
+    iframe.onload = function() {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(function() {
+            document.body.removeChild(iframe);
+        }, 1000);
+    };
+}
+// ===== AKHIR BLOK 8.16.7 =====
 // ===== AKHIR BLOK 8.16 =====
 // ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
 // Fitur ini hanya bisa diakses oleh SuperAdmin
