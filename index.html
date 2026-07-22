@@ -6654,7 +6654,335 @@ function hapusHutang(idHutang) {
     renderHutangPiutang();
 }
 // ===== AKHIR BLOK 8.19 =====    
-    
+// ===== BLOK 8.20 - HARGA GROSIR (Modifikasi 4 Fungsi) =====
+
+// 1. Ganti renderFormTambahProdukGudang (BLOK 8.7.2)
+function renderFormTambahProdukGudang() {
+    var html = '<div class="card"><div class="card-header">Tambah Produk Baru <button class="button button-danger button-small" onclick="tutupFormTambahProdukGudang()"><i class="fas fa-times"></i> Tutup</button></div>';
+    html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="gudangNamaProduk" class="form-input" placeholder="Nama produk"></div>';
+    html += '<div><label class="form-label">Kode Produk (Barcode)</label><div style="display:flex; gap:5px;"><input type="text" id="gudangKodeProduk" class="form-input" placeholder="Scan atau input manual"><button class="button button-primary button-small" onclick="scanBarcodeProduk()"><i class="fas fa-camera"></i> Scan</button></div></div>';
+    html += '<div><label class="form-label">Harga Beli (Modal)</label><input type="number" id="gudangHargaBeli" class="form-input" placeholder="Harga modal"></div>';
+    html += '<div><label class="form-label">Harga Jual</label><input type="number" id="gudangHargaJual" class="form-input" placeholder="Harga jual"></div>';
+    html += '<div><label class="form-label">Harga Grosir (Rp)</label><input type="number" id="gudangHargaGrosir" class="form-input" placeholder="Harga jika beli banyak"></div>';
+    html += '<div><label class="form-label">Minimal Beli Grosir</label><input type="number" id="gudangMinBeli" class="form-input" placeholder="Minimal pcs untuk harga grosir"></div>';
+    html += '<div><label class="form-label">Jumlah Stok</label><input type="number" id="gudangJumlahStok" class="form-input" placeholder="Jumlah stok"></div>';
+    html += '<div><label class="form-label">Jenis Produk</label><select id="gudangJenis" class="form-input"><option value="Makanan">Makanan</option><option value="Minuman">Minuman</option><option value="Obat-Obatan">Obat-Obatan</option><option value="Pakaian">Pakaian</option><option value="Elektronik">Elektronik</option><option value="Lainnya">Lainnya</option></select></div>';
+    html += '<div><label class="form-label">Satuan</label><select id="gudangSatuan" class="form-input"><option value="Pcs">Pcs</option><option value="Liter">Liter</option><option value="Kg">Kg</option><option value="Box">Box</option><option value="Kardus">Kardus</option><option value="Lusin">Lusin</option></select></div>';
+    html += '<div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="gudangTanggalKadaluarsa" class="form-input"></div>';
+    html += '<div><label class="form-label">Upload Foto Produk</label><input type="file" id="gudangFotoProduk" multiple accept=".jpg,.jpeg,.png" style="display:none;"><button class="button button-primary button-small" onclick="document.getElementById(\'gudangFotoProduk\').click();">Pilih Foto</button><span id="gudangNamaFoto" style="font-size:12px; color:#888; margin-left:10px;">Belum ada foto</span></div></div>';
+    html += '<div class="grid-2" style="margin-top:10px;"><div><label class="form-label">Tanggal Input</label><input type="date" id="gudangTanggalInput" class="form-input"></div>';
+    html += '<div><label class="form-label">Penginput</label><input type="text" id="gudangPenginput" class="form-input" placeholder="Nama penginput"></div></div>';
+    html += '<button class="button button-primary margin-top-10" onclick="simpanProdukGudang()"><i class="fas fa-save"></i> Simpan Produk</button></div>';
+    return html;
+}
+
+// 2. Ganti simpanProdukGudang (BLOK 8.7.3)
+function simpanProdukGudang() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var nama = document.getElementById('gudangNamaProduk').value.trim();
+    var kode = document.getElementById('gudangKodeProduk').value.trim();
+    var hargaBeli = document.getElementById('gudangHargaBeli').value.trim();
+    var hargaJual = document.getElementById('gudangHargaJual').value.trim();
+    var hargaGrosir = document.getElementById('gudangHargaGrosir').value.trim();
+    var minBeli = document.getElementById('gudangMinBeli').value.trim();
+    var stok = document.getElementById('gudangJumlahStok').value.trim();
+    var jenis = document.getElementById('gudangJenis').value;
+    var satuan = document.getElementById('gudangSatuan').value;
+    var kadaluarsa = document.getElementById('gudangTanggalKadaluarsa').value;
+    var foto = localStorage.getItem('2r_produk_gudang_foto_temp') || '';
+    var tanggalInput = document.getElementById('gudangTanggalInput').value;
+    var penginput = document.getElementById('gudangPenginput').value.trim();
+    if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
+        tampilkanToast('Semua data wajib diisi!', 'warning'); return;
+    }
+    if (parseInt(hargaBeli) <= 0 || parseInt(hargaJual) <= 0 || parseInt(stok) < 0) {
+        tampilkanToast('Harga dan stok harus bernilai positif!', 'warning'); return;
+    }
+    var hariIni = new Date(); hariIni.setHours(0,0,0,0);
+    if (new Date(kadaluarsa) < hariIni) { tampilkanToast('Tanggal kadaluarsa tidak boleh kurang dari hari ini!', 'warning'); return; }
+    var arrayFoto = foto ? [foto] : [];
+    var produkBaru = {
+        id: Date.now(), tokoId: user.id, namaProduk: nama, kodeProduk: kode || '-',
+        hargaBeli: parseInt(hargaBeli), hargaJual: parseInt(hargaJual),
+        hargaGrosir: parseInt(hargaGrosir) || 0, minBeliGrosir: parseInt(minBeli) || 0,
+        jumlahStok: parseInt(stok),
+        jenis: jenis, satuan: satuan, tanggalKadaluarsa: kadaluarsa, fotoProduk: arrayFoto,
+        tanggalInput: tanggalInput, namaPenginput: penginput, tanggalMasuk: new Date().toISOString(),
+        status: 'Aktif', totalTerjual: 0
+    };
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    semuaProdukGudang.push(produkBaru);
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+    localStorage.removeItem('2r_produk_gudang_foto_temp');
+    document.getElementById('gudangNamaProduk').value = '';
+    document.getElementById('gudangKodeProduk').value = '';
+    document.getElementById('gudangHargaBeli').value = '';
+    document.getElementById('gudangHargaJual').value = '';
+    document.getElementById('gudangHargaGrosir').value = '';
+    document.getElementById('gudangMinBeli').value = '';
+    document.getElementById('gudangJumlahStok').value = '';
+    document.getElementById('gudangTanggalKadaluarsa').value = '';
+    document.getElementById('gudangTanggalInput').value = '';
+    document.getElementById('gudangPenginput').value = '';
+    document.getElementById('gudangNamaFoto').textContent = 'Belum ada foto';
+    tutupFormTambahProdukGudang();
+    renderManajemenStokGudang();
+    tampilkanToast('Produk berhasil ditambahkan ke gudang!', 'success');
+}
+
+// 3. Ganti renderEditProdukGudang (BLOK 8.7.5) - potongan form edit
+function renderEditProdukGudang(id) {
+    var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var target = null;
+    for (var i = 0; i < semua.length; i++) {
+        if (semua[i].id === id) { target = semua[i]; break; }
+    }
+    if (!target) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+    var areaKonten = document.getElementById('mainContent');
+    var html = '<div class="page-header"><h2>Edit Produk Gudang</h2><p>Ubah data produk yang sudah ada.</p></div>';
+    html += '<div class="card"><div class="card-header">Form Edit Produk <button class="button button-danger button-small" onclick="renderKelolaProduk()"><i class="fas fa-times"></i> Batal</button></div>';
+    html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="editGudangNamaProduk" class="form-input" value="' + escapeHtml(target.namaProduk) + '"></div>';
+    html += '<div><label class="form-label">Kode Produk</label><input type="text" id="editGudangKodeProduk" class="form-input" value="' + escapeHtml(target.kodeProduk) + '"></div>';
+    html += '<div><label class="form-label">Harga Beli</label><input type="number" id="editGudangHargaBeli" class="form-input" value="' + target.hargaBeli + '"></div>';
+    html += '<div><label class="form-label">Harga Jual</label><input type="number" id="editGudangHargaJual" class="form-input" value="' + target.hargaJual + '"></div>';
+    html += '<div><label class="form-label">Harga Grosir</label><input type="number" id="editGudangHargaGrosir" class="form-input" value="' + (target.hargaGrosir || 0) + '"></div>';
+    html += '<div><label class="form-label">Minimal Beli Grosir</label><input type="number" id="editGudangMinBeli" class="form-input" value="' + (target.minBeliGrosir || 0) + '"></div>';
+    html += '<div><label class="form-label">Jumlah Stok</label><input type="number" id="editGudangJumlahStok" class="form-input" value="' + target.jumlahStok + '"></div>';
+    html += '<div><label class="form-label">Jenis</label><select id="editGudangJenis" class="form-input">';
+    var jenisList = ['Makanan','Minuman','Obat-Obatan','Pakaian','Elektronik','Lainnya'];
+    for (var i = 0; i < jenisList.length; i++) {
+        var selected = jenisList[i] === target.jenis ? 'selected' : '';
+        html += '<option value="' + jenisList[i] + '" ' + selected + '>' + jenisList[i] + '</option>';
+    }
+    html += '</select></div><div><label class="form-label">Satuan</label><select id="editGudangSatuan" class="form-input">';
+    var satuanList = ['Pcs','Liter','Kg','Box','Kardus','Lusin'];
+    for (var i = 0; i < satuanList.length; i++) {
+        var selected = satuanList[i] === target.satuan ? 'selected' : '';
+        html += '<option value="' + satuanList[i] + '" ' + selected + '>' + satuanList[i] + '</option>';
+    }
+    html += '</select></div><div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="editGudangTanggalKadaluarsa" class="form-input" value="' + target.tanggalKadaluarsa + '"></div>';
+    html += '<div><label class="form-label">Tanggal Input</label><input type="date" id="editGudangTanggalInput" class="form-input" value="' + (target.tanggalInput || '') + '"></div>';
+    html += '<div><label class="form-label">Penginput</label><input type="text" id="editGudangPenginput" class="form-input" value="' + escapeHtml(target.namaPenginput || '') + '"></div>';
+    html += '<div style="grid-column:1/-1;"><label class="form-label">Foto Produk</label>';
+    if (target.fotoProduk && target.fotoProduk.length > 0) {
+        html += '<div style="margin-bottom:10px;"><img src="' + target.fotoProduk[0] + '" style="width:100px;height:100px;object-fit:cover;border-radius:6px;"></div>';
+    } else { html += '<p style="color:#888;font-size:13px;">Belum ada foto</p>'; }
+    html += '<input type="file" id="editGudangFotoProduk" accept=".jpg,.jpeg,.png" style="display:none;">';
+    html += '<button class="button button-primary button-small" onclick="document.getElementById(\'editGudangFotoProduk\').click();">Pilih Foto Baru</button>';
+    html += '<span id="editGudangNamaFoto" style="font-size:12px;color:#888;margin-left:10px;">Kosongkan jika tidak ganti</span></div></div>';
+    html += '<button class="button button-primary margin-top-10" onclick="simpanEditProdukGudang(' + target.id + ')"><i class="fas fa-save"></i> Simpan Perubahan</button></div>';
+    areaKonten.innerHTML = html;
+    setTimeout(function() { pasangEventListenerFotoEdit(); }, 300);
+}
+
+// 4. Ganti simpanEditProdukGudang (BLOK 8.7.5)
+function simpanEditProdukGudang(id) {
+    var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var index = -1;
+    for (var i = 0; i < semua.length; i++) {
+        if (semua[i].id === id) { index = i; break; }
+    }
+    if (index === -1) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+    var nama = document.getElementById('editGudangNamaProduk').value.trim();
+    var kode = document.getElementById('editGudangKodeProduk').value.trim();
+    var hargaBeli = document.getElementById('editGudangHargaBeli').value.trim();
+    var hargaJual = document.getElementById('editGudangHargaJual').value.trim();
+    var hargaGrosir = document.getElementById('editGudangHargaGrosir').value.trim();
+    var minBeli = document.getElementById('editGudangMinBeli').value.trim();
+    var stok = document.getElementById('editGudangJumlahStok').value.trim();
+    var jenis = document.getElementById('editGudangJenis').value;
+    var satuan = document.getElementById('editGudangSatuan').value;
+    var kadaluarsa = document.getElementById('editGudangTanggalKadaluarsa').value;
+    var fotoBaru = localStorage.getItem('2r_edit_produk_gudang_foto_temp') || '';
+    var tanggalInput = document.getElementById('editGudangTanggalInput').value;
+    var penginput = document.getElementById('editGudangPenginput').value.trim();
+    if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
+        tampilkanToast('Semua data wajib diisi!', 'warning'); return;
+    }
+    semua[index].namaProduk = nama;
+    semua[index].kodeProduk = kode || '-';
+    semua[index].hargaBeli = parseInt(hargaBeli);
+    semua[index].hargaJual = parseInt(hargaJual);
+    semua[index].hargaGrosir = parseInt(hargaGrosir) || 0;
+    semua[index].minBeliGrosir = parseInt(minBeli) || 0;
+    semua[index].jumlahStok = parseInt(stok);
+    semua[index].jenis = jenis;
+    semua[index].satuan = satuan;
+    semua[index].tanggalKadaluarsa = kadaluarsa;
+    semua[index].tanggalInput = tanggalInput;
+    semua[index].namaPenginput = penginput;
+    if (fotoBaru) { semua[index].fotoProduk = [fotoBaru]; localStorage.removeItem('2r_edit_produk_gudang_foto_temp'); }
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semua));
+    renderKelolaProduk();
+    tampilkanToast('Produk berhasil diperbarui!', 'success');
+}
+// ===== AKHIR BLOK 8.20 =====
+// ===== BLOK 8.21 - KATEGORI FILTER & HARGA GROSIR =====
+
+// 1. Ganti renderTransaksiPenjualan (Bagian form & data option)
+// CARI: html += '  <div id="trxItemContainer">'; 
+// LALU DI ATASNYA, TAMBAHKAN KODE INI:
+/*
+html += '  <div class="grid-2" style="margin-bottom:10px;">';
+html += '    <div><label class="form-label">Filter Kategori</label><select id="trxKategoriFilter" class="form-input" onchange="updateProdukDropdowns()"><option value="">Semua Kategori</option>';
+var uniqueKategori = [];
+for (var i = 0; i < produkSaya.length; i++) {
+    if (uniqueKategori.indexOf(produkSaya[i].jenis) === -1) {
+        uniqueKategori.push(produkSaya[i].jenis);
+    }
+}
+for (var i = 0; i < uniqueKategori.length; i++) {
+    html += '<option value="' + uniqueKategori[i] + '">' + uniqueKategori[i] + '</option>';
+}
+html += '</select></div><div></div></div>';
+*/
+// DAN GANTI BAGIAN OPTION DI DALEM LOOP MENJADI:
+/*
+html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+*/
+
+// --- KARENA PERUBAHANNYA BANYAK, LANGSUNG GANTI FUNGSI updateHargaSatuan DAN TAMBAHKAN updateProdukDropdowns DI BAWAH INI ---
+
+// Ganti updateHargaSatuan
+function updateHargaSatuan(index) {
+    var select = document.getElementById('trxProduk' + index);
+    if (!select) return;
+    var selected = select.options[select.selectedIndex];
+    var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
+    if (selected && selected.dataset.harga) {
+        var hargaJual = parseFloat(selected.dataset.harga);
+        var hargaGrosir = parseFloat(selected.dataset.hargaGrosir) || 0;
+        var minBeli = parseInt(selected.dataset.minBeli) || 99999;
+        // Logika: Jika Jumlah >= Minimal Beli DAN harga grosir > 0, pakai harga grosir
+        var hargaAkhir = (hargaGrosir > 0 && jumlah >= minBeli) ? hargaGrosir : hargaJual;
+        document.getElementById('trxHarga' + index).value = hargaAkhir;
+    } else {
+        document.getElementById('trxHarga' + index).value = '';
+    }
+    hitungSubtotal(index);
+}
+
+// Tambahkan fungsi baru ini di bawah updateHargaSatuan:
+function updateProdukDropdowns() {
+    var filter = document.getElementById('trxKategoriFilter').value;
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+    if (filter) {
+        produkSaya = produkSaya.filter(function(p) { return p.jenis === filter; });
+    }
+    var i = 0;
+    while (document.getElementById('trxProduk' + i)) {
+        var select = document.getElementById('trxProduk' + i);
+        var currentVal = select.value;
+        select.innerHTML = '<option value="">-- Pilih Produk --</option>';
+        for (var j = 0; j < produkSaya.length; j++) {
+            var p = produkSaya[j];
+            var selected = (p.id == currentVal) ? 'selected' : '';
+            select.innerHTML += '<option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '" ' + selected + '>' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+        }
+        updateHargaSatuan(i);
+        i++;
+    }
+}
+// ===== AKHIR BLOK 8.21 =====
+// ===== BLOK 8.22 - DOWNLOAD LAPORAN CSV =====
+
+// 1. Ganti renderRekapPenjualan
+function renderRekapPenjualan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+
+    var filter = window._currentRekapFilter || 'hari';
+    var now = new Date();
+    var startDate = new Date();
+    if (filter === 'hari') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (filter === 'minggu') {
+        var day = now.getDay();
+        var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+    } else if (filter === 'bulan') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    var filtered = transaksiSaya.filter(function(t) {
+        var d = new Date(t.tanggal);
+        return d >= startDate;
+    });
+
+    var totalPenjualan = 0;
+    for (var i = 0; i < filtered.length; i++) { totalPenjualan += filtered[i].grandTotal || filtered[i].total; }
+
+    var html = '';
+    html += '<div class="page-header"><h2>Rekap Penjualan</h2><p>Total penjualan ' + (filter === 'hari' ? 'hari ini' : filter === 'minggu' ? 'minggu ini' : 'bulan ini') + ': <strong>Rp ' + totalPenjualan.toLocaleString('id-ID') + '</strong></p></div>';
+
+    html += '<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">';
+    html += '  <button class="button ' + (filter === 'hari' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'hari\'; renderRekapPenjualan()">Hari Ini</button>';
+    html += '  <button class="button ' + (filter === 'minggu' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'minggu\'; renderRekapPenjualan()">Minggu Ini</button>';
+    html += '  <button class="button ' + (filter === 'bulan' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'bulan\'; renderRekapPenjualan()">Bulan Ini</button>';
+    html += '  <button class="button button-success button-small" onclick="downloadLaporanCSV()"><i class="fas fa-file-excel"></i> Download CSV</button>';
+    html += '  <button class="button button-primary button-small" onclick="renderTransaksiPenjualan()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+    html += '</div>';
+
+    if (filtered.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi pada periode ini</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Tanggal</th><th>Item</th><th>Total</th><th>Diskon</th><th>Bayar</th><th>Metode</th><th>Catatan</th></tr></thead><tbody>';
+        var no = 1;
+        for (var i = 0; i < filtered.length; i++) {
+            var t = filtered[i];
+            var diskon = t.diskon || 0;
+            var bayar = (t.grandTotal || t.total);
+            html += '<tr><td>' + (no++) + '</td><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td><td>' + t.items.length + ' item</td><td>Rp ' + t.total.toLocaleString('id-ID') + '</td><td style="color:#d32f2f;">-Rp ' + diskon.toLocaleString('id-ID') + '</td><td><strong>Rp ' + bayar.toLocaleString('id-ID') + '</strong></td><td>' + t.metodePembayaran + '</td><td>' + escapeHtml(t.catatan || '-') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total Pendapatan Bersih: Rp ' + totalPenjualan.toLocaleString('id-ID') + '</div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// 2. Tambahkan fungsi download CSV
+function downloadLaporanCSV() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+    var filter = window._currentRekapFilter || 'hari';
+    var now = new Date();
+    var startDate = new Date();
+    if (filter === 'hari') { startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+    else if (filter === 'minggu') { var day = now.getDay(); var diff = now.getDate() - day + (day === 0 ? -6 : 1); startDate = new Date(now.getFullYear(), now.getMonth(), diff); }
+    else if (filter === 'bulan') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); }
+
+    var filtered = transaksiSaya.filter(function(t) { return new Date(t.tanggal) >= startDate; });
+
+    if (filtered.length === 0) { tampilkanToast('Tidak ada data untuk periode ini!', 'warning'); return; }
+
+    var csv = "Tanggal;Item;Total;Diskon;Bayar;Metode;Catatan\n";
+    for (var i = 0; i < filtered.length; i++) {
+        var t = filtered[i];
+        var diskon = t.diskon || 0;
+        var bayar = (t.grandTotal || t.total);
+        csv += '"' + new Date(t.tanggal).toLocaleDateString('id-ID') + '";' + t.items.length + ';' + t.total + ';' + diskon + ';' + bayar + ';"' + t.metodePembayaran + '";"' + escapeHtml(t.catatan || '') + '"\n';
+    }
+    var blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    var url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = 'Laporan_Penjualan_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    tampilkanToast('Laporan CSV berhasil didownload!', 'success');
+}
+// ===== AKHIR BLOK 8.22 =====    
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
