@@ -619,6 +619,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
         { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
         { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
         { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+        { halaman: 'pengajuanBukaAkun', icon: 'fa-user-plus', label: 'Pengajuan Buka Akun' }
         { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
         { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
     ] }
@@ -728,7 +729,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 ],
             // === STAF ADMIN, CS, STAF OWNER, SPONSOR ===
             'staf_admin': [
-                { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' }, { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
+                { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' }, { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'pengajuanBukaAkun', icon: 'fa-user-plus', label: 'Pengajuan Buka Akun' } { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
             ],
             'customer_service': [
                 { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'tiketBantuan', icon: 'fa-ticket-alt', label: 'Tiket Bantuan' }, { halaman: 'liveChat', icon: 'fa-comments', label: 'Live Chat' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
@@ -800,6 +801,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'menuIklan') renderMenuIklan();
     else if (namaHalaman === 'pengajuanHapus') renderPengajuanHapusAkun();
     else if (namaHalaman === 'uploadProdukPublik') renderUploadProdukPublik();
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'manajemenStokGudang') renderManajemenStokGudang();
     else if (namaHalaman === 'kelolaProduk') renderKelolaProduk();
     else if (namaHalaman === 'helloFriends') renderHelloFriends();
@@ -5772,6 +5774,198 @@ function tolakPengajuanUpload(idPengajuan) {
     renderPengajuanUploadProduk();
 }
 // ===== AKHIR BLOK 8.18 =====
+    // ===== BLOK 8.19 - JS_PENGAJUAN_BUKA_AKUN =====
+// Data disimpan di localStorage key: 2r_pengajuan_buka_akun
+
+// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
+// else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
+
+// ===== 8.19.1 - RENDER HALAMAN ADMIN (PENGAJUAN BUKA AKUN) =====
+function renderPengajuanBukaAkun() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Hanya Admin yang dapat mengakses halaman ini!', 'error');
+        return;
+    }
+
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    var html = '';
+
+    html += '<div class="page-header"><h2>Pengajuan Buka Akun Baru</h2><p>Daftar calon user yang mengajukan pembuatan akun. Admin dapat menyetujui atau menolak.</p></div>';
+
+    html += '<div class="card"><div class="card-header">Daftar Pengajuan</div>';
+    
+    if (dataPengajuan.length === 0) {
+        html += '  <div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div>';
+    } else {
+        html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Nama Calon</th><th>Username</th><th>Role Tujuan</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
+        dataPengajuan.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+        for (var i = 0; i < dataPengajuan.length; i++) {
+            var p = dataPengajuan[i];
+            html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td>';
+            html += '  <td>' + escapeHtml(p.nama) + '</td>';
+            html += '  <td>' + escapeHtml(p.username) + '</td>';
+            html += '  <td>' + escapeHtml(p.roleTujuan) + '</td>';
+            html += '  <td>' + escapeHtml(p.alasan || '-') + '</td>';
+            html += '  <td>';
+            html += '    <button class="button button-success button-extra-small" onclick="setujuiPengajuanBukaAkun(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui & Buat Akun</button>';
+            html += '    <button class="button button-danger button-extra-small" onclick="tolakPengajuanBukaAkun(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
+            html += '  </td></tr>';
+        }
+        html += '  </tbody></table></div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// ===== 8.19.2 - RENDER FORM PENGAJUAN (UNTUK CALON USER / TANPA LOGIN) =====
+function renderFormPengajuanBukaAkun() {
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var html = '';
+    html += '<div class="page-header"><h2>Ajukan Buka Akun Baru</h2><p>Silakan isi data diri Anda untuk mengajukan pembuatan akun. Admin akan memverifikasi dan menyetujui.</p></div>';
+    
+    html += '<div class="card" style="max-width:600px; margin:0 auto;">';
+    html += '  <div class="card-header">Form Pengajuan</div>';
+    html += '  <div class="form-group"><label>Nama Lengkap</label><input type="text" id="pengajuanNama" class="form-input" placeholder="Nama Anda"></div>';
+    html += '  <div class="form-group"><label>Username yang Diinginkan</label><input type="text" id="pengajuanUsername" class="form-input" placeholder="Username (min 4 karakter)"></div>';
+    html += '  <div class="form-group"><label>Role yang Diinginkan</label><select id="pengajuanRole" class="form-input">';
+    html += '    <option value="toko">Toko</option><option value="ojek">Ojek</option><option value="pedagang">Pedagang Pasar</option><option value="codseller">COD Seller</option>';
+    html += '  </select></div>';
+    html += '  <div class="form-group"><label>Alasan Membuat Akun</label><textarea id="pengajuanAlasan" class="form-input" rows="3" placeholder="Alasan Anda membuat akun..."></textarea></div>';
+    html += '  <button class="button button-primary" onclick="simpanPengajuanBukaAkun()" style="width:100%;"><i class="fas fa-paper-plane"></i> Ajukan</button>';
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// ===== 8.19.3 - SIMPAN PENGAJUAN BUKA AKUN (DARI CALON USER) =====
+function simpanPengajuanBukaAkun() {
+    var nama = document.getElementById('pengajuanNama').value.trim();
+    var username = document.getElementById('pengajuanUsername').value.trim();
+    var roleTujuan = document.getElementById('pengajuanRole').value;
+    var alasan = document.getElementById('pengajuanAlasan').value.trim();
+
+    if (!nama) { tampilkanToast('Nama lengkap wajib diisi!', 'warning'); return; }
+    if (!username || username.length < 4) { tampilkanToast('Username minimal 4 karakter!', 'warning'); return; }
+    if (!roleTujuan) { tampilkanToast('Pilih role yang diinginkan!', 'warning'); return; }
+
+    // Cek apakah username sudah terdaftar di sistem
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === username) {
+            tampilkanToast('Username "' + username + '" sudah digunakan!', 'error');
+            return;
+        }
+    }
+
+    // Simpan pengajuan
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    dataPengajuan.push({
+        id: 'PBA-' + Date.now(),
+        nama: nama,
+        username: username,
+        roleTujuan: roleTujuan,
+        alasan: alasan,
+        tanggal: new Date().toISOString()
+    });
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+
+    document.getElementById('pengajuanNama').value = '';
+    document.getElementById('pengajuanUsername').value = '';
+    document.getElementById('pengajuanAlasan').value = '';
+
+    tampilkanToast('Pengajuan Anda telah dikirim ke Admin!', 'success');
+    
+    // Kembali ke halaman login atau render form lagi
+    renderFormPengajuanBukaAkun();
+}
+
+// ===== 8.19.4 - SETUJUI PENGAJUAN & BUAT AKUN (OLEH ADMIN) =====
+function setujuiPengajuanBukaAkun(idPengajuan) {
+    if (!confirm('Setujui pengajuan ini? Akun baru akan langsung dibuat.')) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    var targetPengajuan = null;
+    var indexPengajuan = -1;
+
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            targetPengajuan = dataPengajuan[i];
+            indexPengajuan = i;
+            break;
+        }
+    }
+
+    if (!targetPengajuan) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
+
+    // Cek username lagi untuk keamanan (jika ada yang mendaftar di antara waktu pengajuan)
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === targetPengajuan.username) {
+            tampilkanToast('Username "' + targetPengajuan.username + '" sudah digunakan!', 'error');
+            // Hapus pengajuan yang sudah kadaluarsa
+            dataPengajuan.splice(indexPengajuan, 1);
+            localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+            renderPengajuanBukaAkun();
+            return;
+        }
+    }
+
+    // Siapkan password default (misal: '123456') dan hash
+    var passwordDefault = '123456';
+    var hashPassword = await hashPassword(passwordDefault);
+    
+    // Buat akun baru
+    var akunBaru = {
+        id: generateId(targetPengajuan.roleTujuan),
+        role: targetPengajuan.roleTujuan,
+        username: targetPengajuan.username,
+        password: hashPassword,
+        nama: targetPengajuan.nama,
+        email: '',
+        nomorHp: '',
+        alamat: '',
+        namaBank: '',
+        nomorRekening: '',
+        pemilikRekening: '',
+        ktp: '',
+        status: 'AKTIF',
+        waktuRegistrasi: new Date().toISOString()
+    };
+
+    dataAkun.push(akunBaru);
+    simpanDataAkun(dataAkun);
+
+    // Hapus pengajuan dari antrian
+    dataPengajuan.splice(indexPengajuan, 1);
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+
+    tampilkanToast('Akun "' + targetPengajuan.username + '" berhasil dibuat! Password default: ' + passwordDefault, 'success');
+    renderPengajuanBukaAkun();
+}
+
+// ===== 8.19.5 - TOLAK PENGAJUAN (OLEH ADMIN) =====
+function tolakPengajuanBukaAkun(idPengajuan) {
+    if (!confirm('Tolak pengajuan ini?')) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            dataPengajuan.splice(i, 1);
+            break;
+        }
+    }
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+    tampilkanToast('Pengajuan ditolak dan dihapus!', 'success');
+    renderPengajuanBukaAkun();
+}
+// ===== AKHIR BLOK 8.19 =====
     
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
