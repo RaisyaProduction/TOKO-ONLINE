@@ -4739,12 +4739,12 @@ function bukaChat(targetId) {
 
 // ===== BLOK 8.16.1 - RENDER TRANSAKSI PENJUALAN =====
 function renderTransaksiPenjualan() {
+    // Panggil dummy otomatis (jika produk belum ada, akan dibuat)
+    inisialisasiDataDummyTransaksi();
+
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
-
-    // Jika produk gudang kosong, buat dummy untuk user yang login
-    inisialisasiDataDummyTransaksi(user.id);
 
     var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
     var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
@@ -4752,7 +4752,6 @@ function renderTransaksiPenjualan() {
     var html = '';
     html += '<div class="page-header"><h2>Transaksi Penjualan</h2><p>Catat penjualan langsung ke pelanggan. Stok akan berkurang otomatis.</p></div>';
 
-    // Form transaksi
     html += '<div class="card" id="formTransaksiPenjualan">';
     html += '  <div class="card-header">Form Transaksi</div>';
     html += '  <div class="grid-2">';
@@ -4760,7 +4759,6 @@ function renderTransaksiPenjualan() {
     html += '    <div><label class="form-label">Metode Pembayaran</label><select id="trxMetode" class="form-input"><option value="Tunai">Tunai</option><option value="Transfer">Transfer</option></select></div>';
     html += '  </div>';
     
-    // Bagian item produk
     html += '  <div id="trxItemContainer">';
     html += '    <div class="grid-2" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;" id="trxItemRow0">';
     html += '      <div><label class="form-label">Pilih Produk</label><select id="trxProduk0" class="form-input" onchange="updateHargaSatuan(0)">';
@@ -4964,7 +4962,6 @@ function simpanTransaksiPenjualan() {
     tampilkanToast('Transaksi berhasil disimpan! Stok telah diperbarui.', 'success');
     renderTransaksiPenjualan();
 }
-
 // ===== AKHIR BLOK 8.16.1 =====
 
 // ===== BLOK 8.16.2 - RENDER REKAP PENJUALAN =====
