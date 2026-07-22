@@ -4726,7 +4726,491 @@ function bukaChat(targetId) {
 </script>
 <!-- ===== AKHIR BLOK 8.15 ===== -->
 <script>
-    // ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY UNTUK PENGUJIAN =====
+    // ===== BLOK 8.16 - JS_PAKET_TRANSAKSI_1 (Transaksi Langsung Offline) =====
+
+// ------------------------------------------------------------
+// 1. FUNGSI NAVIGASI UNTUK 4 HALAMAN
+// ------------------------------------------------------------
+// Tambahkan ke fungsi navigasiKeHalaman (BLOK 6.2.1):
+// else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
+// else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
+// else if (namaHalaman === 'pengeluaran') renderPengeluaran();
+// else if (namaHalaman === 'modalCash') renderModalCash();
+
+// ===== BLOK 8.16.1 - RENDER TRANSAKSI PENJUALAN =====
+function renderTransaksiPenjualan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    // Jika produk gudang kosong, buat dummy untuk user yang login
+    inisialisasiDataDummyTransaksi(user.id);
+
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+
+    var html = '';
+    html += '<div class="page-header"><h2>Transaksi Penjualan</h2><p>Catat penjualan langsung ke pelanggan. Stok akan berkurang otomatis.</p></div>';
+
+    // Form transaksi
+    html += '<div class="card" id="formTransaksiPenjualan">';
+    html += '  <div class="card-header">Form Transaksi</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Tanggal</label><input type="date" id="trxTanggal" class="form-input" value="' + new Date().toISOString().slice(0,10) + '"></div>';
+    html += '    <div><label class="form-label">Metode Pembayaran</label><select id="trxMetode" class="form-input"><option value="Tunai">Tunai</option><option value="Transfer">Transfer</option></select></div>';
+    html += '  </div>';
+    
+    // Bagian item produk
+    html += '  <div id="trxItemContainer">';
+    html += '    <div class="grid-2" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;" id="trxItemRow0">';
+    html += '      <div><label class="form-label">Pilih Produk</label><select id="trxProduk0" class="form-input" onchange="updateHargaSatuan(0)">';
+    if (produkSaya.length === 0) {
+        html += '        <option value="">-- Tidak ada produk di gudang --</option>';
+    } else {
+        html += '        <option value="">-- Pilih Produk --</option>';
+        for (var i = 0; i < produkSaya.length; i++) {
+            var p = produkSaya[i];
+            html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+        }
+    }
+    html += '      </select></div>';
+    html += '      <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah0" class="form-input" min="1" onchange="hitungSubtotal(0)" oninput="hitungSubtotal(0)"></div>';
+    html += '      <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga0" class="form-input" readonly></div>';
+    html += '      <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal0" class="form-input" readonly></div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary button-small" onclick="tambahItemTransaksi()"><i class="fas fa-plus"></i> Tambah Item</button>';
+    html += '  <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+    html += '    <div style="text-align:right; font-size:18px; font-weight:700;">Total: Rp <span id="trxTotal">0</span></div>';
+    html += '  </div>';
+    html += '  <div class="form-group"><label class="form-label">Catatan</label><input type="text" id="trxCatatan" class="form-input" placeholder="Opsional"></div>';
+    html += '  <button class="button button-primary" onclick="simpanTransaksiPenjualan()" style="width:100%;"><i class="fas fa-save"></i> Simpan Transaksi</button>';
+    html += '</div>';
+
+    // Tabel riwayat penjualan (5 transaksi terakhir)
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+    transaksiSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+
+    html += '<div class="card">';
+    html += '  <div class="card-header">Transaksi Terakhir</div>';
+    if (transaksiSaya.length === 0) {
+        html += '  <div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi</h3></div>';
+    } else {
+        html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Item</th><th>Total</th><th>Metode</th></tr></thead><tbody>';
+        var max = Math.min(transaksiSaya.length, 5);
+        for (var i = 0; i < max; i++) {
+            var t = transaksiSaya[i];
+            html += '  <tr><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td>';
+            html += '  <td>' + t.items.length + ' item</td>';
+            html += '  <td>Rp ' + t.total.toLocaleString('id-ID') + '</td>';
+            html += '  <td>' + t.metodePembayaran + '</td></tr>';
+        }
+        html += '  </tbody></table></div>';
+        html += '  <div style="text-align:right; margin-top:10px;"><button class="button button-primary button-small" onclick="renderRekapPenjualan()">Lihat Semua</button></div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// ----- Helper: update harga satuan saat produk dipilih -----
+function updateHargaSatuan(index) {
+    var select = document.getElementById('trxProduk' + index);
+    if (!select) return;
+    var selected = select.options[select.selectedIndex];
+    if (selected && selected.dataset.harga) {
+        document.getElementById('trxHarga' + index).value = selected.dataset.harga;
+    } else {
+        document.getElementById('trxHarga' + index).value = '';
+    }
+    hitungSubtotal(index);
+}
+
+// ----- Helper: hitung subtotal dan total -----
+function hitungSubtotal(index) {
+    var harga = parseFloat(document.getElementById('trxHarga' + index).value) || 0;
+    var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
+    var subtotal = harga * jumlah;
+    document.getElementById('trxSubtotal' + index).value = subtotal;
+
+    // Hitung total semua baris
+    var total = 0;
+    var i = 0;
+    while (document.getElementById('trxSubtotal' + i)) {
+        total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+        i++;
+    }
+    document.getElementById('trxTotal').textContent = total.toLocaleString('id-ID');
+}
+
+// ----- Helper: tambah item baru -----
+function tambahItemTransaksi() {
+    var container = document.getElementById('trxItemContainer');
+    var index = container.children.length;
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+
+    var row = document.createElement('div');
+    row.className = 'grid-2';
+    row.style.marginTop = '10px';
+    row.style.borderTop = '1px solid #eee';
+    row.style.paddingTop = '10px';
+    row.id = 'trxItemRow' + index;
+
+    var html = '';
+    html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
+    html += '    <option value="">-- Pilih Produk --</option>';
+    for (var i = 0; i < produkSaya.length; i++) {
+        var p = produkSaya[i];
+        html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+    }
+    html += '  </select></div>';
+    html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
+    html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
+    html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
+    row.innerHTML = html;
+    container.appendChild(row);
+}
+
+// ----- Fungsi simpan transaksi penjualan -----
+function simpanTransaksiPenjualan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var tanggal = document.getElementById('trxTanggal').value;
+    var metode = document.getElementById('trxMetode').value;
+    var catatan = document.getElementById('trxCatatan').value.trim();
+
+    // Kumpulkan item
+    var items = [];
+    var i = 0;
+    while (document.getElementById('trxProduk' + i)) {
+        var select = document.getElementById('trxProduk' + i);
+        var produkId = select.value;
+        if (!produkId) { i++; continue; }
+        var jumlah = parseInt(document.getElementById('trxJumlah' + i).value) || 0;
+        var harga = parseFloat(document.getElementById('trxHarga' + i).value) || 0;
+        var subtotal = parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+        if (jumlah <= 0) { tampilkanToast('Jumlah barang harus lebih dari 0!', 'warning'); return; }
+        // Validasi stok
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produk = null;
+        for (var j = 0; j < semuaProdukGudang.length; j++) {
+            if (semuaProdukGudang[j].id == produkId) { produk = semuaProdukGudang[j]; break; }
+        }
+        if (!produk) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+        if (produk.jumlahStok < jumlah) {
+            tampilkanToast('Stok produk ' + produk.namaProduk + ' tidak cukup! Tersedia: ' + produk.jumlahStok, 'error');
+            return;
+        }
+        items.push({
+            produkId: parseInt(produkId),
+            nama: produk.namaProduk,
+            harga: harga,
+            jumlah: jumlah,
+            subtotal: subtotal
+        });
+        i++;
+    }
+
+    if (items.length === 0) { tampilkanToast('Minimal satu item harus ditambahkan!', 'warning'); return; }
+
+    var total = 0;
+    for (var i = 0; i < items.length; i++) { total += items[i].subtotal; }
+
+    // Simpan transaksi
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiBaru = {
+        id: 'TRX-' + Date.now(),
+        tokoId: user.id,
+        tanggal: tanggal,
+        items: items,
+        total: total,
+        metodePembayaran: metode,
+        catatan: catatan,
+        createdAt: new Date().toISOString()
+    };
+    semuaTransaksi.push(transaksiBaru);
+    localStorage.setItem('2r_transaksi_penjualan', JSON.stringify(semuaTransaksi));
+
+    // Kurangi stok gudang
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        for (var j = 0; j < semuaProdukGudang.length; j++) {
+            if (semuaProdukGudang[j].id == item.produkId) {
+                semuaProdukGudang[j].jumlahStok -= item.jumlah;
+                semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) + item.jumlah;
+                break;
+            }
+        }
+    }
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+
+    // Update modal cash (jika pembayaran tunai)
+    if (metode === 'Tunai') {
+        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
+        modalData.saldo = (modalData.saldo || 0) + total;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Penjualan',
+            jumlah: total,
+            saldoSetelah: modalData.saldo,
+            keterangan: 'Transaksi #' + transaksiBaru.id
+        });
+        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
+    }
+
+    tampilkanToast('Transaksi berhasil disimpan! Stok telah diperbarui.', 'success');
+    renderTransaksiPenjualan();
+}
+
+// ===== AKHIR BLOK 8.16.1 =====
+
+// ===== BLOK 8.16.2 - RENDER REKAP PENJUALAN =====
+function renderRekapPenjualan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+
+    // Filter hari ini, minggu ini, bulan ini
+    var filter = 'hari'; // default
+    if (window.location.hash) {
+        var hash = window.location.hash.replace('#', '');
+        if (hash === 'hari' || hash === 'minggu' || hash === 'bulan') filter = hash;
+    }
+
+    var now = new Date();
+    var startDate = new Date();
+    if (filter === 'hari') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (filter === 'minggu') {
+        var day = now.getDay();
+        var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+    } else if (filter === 'bulan') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    var filtered = transaksiSaya.filter(function(t) {
+        var d = new Date(t.tanggal);
+        return d >= startDate;
+    });
+
+    var totalPenjualan = 0;
+    for (var i = 0; i < filtered.length; i++) { totalPenjualan += filtered[i].total; }
+
+    var html = '';
+    html += '<div class="page-header"><h2>Rekap Penjualan</h2><p>Total penjualan ' + (filter === 'hari' ? 'hari ini' : filter === 'minggu' ? 'minggu ini' : 'bulan ini') + ': <strong>Rp ' + totalPenjualan.toLocaleString('id-ID') + '</strong></p></div>';
+
+    html += '<div style="margin-bottom:15px; display:flex; gap:10px;">';
+    html += '  <button class="button ' + (filter === 'hari' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'hari\')">Hari Ini</button>';
+    html += '  <button class="button ' + (filter === 'minggu' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'minggu\')">Minggu Ini</button>';
+    html += '  <button class="button ' + (filter === 'bulan' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'bulan\')">Bulan Ini</button>';
+    html += '  <button class="button button-primary button-small" onclick="renderTransaksiPenjualan()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+    html += '</div>';
+
+    if (filtered.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi pada periode ini</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Tanggal</th><th>Item</th><th>Total</th><th>Metode</th><th>Catatan</th></tr></thead><tbody>';
+        var no = 1;
+        for (var i = 0; i < filtered.length; i++) {
+            var t = filtered[i];
+            html += '<tr><td>' + (no++) + '</td><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td><td>' + t.items.length + ' item</td><td>Rp ' + t.total.toLocaleString('id-ID') + '</td><td>' + t.metodePembayaran + '</td><td>' + escapeHtml(t.catatan || '-') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total Penjualan: Rp ' + totalPenjualan.toLocaleString('id-ID') + '</div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 8.16.2 =====
+
+// ===== BLOK 8.16.3 - RENDER REKAP PENGELUARAN =====
+function renderPengeluaran() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+    var pengeluaranSaya = semuaPengeluaran.filter(function(p) { return p.tokoId === user.id; });
+
+    var totalPengeluaran = 0;
+    for (var i = 0; i < pengeluaranSaya.length; i++) { totalPengeluaran += pengeluaranSaya[i].jumlah; }
+
+    var html = '';
+    html += '<div class="page-header"><h2>Rekap Pengeluaran</h2><p>Total pengeluaran: <strong>Rp ' + totalPengeluaran.toLocaleString('id-ID') + '</strong></p></div>';
+
+    // Form input pengeluaran
+    html += '<div class="card"><div class="card-header">Tambah Pengeluaran</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Tanggal</label><input type="date" id="pengTanggal" class="form-input" value="' + new Date().toISOString().slice(0,10) + '"></div>';
+    html += '    <div><label class="form-label">Kategori</label><select id="pengKategori" class="form-input"><option value="Belanja Bahan Baku">Belanja Bahan Baku</option><option value="Operasional">Operasional</option><option value="Transportasi">Transportasi</option><option value="Lainnya">Lainnya</option></select></div>';
+    html += '  </div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Jumlah (Rp)</label><input type="number" id="pengJumlah" class="form-input" placeholder="0"></div>';
+    html += '    <div><label class="form-label">Catatan</label><input type="text" id="pengCatatan" class="form-input" placeholder="Opsional"></div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary margin-top-10" onclick="simpanPengeluaran()"><i class="fas fa-save"></i> Simpan Pengeluaran</button>';
+    html += '</div>';
+
+    // Daftar pengeluaran
+    if (pengeluaranSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada pengeluaran</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Tanggal</th><th>Kategori</th><th>Jumlah</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody>';
+        var no = 1;
+        for (var i = 0; i < pengeluaranSaya.length; i++) {
+            var p = pengeluaranSaya[i];
+            html += '<tr><td>' + (no++) + '</td><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.kategori + '</td><td>Rp ' + p.jumlah.toLocaleString('id-ID') + '</td><td>' + escapeHtml(p.catatan || '-') + '</td><td><button class="button button-danger button-extra-small" onclick="hapusPengeluaran(' + i + ')"><i class="fas fa-trash"></i></button></td></tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total: Rp ' + totalPengeluaran.toLocaleString('id-ID') + '</div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+function simpanPengeluaran() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var tanggal = document.getElementById('pengTanggal').value;
+    var kategori = document.getElementById('pengKategori').value;
+    var jumlah = parseFloat(document.getElementById('pengJumlah').value) || 0;
+    var catatan = document.getElementById('pengCatatan').value.trim();
+
+    if (jumlah <= 0) { tampilkanToast('Jumlah harus lebih dari 0!', 'warning'); return; }
+
+    var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+    semuaPengeluaran.push({
+        id: 'OUT-' + Date.now(),
+        tokoId: user.id,
+        tanggal: tanggal,
+        kategori: kategori,
+        jumlah: jumlah,
+        catatan: catatan,
+        createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('2r_pengeluaran', JSON.stringify(semuaPengeluaran));
+    tampilkanToast('Pengeluaran berhasil disimpan!', 'success');
+    renderPengeluaran();
+}
+
+function hapusPengeluaran(index) {
+    if (!confirm('Yakin ingin menghapus pengeluaran ini?')) return;
+    var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+    semuaPengeluaran.splice(index, 1);
+    localStorage.setItem('2r_pengeluaran', JSON.stringify(semuaPengeluaran));
+    renderPengeluaran();
+    tampilkanToast('Pengeluaran dihapus!', 'success');
+}
+// ===== AKHIR BLOK 8.16.3 =====
+
+// ===== BLOK 8.16.4 - RENDER MODAL CASH & BELANJA =====
+function renderModalCash() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+
+    var html = '';
+    html += '<div class="page-header"><h2>Modal Cash & Belanja</h2>';
+    html += '<p>Saldo Kas Saat Ini: <strong style="font-size:24px; color:#FF6B00;">Rp ' + (modalData.saldo || 0).toLocaleString('id-ID') + '</strong></p></div>';
+
+    // Form tambah modal
+    html += '<div class="card"><div class="card-header">Tambah Modal Kas</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Jumlah Tambahan</label><input type="number" id="modalTambah" class="form-input" placeholder="0"></div>';
+    html += '    <div><label class="form-label">Keterangan</label><input type="text" id="modalKeteranganTambah" class="form-input" placeholder="Misal: Setoran modal awal"></div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary margin-top-10" onclick="tambahModalCash()"><i class="fas fa-plus"></i> Tambah Modal</button>';
+    html += '</div>';
+
+    // Form catat belanja modal (mengurangi saldo)
+    html += '<div class="card"><div class="card-header">Catat Belanja Modal (Mengurangi Kas)</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Jumlah Belanja</label><input type="number" id="modalBelanja" class="form-input" placeholder="0"></div>';
+    html += '    <div><label class="form-label">Keterangan</label><input type="text" id="modalKeteranganBelanja" class="form-input" placeholder="Misal: Beli bahan baku"></div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary margin-top-10" onclick="catatBelanjaModal()"><i class="fas fa-minus"></i> Catat Belanja</button>';
+    html += '</div>';
+
+    // Riwayat transaksi modal
+    html += '<div class="card"><div class="card-header">Riwayat Kas</div>';
+    if (modalData.riwayat && modalData.riwayat.length === 0) {
+        html += '  <div class="empty-state"><i class="fas fa-coins"></i><h3>Belum ada riwayat</h3></div>';
+    } else {
+        html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Saldo Setelah</th><th>Keterangan</th></tr></thead><tbody>';
+        var riwayat = modalData.riwayat || [];
+        riwayat.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+        for (var i = 0; i < riwayat.length; i++) {
+            var r = riwayat[i];
+            var sign = (r.jenis === 'Penjualan' || r.jenis === 'Tambahan Modal') ? '+' : '-';
+            var color = (sign === '+') ? 'green' : 'red';
+            html += '<tr><td>' + new Date(r.tanggal).toLocaleDateString('id-ID') + '</td><td>' + r.jenis + '</td><td style="color:' + color + ';">' + sign + ' Rp ' + r.jumlah.toLocaleString('id-ID') + '</td><td>Rp ' + r.saldoSetelah.toLocaleString('id-ID') + '</td><td>' + escapeHtml(r.keterangan || '-') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+function tambahModalCash() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var jumlah = parseFloat(document.getElementById('modalTambah').value) || 0;
+    var keterangan = document.getElementById('modalKeteranganTambah').value.trim();
+    if (jumlah <= 0) { tampilkanToast('Jumlah harus lebih dari 0!', 'warning'); return; }
+
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    modalData.saldo = (modalData.saldo || 0) + jumlah;
+    modalData.riwayat.push({
+        tanggal: new Date().toISOString(),
+        jenis: 'Tambahan Modal',
+        jumlah: jumlah,
+        saldoSetelah: modalData.saldo,
+        keterangan: keterangan
+    });
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Modal berhasil ditambahkan!', 'success');
+    renderModalCash();
+}
+
+function catatBelanjaModal() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var jumlah = parseFloat(document.getElementById('modalBelanja').value) || 0;
+    var keterangan = document.getElementById('modalKeteranganBelanja').value.trim();
+    if (jumlah <= 0) { tampilkanToast('Jumlah harus lebih dari 0!', 'warning'); return; }
+
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if ((modalData.saldo || 0) < jumlah) {
+        tampilkanToast('Saldo tidak cukup! Saldo saat ini: Rp ' + modalData.saldo.toLocaleString('id-ID'), 'error');
+        return;
+    }
+    modalData.saldo = (modalData.saldo || 0) - jumlah;
+    modalData.riwayat.push({
+        tanggal: new Date().toISOString(),
+        jenis: 'Belanja Modal',
+        jumlah: jumlah,
+        saldoSetelah: modalData.saldo,
+        keterangan: keterangan
+    });
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Belanja modal berhasil dicatat!', 'success');
+    renderModalCash();
+}
+// ===== AKHIR BLOK 8.16.4 =====
+
+// ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY UNTUK PENGUJIAN =====
 // Fungsi ini akan membuat contoh produk gudang dan modal cash jika belum ada
 function inisialisasiDataDummyTransaksi(targetId) {
     // Jika targetId tidak diberikan, gunakan user yang sedang login
@@ -4765,6 +5249,7 @@ function inisialisasiDataDummyTransaksi(targetId) {
     }
 }
 // ===== AKHIR BLOK 8.16.5 =====
+// ===== AKHIR BLOK 8.16 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
