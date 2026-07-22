@@ -2335,14 +2335,16 @@ function renderTransferTransaksi() {
     html += '      </ul>';
     html += '    </div>';
     html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
-    html += '      <h4 style="color:#4CAF50; margin:0 0 5px 0;">Paket Transaksi 3</h4>';
-    html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Pembayaran melalui sistem aplikasi (Saldo 2R).</p>';
-    html += '      <ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
-    html += '        <li>Transaksi Online 2 (Pesanan & Integrasi Saldo Aplikasi)</li>';
-    html += '      </ul>';
-    html += '    </div>';
-    html += '  </div>';
-    html += '</div>';
+html += '      <h4 style="color:#FF6B00; margin:0 0 5px 0;">Paket Transaksi 1</h4>';
+html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Langsung (Offline) – Pelanggan datang ke toko.</p>';
+html += '      <ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+// BAGIAN INI DIUBAH MENJADI LINK
+html += '        <li><a href="javascript:void(0)" onclick="renderTransaksiPenjualan()" style="color:#FF6B00; font-weight:600; text-decoration:underline; cursor:pointer;">Transaksi Penjualan</a> (Klik untuk uji coba)</li>';
+html += '        <li>Rekap Penjualan Harian/Mingguan/Bulanan</li>';
+html += '        <li>Rekap Pengeluaran</li>';
+html += '        <li>Modal Cash & Belanja</li>';
+html += '      </ul>';
+html += '    </div>';
 
     // --- Tabel Akun Target dengan Checkbox Paket + Tombol Setup Dummy ---
     html += '<div class="card">';
