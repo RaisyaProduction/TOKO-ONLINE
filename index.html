@@ -2136,89 +2136,122 @@ function hapusKTPUmum() {
     }
     // ===== AKHIR BLOK 8.1.2 =====
 
-    // ===== BLOK 8.1.3 - TRANSFER MENU =====
-    function renderTransferMenu() {
-        var role = localStorage.getItem('2r_user_role');
-        if (role !== 'superadmin') { tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error'); return; }
-        var areaKonten = document.getElementById('mainContent');
-        var html = '<div class="page-header"><h2>Transfer Menu</h2><p>Pilih kategori menu yang ingin Anda transfer ke akun target.</p></div>';
-        html += '<div class="widget-grid">';
-        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransferUploadProduk()"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-upload"></i></div><div class="widget-number" style="font-size:18px;">Upload Produk Publik</div><div class="widget-label">Atur akses upload produk untuk toko</div></div>';
-        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransferTransaksi()"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-credit-card"></i></div><div class="widget-number" style="font-size:18px;">Transaksi</div><div class="widget-label">Atur akses kasir, pembayaran, laporan</div></div>';
-        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransferLainnya()"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-cogs"></i></div><div class="widget-number" style="font-size:18px;">Menu Lainnya</div><div class="widget-label">Atur akses menu tambahan lainnya</div></div>';
-        html += '</div>';
-        areaKonten.innerHTML = html;
+    // ===== BLOK 8.1.3 - RENDER TRANSFER MENU PAKET TRANSAKSI (VERSI TEKS/PLACEHOLDER) =====
+function renderTransferTransaksi() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+        return;
     }
-    function renderTransferUploadProduk() {
-        var role = localStorage.getItem('2r_user_role');
-        if (role !== 'superadmin') { tampilkanToast('Anda tidak memiliki akses!', 'error'); return; }
-        var areaKonten = document.getElementById('mainContent');
-        var dataAkun = getDataAkun();
-        var daftarToko = [];
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].role === 'toko') daftarToko.push(dataAkun[i]);
+
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    // Ambil data akun target (Toko, Pedagang, COD Seller)
+    var dataAkun = getDataAkun();
+    var daftarTarget = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+            daftarTarget.push(a);
         }
-        var html = '<div class="page-header"><h2>Transfer Upload Produk Publik</h2><p>Pilih toko yang ingin Anda aktifkan/nonaktifkan fitur upload produk publik.</p>';
-        html += '<button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button></div>';
-        html += '<div class="card"><div class="card-header">Daftar Toko <span style="font-weight:normal;font-size:13px;color:#888;">(Total: ' + daftarToko.length + ')</span></div>';
-        if (daftarToko.length === 0) {
-            html += '<div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada toko</h3></div>';
-        } else {
-            html += '<div class="table-container"><table class="table"><thead><tr><th>Nomor</th><th>ID</th><th>Username</th><th>Nama</th><th>Status Upload Publik</th><th>Aksi</th></tr></thead><tbody>';
-            for (var i = 0; i < daftarToko.length; i++) {
-                var toko = daftarToko[i];
-                var statusUpload = toko.fitur && toko.fitur.uploadProdukPublik ? 'Aktif' : 'Nonaktif';
-                var badge = statusUpload === 'Aktif' ? 'badge-success' : 'badge-danger';
-                html += '<tr><td>' + (i+1) + '</td><td>' + toko.id + '</td><td>' + toko.username + '</td><td>' + toko.nama + '</td><td><span class="badge ' + badge + '">' + statusUpload + '</span></td><td>';
-                if (statusUpload === 'Aktif') html += '<button class="button button-danger button-extra-small" onclick="nonaktifkanUploadPublik(\'' + toko.id + '\')">Nonaktifkan</button>';
-                else html += '<button class="button button-success button-extra-small" onclick="aktifkanUploadPublik(\'' + toko.id + '\')">Aktifkan</button>';
-                html += '</td></tr>';
-            }
-            html += '</tbody></table></div>';
+    }
+
+    // --- HTML HALAMAN ---
+    var html = '';
+    html += '<div class="page-header">';
+    html += '  <h2>Transfer Menu – Paket Transaksi</h2>';
+    html += '  <p>Halaman ini digunakan untuk mengatur paket transaksi yang akan ditransfer ke akun Toko, Pedagang Pasar, dan COD Seller. <em>(Fitur penyimpanan paket sedang dalam pengembangan)</em></p>';
+    html += '</div>';
+
+    // === 1. DAFTAR PAKET (HANYA TEKS) ===
+    html += '<div class="card">';
+    html += '  <div class="card-header">Daftar Paket Transaksi yang Tersedia</div>';
+    html += '  <div class="grid-2">';
+    
+    // Paket 1
+    html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
+    html += '      <h4 style="color:#FF6B00; margin:0 0 5px 0;">Paket Transaksi 1</h4>';
+    html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Langsung (Offline) – Pelanggan datang ke toko.</p>';
+    html += '      <ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+    html += '        <li>Transaksi Penjualan</li>';
+    html += '        <li>Rekap Penjualan Harian/Mingguan/Bulanan</li>';
+    html += '        <li>Rekap Pengeluaran</li>';
+    html += '        <li>Modal Cash & Belanja</li>';
+    html += '      </ul>';
+    html += '    </div>';
+
+    // Paket 2
+    html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
+    html += '      <h4 style="color:#2196F3; margin:0 0 5px 0;">Paket Transaksi 2</h4>';
+    html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Pembayaran langsung ke rekening toko.</p>';
+    html += '      <ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+    html += '        <li>Transaksi Online 1 (Daftar Pesanan & Konfirmasi Manual)</li>';
+    html += '      </ul>';
+    html += '    </div>';
+
+    // Paket 3
+    html += '    <div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
+    html += '      <h4 style="color:#4CAF50; margin:0 0 5px 0;">Paket Transaksi 3</h4>';
+    html += '      <p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Pembayaran melalui sistem aplikasi (Saldo 2R).</p>';
+    html += '      <ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+    html += '        <li>Transaksi Online 2 (Pesanan & Integrasi Saldo Aplikasi)</li>';
+    html += '      </ul>';
+    html += '    </div>';
+
+    html += '  </div>';
+    html += '</div>';
+
+    // === 2. TABEL DAFTAR AKUN TARGET (KOLOM PAKET MASIH KOSONG) ===
+    html += '<div class="card">';
+    html += '  <div class="card-header">';
+    html += '    <span>Daftar Akun Target (Toko, Pedagang, COD Seller)</span>';
+    html += '    <span style="font-weight:normal; font-size:13px; color:#888;">Total: ' + daftarTarget.length + ' akun</span>';
+    html += '  </div>';
+
+    if (daftarTarget.length === 0) {
+        html += '  <div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada akun Toko, Pedagang, atau COD Seller</h3></div>';
+    } else {
+        html += '  <div class="table-container">';
+        html += '    <table class="table">';
+        html += '      <thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th>Paket Aktif</th><th>Aksi</th></tr></thead>';
+        html += '      <tbody>';
+
+        for (var i = 0; i < daftarTarget.length; i++) {
+            var a = daftarTarget[i];
+            var namaRole = a.role === 'toko' ? 'Toko' : (a.role === 'pedagang' ? 'Pedagang Pasar' : 'COD Seller');
+            
+            html += '      <tr>';
+            html += '        <td>' + (i + 1) + '</td>';
+            html += '        <td>' + a.id + '</td>';
+            html += '        <td>' + escapeHtml(a.nama || a.username) + '</td>';
+            html += '        <td>' + namaRole + '</td>';
+            // KOLOM PAKET MASIH KOSONG (HANYA TEKS)
+            html += '        <td><span style="color:#999; font-style:italic;">Belum diatur</span></td>';
+            html += '        <td>';
+            html += '          <button class="button button-primary button-extra-small" onclick="alert(\'Fitur atur paket sedang dalam pengembangan. Nanti akan ada checkbox untuk memilih Paket 1, 2, atau 3.\')">Atur</button>';
+            html += '        </td>';
+            html += '      </tr>';
         }
-        html += '</div>';
-        areaKonten.innerHTML = html;
+
+        html += '      </tbody></table></div>';
     }
-    function aktifkanUploadPublik(id) {
-        if (!confirm('Aktifkan fitur Upload Produk Publik untuk toko ini?')) return;
-        var dataAkun = getDataAkun();
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].id === id) {
-                if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
-                dataAkun[i].fitur.uploadProdukPublik = true;
-                break;
-            }
-        }
-        simpanDataAkun(dataAkun);
-        renderTransferUploadProduk();
-        tampilkanToast('Fitur Upload Produk Publik telah diaktifkan!', 'success');
-    }
-    function nonaktifkanUploadPublik(id) {
-        if (!confirm('Nonaktifkan fitur Upload Produk Publik untuk toko ini?')) return;
-        var dataAkun = getDataAkun();
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].id === id) {
-                if (dataAkun[i].fitur) dataAkun[i].fitur.uploadProdukPublik = false;
-                break;
-            }
-        }
-        simpanDataAkun(dataAkun);
-        renderTransferUploadProduk();
-        tampilkanToast('Fitur Upload Produk Publik telah dinonaktifkan!', 'success');
-    }
-    function renderTransferTransaksi() {
-        var areaKonten = document.getElementById('mainContent');
-        var html = '<div class="page-header"><h2>Transfer Transaksi</h2><p>Halaman ini sedang dalam pengembangan.</p><button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button></div>';
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-tools" style="color:#FF9800;"></i><h3>Fitur Transfer Transaksi</h3><p>Segera hadir.</p></div></div>';
-        areaKonten.innerHTML = html;
-    }
-    function renderTransferLainnya() {
-        var areaKonten = document.getElementById('mainContent');
-        var html = '<div class="page-header"><h2>Transfer Menu Lainnya</h2><p>Halaman ini sedang dalam pengembangan.</p><button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button></div>';
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-tools" style="color:#FF9800;"></i><h3>Fitur Transfer Menu Lainnya</h3><p>Segera hadir.</p></div></div>';
-        areaKonten.innerHTML = html;
-    }
-    // ===== AKHIR BLOK 8.1.3 =====
+    html += '</div>';
+
+    // === 3. CATATAN PENGEMBANGAN ===
+    html += '<div class="card" style="background:#fff3cd; border:1px solid #ffc107;">';
+    html += '  <div class="card-header" style="color:#856404;">Catatan Pengembangan</div>';
+    html += '  <p style="font-size:13px; color:#856404; margin:0;">Saat ini halaman ini hanya menampilkan teks (placeholder). Pada tahap berikutnya akan ditambahkan:</p>';
+    html += '  <ul style="font-size:12px; color:#856404; margin:5px 0 0 20px;">';
+    html += '    <li>Checkbox untuk memilih paket (1, 2, 3) per akun.</li>';
+    html += '    <li>Tombol "Simpan" yang akan menyimpan data paket ke dalam properti <code>fitur</code> di localStorage.</li>';
+    html += '    <li>Penyesuaian sidebar pada akun target sehingga menu transaksi muncul sesuai paket yang dipilih.</li>';
+    html += '  </ul>';
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 8.1.3 =====
 
     // ===== BLOK 8.1.4 - KELOLA WILAYAH =====
     function renderKelolaWilayah() {
