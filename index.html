@@ -897,7 +897,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'settingRekening') renderSettingRekening();
     else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
-    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun(); // <-- BAGIAN INI
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'belanja') renderBelanja();
     else if (namaHalaman === 'pesananSaya') renderPesananSaya();
     else if (namaHalaman === 'kelolaIklan') renderMenuIklan();
@@ -5477,10 +5477,6 @@ function inisialisasiDataDummyTransaksi(targetId) {
 // Fitur ini hanya bisa diakses oleh SuperAdmin
 // Data disimpan di localStorage key: 2r_harga_produk_publik, 2r_harga_akun_pro, 2r_penagihan_item
 
-// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
-// Tambahkan ini di fungsi navigasiKeHalaman:
-// else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
-
 // ===== 8.17.1 - RENDER HALAMAN SETTING HARGA =====
 function renderSettingHargaAplikasi() {
     var role = localStorage.getItem('2r_user_role');
@@ -5663,11 +5659,10 @@ function hapusItemPenagihan(index) {
     renderSettingHargaAplikasi();
 }
 // ===== AKHIR BLOK 8.17 =====
+
+
 // ===== BLOK 8.18 - JS_PENGAJUAN_UPLOAD_PRODUK =====
 // Data disimpan di localStorage key: 2r_pengajuan_upload
-
-// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
-// else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
 
 // ===== 8.18.1 - RENDER HALAMAN PENGAJUAN UPLOAD =====
 function renderPengajuanUploadProduk() {
@@ -5871,11 +5866,10 @@ function tolakPengajuanUpload(idPengajuan) {
     renderPengajuanUploadProduk();
 }
 // ===== AKHIR BLOK 8.18 =====
-    // ===== BLOK 8.19 - JS_PENGAJUAN_BUKA_AKUN =====
-// Data disimpan di localStorage key: 2r_pengajuan_buka_akun
 
-// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
-// else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
+
+// ===== BLOK 8.19 - JS_PENGAJUAN_BUKA_AKUN =====
+// Data disimpan di localStorage key: 2r_pengajuan_buka_akun
 
 // ===== 8.19.1 - RENDER HALAMAN ADMIN (PENGAJUAN BUKA AKUN) =====
 function renderPengajuanBukaAkun() {
@@ -5919,29 +5913,7 @@ function renderPengajuanBukaAkun() {
     areaKonten.innerHTML = html;
 }
 
-// ===== 8.19.2 - RENDER FORM PENGAJUAN (UNTUK CALON USER / TANPA LOGIN) =====
-function renderFormPengajuanBukaAkun() {
-    var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
-
-    var html = '';
-    html += '<div class="page-header"><h2>Ajukan Buka Akun Baru</h2><p>Silakan isi data diri Anda untuk mengajukan pembuatan akun. Admin akan memverifikasi dan menyetujui.</p></div>';
-    
-    html += '<div class="card" style="max-width:600px; margin:0 auto;">';
-    html += '  <div class="card-header">Form Pengajuan</div>';
-    html += '  <div class="form-group"><label>Nama Lengkap</label><input type="text" id="pengajuanNama" class="form-input" placeholder="Nama Anda"></div>';
-    html += '  <div class="form-group"><label>Username yang Diinginkan</label><input type="text" id="pengajuanUsername" class="form-input" placeholder="Username (min 4 karakter)"></div>';
-    html += '  <div class="form-group"><label>Role yang Diinginkan</label><select id="pengajuanRole" class="form-input">';
-    html += '    <option value="toko">Toko</option><option value="ojek">Ojek</option><option value="pedagang">Pedagang Pasar</option><option value="codseller">COD Seller</option>';
-    html += '  </select></div>';
-    html += '  <div class="form-group"><label>Alasan Membuat Akun</label><textarea id="pengajuanAlasan" class="form-input" rows="3" placeholder="Alasan Anda membuat akun..."></textarea></div>';
-    html += '  <button class="button button-primary" onclick="simpanPengajuanBukaAkun()" style="width:100%;"><i class="fas fa-paper-plane"></i> Ajukan</button>';
-    html += '</div>';
-
-    areaKonten.innerHTML = html;
-}
-
-// ===== 8.19.3 - SIMPAN PENGAJUAN BUKA AKUN (DARI CALON USER) =====
+// ===== 8.19.2 - SIMPAN PENGAJUAN BUKA AKUN (DARI CALON USER) =====
 function simpanPengajuanBukaAkun() {
     var nama = document.getElementById('pengajuanNama').value.trim();
     var username = document.getElementById('pengajuanUsername').value.trim();
@@ -5978,12 +5950,9 @@ function simpanPengajuanBukaAkun() {
     document.getElementById('pengajuanAlasan').value = '';
 
     tampilkanToast('Pengajuan Anda telah dikirim ke Admin!', 'success');
-    
-    // Kembali ke halaman login atau render form lagi
-    renderFormPengajuanBukaAkun();
 }
 
-// ===== 8.19.4 - SETUJUI PENGAJUAN & BUAT AKUN (OLEH ADMIN) =====
+// ===== 8.19.3 - SETUJUI PENGAJUAN & BUAT AKUN (OLEH ADMIN) =====
 function setujuiPengajuanBukaAkun(idPengajuan) {
     if (!confirm('Setujui pengajuan ini? Akun baru akan langsung dibuat.')) return;
 
@@ -6047,7 +6016,7 @@ function setujuiPengajuanBukaAkun(idPengajuan) {
     renderPengajuanBukaAkun();
 }
 
-// ===== 8.19.5 - TOLAK PENGAJUAN (OLEH ADMIN) =====
+// ===== 8.19.4 - TOLAK PENGAJUAN (OLEH ADMIN) =====
 function tolakPengajuanBukaAkun(idPengajuan) {
     if (!confirm('Tolak pengajuan ini?')) return;
 
