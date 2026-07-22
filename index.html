@@ -619,6 +619,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
         { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
         { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
         { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+        { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
         { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
         { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
     ] }
@@ -829,6 +830,8 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+    else if (namaHalaman === 'dataPenagihan') renderDataPenagihan();
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -3911,7 +3914,7 @@ function tampilkanDashboard(user) {
         for (var i = 0; i < dataAkun.length; i++) {
             if (dataAkun[i].id === user.id) { akunSaya = dataAkun[i]; break; }
         }
-        var batas = akunSaya ? (akunSaya.maksProdukPublik || 5) : 5;
+        var batas = (akunSaya && akunSaya.isPro) ? 50 : (akunSaya ? (akunSaya.maksProdukPublik || 5) : 5);
         var sisa = batas - produkSaya.length;
         var html = '<div class="page-header"><h2>Upload Produk Publik</h2><p>Upload produk untuk ditampilkan di direktori publik. Batas maksimal: <strong>' + batas + ' produk</strong> per akun.</p></div>';
         html += '<div class="card" style="background:#e8f5e9; border:1px solid #c8e6c9;"><div style="display:flex; justify-content:space-between; align-items:center;"><span><strong>Slot tersedia:</strong> ' + sisa + ' dari ' + batas + ' produk</span>';
@@ -4039,7 +4042,7 @@ function compressImage(file, maxWidth, quality) {
 <!-- ===== AKHIR BLOK 8.9 ===== -->
 <!-- ===== BLOK 8.10 - JS_RENDER_CHAT ===== -->
 <script>
-// ===== BLOK 8.10.1 - RENDER DAFTAR PERCAKAPAN (INBOX) =====
+// ===== BLOK 8.10.1 - RENDER DAFTAR PERCAKAPAN (INBOX) DENGAN PRIORITAS PRO =====
 function renderChat() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
@@ -4052,20 +4055,28 @@ function renderChat() {
         return p.pengirim === user.id || p.penerima === user.id;
     });
 
+    // Bangun daftar lawan bicara beserta status PRO
     var daftarLawan = {};
     for (var i = 0; i < pesanSaya.length; i++) {
         var idLawan = (pesanSaya[i].pengirim === user.id) ? pesanSaya[i].penerima : pesanSaya[i].pengirim;
         var roleLawan = '';
+        var isProLawan = false;
         for (var k = 0; k < dataAkun.length; k++) {
             if (dataAkun[k].id === idLawan) {
                 roleLawan = dataAkun[k].role;
+                isProLawan = dataAkun[k].isPro || false;
                 break;
             }
         }
-        if (roleLawan === 'superadmin') { continue; }
+        if (roleLawan === 'superadmin') { continue; } // Jangan tampilkan SuperAdmin di daftar chat
 
         if (!daftarLawan[idLawan]) {
-            daftarLawan[idLawan] = { id: idLawan, pesanTerakhir: pesanSaya[i], waktu: new Date(pesanSaya[i].waktu) };
+            daftarLawan[idLawan] = { 
+                id: idLawan, 
+                isPro: isProLawan, 
+                pesanTerakhir: pesanSaya[i], 
+                waktu: new Date(pesanSaya[i].waktu) 
+            };
         } else {
             if (new Date(pesanSaya[i].waktu) > daftarLawan[idLawan].waktu) {
                 daftarLawan[idLawan].pesanTerakhir = pesanSaya[i];
@@ -4074,8 +4085,13 @@ function renderChat() {
         }
     }
 
+    // Ubah ke array dan urutkan: PRO dulu, lalu waktu terbaru
     var listLawan = Object.values(daftarLawan);
-    listLawan.sort(function(a, b) { return b.waktu - a.waktu; });
+    listLawan.sort(function(a, b) {
+        if (a.isPro && !b.isPro) return -1;
+        if (!a.isPro && b.isPro) return 1;
+        return b.waktu - a.waktu;
+    });
 
     var html = '<div class="page-header"><h2>Chat</h2><p>Daftar percakapan Anda. ID lawan bicara ditampilkan untuk memudahkan balasan.</p></div>';
 
@@ -4094,7 +4110,9 @@ function renderChat() {
             }
             var isiPesan = lawan.pesanTerakhir.isi;
             var waktu = new Date(lawan.pesanTerakhir.waktu).toLocaleString('id-ID');
-            html += '<tr><td><strong>' + escapeHtml(lawan.id) + '</strong> (' + escapeHtml(namaLawan) + ')</td>';
+            // Tambahkan badge PRO jika akun lawan adalah PRO
+            var badgePro = lawan.isPro ? ' <span class="badge badge-success">PRO</span>' : '';
+            html += '<tr><td><strong>' + escapeHtml(lawan.id) + '</strong> (' + escapeHtml(namaLawan) + badgePro + ')</td>';
             html += '<td>' + escapeHtml(isiPesan.length > 50 ? isiPesan.substring(0, 50) + '...' : isiPesan) + '</td>';
             html += '<td>' + waktu + '</td>';
             html += '<td><button class="button button-primary button-small" onclick="bukaChat(\'' + lawan.id + '\')"><i class="fas fa-reply"></i> Balas</button></td></tr>';
@@ -4102,6 +4120,7 @@ function renderChat() {
         html += '</tbody></table></div></div>';
     }
 
+    // Dropdown untuk memulai chat baru
     var opsiDropdown = '<option value="">-- Pilih ID Tujuan --</option>';
     for (var i = 0; i < dataAkun.length; i++) {
         var a = dataAkun[i];
@@ -4122,7 +4141,7 @@ function renderChat() {
 
     areaKonten.innerHTML = html;
 }
-// ===== AKHIR BLOK 8.10.1 =====
+// ===== AKHIR BLOK 8.10.1 =====    
 
 // ===== BLOK 8.10.2 - RENDER RUANG CHAT DENGAN LAWAN TERTENTU =====
 function renderChatRoom(targetId) {
@@ -6982,7 +7001,219 @@ function downloadLaporanCSV() {
     URL.revokeObjectURL(url);
     tampilkanToast('Laporan CSV berhasil didownload!', 'success');
 }
-// ===== AKHIR BLOK 8.22 =====    
+// ===== AKHIR BLOK 8.22 =====
+    // ===== BLOK 8.25 - JS_DATA_PENAGIHAN (SuperAdmin & Staf Admin) =====
+function renderDataPenagihan() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataAkun = getDataAkun();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+
+    // Gabungkan data akun dengan tagihan terakhirnya
+    var dataGabungan = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'superadmin' || a.role === 'customer') continue; // Skip admin & customer
+
+        // Cari tagihan terakhir akun ini
+        var tagihanTerakhir = null;
+        for (var j = dataTagihan.length - 1; j >= 0; j--) {
+            if (dataTagihan[j].akunId === a.id) {
+                tagihanTerakhir = dataTagihan[j];
+                break;
+            }
+        }
+        dataGabungan.push({
+            id: a.id,
+            nama: a.nama || a.username,
+            role: a.role,
+            statusAkun: a.status || 'AKTIF',
+            isPro: a.isPro || false,
+            tagihanTerakhir: tagihanTerakhir
+        });
+    }
+
+    var html = '<div class="page-header"><h2>Data Penagihan Akun</h2><p>Daftar tagihan dan status akun Toko, Pedagang, dan COD Seller.</p></div>';
+    if (dataGabungan.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada data akun</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID Akun</th><th>Nama</th><th>Role</th><th>Akun Pro</th><th>Status Akun</th><th>Tagihan Terakhir</th><th>Status Tagihan</th></tr></thead><tbody>';
+        for (var i = 0; i < dataGabungan.length; i++) {
+            var d = dataGabungan[i];
+            var badgeAkun = d.statusAkun === 'SUSPEN' ? 'badge-danger' : 'badge-success';
+            var badgePro = d.isPro ? 'badge-success' : 'badge-warning';
+            var tagihanText = '-';
+            var badgeTagihan = 'badge-secondary';
+            
+            if (d.tagihanTerakhir) {
+                var t = d.tagihanTerakhir;
+                tagihanText = 'Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + ' (' + t.bulan + '/' + t.tahun + ')';
+                badgeTagihan = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+            }
+
+            html += '<tr><td>' + escapeHtml(d.id) + '</td>';
+            html += '<td>' + escapeHtml(d.nama) + '</td>';
+            html += '<td>' + d.role + '</td>';
+            html += '<td><span class="badge ' + badgePro + '">' + (d.isPro ? 'PRO' : 'Biasa') + '</span></td>';
+            html += '<td><span class="badge ' + badgeAkun + '">' + d.statusAkun + '</span></td>';
+            html += '<td>' + tagihanText + '</td>';
+            html += '<td><span class="badge ' + badgeTagihan + '">' + (d.tagihanTerakhir ? d.tagihanTerakhir.status : '-') + '</span></td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 8.25 =====
+    // ===== BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN (Gap 1) =====
+
+// --- 1. Form Pengajuan di Halaman Login (Tambahkan di BLOK 2.1 HTML) ---
+// Cari BLOK 2.1.3 (FORM LOGIN), tambahkan link di bawah "Daftar di sini":
+/* 
+<div class="authentication-footer">
+    Belum punya akun? 
+    <a onclick="toggleForm('register')">Daftar di sini</a>
+    <br><a onclick="toggleForm('pengajuanBukaAkun')" style="font-size:12px; color:#FF6B00; cursor:pointer;">Ajukan Buka Akun via Admin</a>
+</div>
+*/
+
+// --- 2. Form Pengajuan Buka Akun (Tambahkan di BLOK 2.1.4 di bawah Register) ---
+/*
+<form class="authentication-form hidden-form" id="pengajuanBukaAkunForm">
+    <div class="form-group">
+        <label>Nama Lengkap</label>
+        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="pengajuanNama" placeholder="Nama lengkap" required></div>
+    </div>
+    <div class="form-group">
+        <label>Email / Nomor HP</label>
+        <div class="input-group"><i class="fas fa-envelope"></i><input type="text" id="pengajuanKontak" placeholder="Email atau HP" required></div>
+    </div>
+    <div class="form-group">
+        <label>Role yang Diinginkan</label>
+        <div class="input-group"><i class="fas fa-user-tag"></i>
+            <select id="pengajuanRole"><option value="toko">Toko</option><option value="pedagang">Pedagang Pasar</option><option value="codseller">COD Seller</option></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Alasan Pembuatan Akun</label>
+        <div class="input-group"><i class="fas fa-comment"></i><input type="text" id="pengajuanAlasan" placeholder="Misal: Ingin berjualan online" required></div>
+    </div>
+    <button type="submit" class="button-submit"><i class="fas fa-paper-plane"></i> Ajukan ke Admin</button>
+    <div class="authentication-footer">Sudah punya akun? <a onclick="toggleForm('login')">Login di sini</a></div>
+</form>
+*/
+// Dan tambahkan di toggleForm: else if (tipe === 'pengajuanBukaAkun') { ... }
+
+// --- 3. Fungsi Simpan Pengajuan Buka Akun ---
+document.getElementById('pengajuanBukaAkunForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var nama = document.getElementById('pengajuanNama').value.trim();
+    var kontak = document.getElementById('pengajuanKontak').value.trim();
+    var role = document.getElementById('pengajuanRole').value;
+    var alasan = document.getElementById('pengajuanAlasan').value.trim();
+    if (!nama || !kontak || !role || !alasan) { tampilkanToast('Semua data wajib diisi!', 'warning'); return; }
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    dataPengajuan.push({
+        id: 'PB-' + Date.now(),
+        nama: nama,
+        kontak: kontak,
+        role: role,
+        alasan: alasan,
+        status: 'MENUNGGU',
+        waktu: new Date().toISOString()
+    });
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+    tampilkanToast('Pengajuan Anda telah dikirim ke Staf Admin!', 'success');
+    toggleForm('login');
+});
+
+// --- 4. Render Halaman Pengajuan Buka Akun untuk Staf Admin ---
+function renderPengajuanBukaAkun() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    var pengajuanMenunggu = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
+
+    var html = '<div class="page-header"><h2>Pengajuan Buka Akun</h2><p>Daftar calon user yang ingin dibuatkan akun.</p></div>';
+
+    if (pengajuanMenunggu.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan menunggu</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Nama</th><th>Kontak</th><th>Role</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < pengajuanMenunggu.length; i++) {
+            var p = pengajuanMenunggu[i];
+            html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.kontak) + '</td><td>' + p.role + '</td><td>' + escapeHtml(p.alasan) + '</td><td>';
+            html += '<button class="button button-success button-extra-small" onclick="setujuiPengajuanBukaAkun(\'' + p.id + '\')">Setujui & Buat Akun</button>';
+            html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanBukaAkun(\'' + p.id + '\')">Tolak</button>';
+            html += '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// --- 5. Fungsi Setujui & Tolak Pengajuan ---
+function setujuiPengajuanBukaAkun(idPengajuan) {
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    var index = -1;
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) { index = i; break; }
+    }
+    if (index === -1) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
+
+    var p = dataPengajuan[index];
+    // Buat akun baru (status NONAKTIF, menunggu verifikasi)
+    var dataAkun = getDataAkun();
+    var username = p.nama.toLowerCase().replace(/\s/g, '') + Math.floor(Math.random() * 100);
+    var passwordHash = await hashPassword('123456'); // Password default
+    var akunBaru = {
+        id: generateId(p.role),
+        role: p.role,
+        username: username,
+        password: passwordHash,
+        nama: p.nama,
+        email: p.kontak,
+        nomorHp: p.kontak,
+        status: 'NONAKTIF (Menunggu Verifikasi)',
+        waktuRegistrasi: new Date().toISOString()
+    };
+    dataAkun.push(akunBaru);
+    simpanDataAkun(dataAkun);
+
+    // Update status pengajuan
+    dataPengajuan[index].status = 'DISETUJUI';
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+
+    tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Pass: 123456. Silakan hubungi calon user.', 'success');
+    renderPengajuanBukaAkun();
+}
+
+function tolakPengajuanBukaAkun(idPengajuan) {
+    if (!confirm('Yakin ingin menolak pengajuan ini?')) return;
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            dataPengajuan[i].status = 'DITOLAK';
+            break;
+        }
+    }
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+    tampilkanToast('Pengajuan ditolak.', 'success');
+    renderPengajuanBukaAkun();
+}
+// ===== AKHIR BLOK 8.26 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
