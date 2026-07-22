@@ -4796,297 +4796,6 @@ function bukaChat(targetId) {
 // else if (namaHalaman === 'pengeluaran') renderPengeluaran();
 // else if (namaHalaman === 'modalCash') renderModalCash();
 
-// ===== BLOK 8.16.1 - RENDER TRANSAKSI PENJUALAN =====
-function renderTransaksiPenjualan() {
-    // Panggil dummy otomatis (jika produk belum ada, akan dibuat)
-    inisialisasiDataDummyTransaksi();
-
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
-
-    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
-
-    var html = '';
-    html += '<div class="page-header"><h2>Transaksi Penjualan</h2><p>Catat penjualan langsung ke pelanggan. Stok akan berkurang otomatis.</p></div>';
-
-    html += '<div class="card" id="formTransaksiPenjualan">';
-    html += '  <div class="card-header">Form Transaksi</div>';
-    html += '  <div class="grid-2">';
-    html += '    <div><label class="form-label">Tanggal</label><input type="date" id="trxTanggal" class="form-input" value="' + new Date().toISOString().slice(0,10) + '"></div>';
-    html += '    <div><label class="form-label">Metode Pembayaran</label><select id="trxMetode" class="form-input"><option value="Tunai">Tunai</option><option value="Transfer">Transfer</option></select></div>';
-    html += '  </div>';
-    
-    html += '  <div id="trxItemContainer">';
-    html += '    <div class="grid-2" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;" id="trxItemRow0">';
-    html += '      <div><label class="form-label">Pilih Produk</label><select id="trxProduk0" class="form-input" onchange="updateHargaSatuan(0)">';
-    if (produkSaya.length === 0) {
-        html += '        <option value="">-- Tidak ada produk di gudang --</option>';
-    } else {
-        html += '        <option value="">-- Pilih Produk --</option>';
-        for (var i = 0; i < produkSaya.length; i++) {
-            var p = produkSaya[i];
-            html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
-        }
-    }
-    html += '      </select></div>';
-    html += '      <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah0" class="form-input" min="1" onchange="hitungSubtotal(0)" oninput="hitungSubtotal(0)"></div>';
-    html += '      <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga0" class="form-input" readonly></div>';
-    html += '      <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal0" class="form-input" readonly></div>';
-    html += '    </div>';
-    html += '  </div>';
-    html += '  <button class="button button-primary button-small" onclick="tambahItemTransaksi()"><i class="fas fa-plus"></i> Tambah Item</button>';
-    html += '  <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
-    html += '    <div style="text-align:right; font-size:18px; font-weight:700;">Total: Rp <span id="trxTotal">0</span></div>';
-    html += '  </div>';
-    html += '  <div class="form-group"><label class="form-label">Catatan</label><input type="text" id="trxCatatan" class="form-input" placeholder="Opsional"></div>';
-    html += '  <button class="button button-primary" onclick="simpanTransaksiPenjualan()" style="width:100%;"><i class="fas fa-save"></i> Simpan Transaksi</button>';
-    html += '</div>';
-
-    // Tabel riwayat penjualan (5 transaksi terakhir)
-    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
-    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
-    transaksiSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
-
-    html += '<div class="card">';
-    html += '  <div class="card-header">Transaksi Terakhir</div>';
-    if (transaksiSaya.length === 0) {
-        html += '  <div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi</h3></div>';
-    } else {
-        html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Item</th><th>Total</th><th>Metode</th></tr></thead><tbody>';
-        var max = Math.min(transaksiSaya.length, 5);
-        for (var i = 0; i < max; i++) {
-            var t = transaksiSaya[i];
-            html += '  <tr><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td>';
-            html += '  <td>' + t.items.length + ' item</td>';
-            html += '  <td>Rp ' + t.total.toLocaleString('id-ID') + '</td>';
-            html += '  <td>' + t.metodePembayaran + '</td></tr>';
-        }
-        html += '  </tbody></table></div>';
-        html += '  <div style="text-align:right; margin-top:10px;"><button class="button button-primary button-small" onclick="renderRekapPenjualan()">Lihat Semua</button></div>';
-    }
-    html += '</div>';
-
-    areaKonten.innerHTML = html;
-}
-
-// ----- Helper: update harga satuan saat produk dipilih -----
-function updateHargaSatuan(index) {
-    var select = document.getElementById('trxProduk' + index);
-    if (!select) return;
-    var selected = select.options[select.selectedIndex];
-    if (selected && selected.dataset.harga) {
-        document.getElementById('trxHarga' + index).value = selected.dataset.harga;
-    } else {
-        document.getElementById('trxHarga' + index).value = '';
-    }
-    hitungSubtotal(index);
-}
-
-// ----- Helper: hitung subtotal dan total -----
-function hitungSubtotal(index) {
-    var harga = parseFloat(document.getElementById('trxHarga' + index).value) || 0;
-    var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
-    var subtotal = harga * jumlah;
-    document.getElementById('trxSubtotal' + index).value = subtotal;
-
-    // Hitung total semua baris
-    var total = 0;
-    var i = 0;
-    while (document.getElementById('trxSubtotal' + i)) {
-        total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
-        i++;
-    }
-    document.getElementById('trxTotal').textContent = total.toLocaleString('id-ID');
-}
-
-// ----- Helper: tambah item baru -----
-function tambahItemTransaksi() {
-    var container = document.getElementById('trxItemContainer');
-    var index = container.children.length;
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
-
-    var row = document.createElement('div');
-    row.className = 'grid-2';
-    row.style.marginTop = '10px';
-    row.style.borderTop = '1px solid #eee';
-    row.style.paddingTop = '10px';
-    row.id = 'trxItemRow' + index;
-
-    var html = '';
-    html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
-    html += '    <option value="">-- Pilih Produk --</option>';
-    for (var i = 0; i < produkSaya.length; i++) {
-        var p = produkSaya[i];
-        html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
-    }
-    html += '  </select></div>';
-    html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
-    html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
-    html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
-    row.innerHTML = html;
-    container.appendChild(row);
-}
-
-// ----- Fungsi simpan transaksi penjualan -----
-function simpanTransaksiPenjualan() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var tanggal = document.getElementById('trxTanggal').value;
-    var metode = document.getElementById('trxMetode').value;
-    var catatan = document.getElementById('trxCatatan').value.trim();
-
-    // Kumpulkan item
-    var items = [];
-    var i = 0;
-    while (document.getElementById('trxProduk' + i)) {
-        var select = document.getElementById('trxProduk' + i);
-        var produkId = select.value;
-        if (!produkId) { i++; continue; }
-        var jumlah = parseInt(document.getElementById('trxJumlah' + i).value) || 0;
-        var harga = parseFloat(document.getElementById('trxHarga' + i).value) || 0;
-        var subtotal = parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
-        if (jumlah <= 0) { tampilkanToast('Jumlah barang harus lebih dari 0!', 'warning'); return; }
-        // Validasi stok
-        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var produk = null;
-        for (var j = 0; j < semuaProdukGudang.length; j++) {
-            if (semuaProdukGudang[j].id == produkId) { produk = semuaProdukGudang[j]; break; }
-        }
-        if (!produk) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
-        if (produk.jumlahStok < jumlah) {
-            tampilkanToast('Stok produk ' + produk.namaProduk + ' tidak cukup! Tersedia: ' + produk.jumlahStok, 'error');
-            return;
-        }
-        items.push({
-            produkId: parseInt(produkId),
-            nama: produk.namaProduk,
-            harga: harga,
-            jumlah: jumlah,
-            subtotal: subtotal
-        });
-        i++;
-    }
-
-    if (items.length === 0) { tampilkanToast('Minimal satu item harus ditambahkan!', 'warning'); return; }
-
-    var total = 0;
-    for (var i = 0; i < items.length; i++) { total += items[i].subtotal; }
-
-    // Simpan transaksi
-    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
-    var transaksiBaru = {
-        id: 'TRX-' + Date.now(),
-        tokoId: user.id,
-        tanggal: tanggal,
-        items: items,
-        total: total,
-        metodePembayaran: metode,
-        catatan: catatan,
-        createdAt: new Date().toISOString()
-    };
-    semuaTransaksi.push(transaksiBaru);
-    localStorage.setItem('2r_transaksi_penjualan', JSON.stringify(semuaTransaksi));
-
-    // Kurangi stok gudang
-    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-    for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        for (var j = 0; j < semuaProdukGudang.length; j++) {
-            if (semuaProdukGudang[j].id == item.produkId) {
-                semuaProdukGudang[j].jumlahStok -= item.jumlah;
-                semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) + item.jumlah;
-                break;
-            }
-        }
-    }
-    localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
-
-    // Update modal cash (jika pembayaran tunai)
-    if (metode === 'Tunai') {
-        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
-        modalData.saldo = (modalData.saldo || 0) + total;
-        modalData.riwayat.push({
-            tanggal: new Date().toISOString(),
-            jenis: 'Penjualan',
-            jumlah: total,
-            saldoSetelah: modalData.saldo,
-            keterangan: 'Transaksi #' + transaksiBaru.id
-        });
-        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
-    }
-
-    tampilkanToast('Transaksi berhasil disimpan! Stok telah diperbarui.', 'success');
-    renderTransaksiPenjualan();
-}
-// ===== AKHIR BLOK 8.16.1 =====
-
-// ===== BLOK 8.16.2 - RENDER REKAP PENJUALAN =====
-function renderRekapPenjualan() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
-
-    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
-    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
-
-    // Filter hari ini, minggu ini, bulan ini
-    var filter = 'hari'; // default
-    if (window.location.hash) {
-        var hash = window.location.hash.replace('#', '');
-        if (hash === 'hari' || hash === 'minggu' || hash === 'bulan') filter = hash;
-    }
-
-    var now = new Date();
-    var startDate = new Date();
-    if (filter === 'hari') {
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    } else if (filter === 'minggu') {
-        var day = now.getDay();
-        var diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
-    } else if (filter === 'bulan') {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-
-    var filtered = transaksiSaya.filter(function(t) {
-        var d = new Date(t.tanggal);
-        return d >= startDate;
-    });
-
-    var totalPenjualan = 0;
-    for (var i = 0; i < filtered.length; i++) { totalPenjualan += filtered[i].total; }
-
-    var html = '';
-    html += '<div class="page-header"><h2>Rekap Penjualan</h2><p>Total penjualan ' + (filter === 'hari' ? 'hari ini' : filter === 'minggu' ? 'minggu ini' : 'bulan ini') + ': <strong>Rp ' + totalPenjualan.toLocaleString('id-ID') + '</strong></p></div>';
-
-    html += '<div style="margin-bottom:15px; display:flex; gap:10px;">';
-    html += '  <button class="button ' + (filter === 'hari' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'hari\')">Hari Ini</button>';
-    html += '  <button class="button ' + (filter === 'minggu' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'minggu\')">Minggu Ini</button>';
-    html += '  <button class="button ' + (filter === 'bulan' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'bulan\')">Bulan Ini</button>';
-    html += '  <button class="button button-primary button-small" onclick="renderTransaksiPenjualan()"><i class="fas fa-arrow-left"></i> Kembali</button>';
-    html += '</div>';
-
-    if (filtered.length === 0) {
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi pada periode ini</h3></div></div>';
-    } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Tanggal</th><th>Item</th><th>Total</th><th>Metode</th><th>Catatan</th></tr></thead><tbody>';
-        var no = 1;
-        for (var i = 0; i < filtered.length; i++) {
-            var t = filtered[i];
-            html += '<tr><td>' + (no++) + '</td><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td><td>' + t.items.length + ' item</td><td>Rp ' + t.total.toLocaleString('id-ID') + '</td><td>' + t.metodePembayaran + '</td><td>' + escapeHtml(t.catatan || '-') + '</td></tr>';
-        }
-        html += '</tbody></table></div>';
-        html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total Penjualan: Rp ' + totalPenjualan.toLocaleString('id-ID') + '</div>';
-    }
-    html += '</div>';
-
-    areaKonten.innerHTML = html;
-}
-// ===== AKHIR BLOK 8.16.2 =====
-
 // ===== BLOK 8.16.3 - RENDER REKAP PENGELUARAN =====
 function renderPengeluaran() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
@@ -5166,8 +4875,7 @@ function hapusPengeluaran(index) {
     tampilkanToast('Pengeluaran dihapus!', 'success');
 }
 // ===== AKHIR BLOK 8.16.3 =====
-
-// ===== BLOK 8.16.4 - RENDER MODAL CASH & BELANJA (LENGKAP: TAMBAH, EDIT, HAPUS) =====
+    // ===== BLOK 8.16.4 - RENDER MODAL CASH & BELANJA =====
 function renderModalCash() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
@@ -5221,7 +4929,6 @@ function renderModalCash() {
             html += '        <td style="color:' + color + ';">' + sign + ' Rp ' + r.jumlah.toLocaleString('id-ID') + '</td>';
             html += '        <td>Rp ' + r.saldoSetelah.toLocaleString('id-ID') + '</td>';
             html += '        <td>' + escapeHtml(r.keterangan || '-') + '</td>';
-            // Tombol Edit & Hapus hanya untuk Tambahan Modal dan Belanja Modal (bukan Penjualan)
             if (r.jenis === 'Tambahan Modal' || r.jenis === 'Belanja Modal') {
                 html += '        <td>';
                 html += '          <button class="button button-primary button-extra-small" onclick="editModalCash(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
@@ -5239,7 +4946,6 @@ function renderModalCash() {
     areaKonten.innerHTML = html;
 }
 
-// --- TAMBAH MODAL CASH ---
 function tambahModalCash() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var jumlah = parseFloat(document.getElementById('modalTambah').value) || 0;
@@ -5261,7 +4967,6 @@ function tambahModalCash() {
     renderModalCash();
 }
 
-// --- CATAT BELANJA MODAL (MENGURANGI SALDO) ---
 function catatBelanjaModal() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var jumlah = parseFloat(document.getElementById('modalBelanja').value) || 0;
@@ -5287,7 +4992,6 @@ function catatBelanjaModal() {
     renderModalCash();
 }
 
-// --- EDIT MODAL CASH (UNTUK ITEM RIWAYAT) ---
 function editModalCash(index) {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var modalKey = '2r_modal_cash_' + user.id;
@@ -5297,13 +5001,10 @@ function editModalCash(index) {
         return;
     }
     var item = modalData.riwayat[index];
-    // Hanya bisa edit jenis Tambahan Modal atau Belanja Modal
     if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
         tampilkanToast('Item ini tidak dapat diedit!', 'warning');
         return;
     }
-
-    // Tampilkan prompt untuk mengedit
     var newJumlah = prompt('Edit jumlah (Rp):', item.jumlah);
     if (newJumlah === null) return;
     newJumlah = parseFloat(newJumlah);
@@ -5314,12 +5015,9 @@ function editModalCash(index) {
     var newKeterangan = prompt('Edit keterangan:', item.keterangan || '');
     if (newKeterangan === null) return;
 
-    // Hitung ulang saldo: saldo sekarang dikurangi nilai lama, ditambah nilai baru
-    // Karena saldo saat ini sudah mencakup transaksi ini, kita perlu "rollback" dulu
     var selisih = newJumlah - item.jumlah;
     modalData.saldo = (modalData.saldo || 0) + selisih;
 
-    // Update item
     item.jumlah = newJumlah;
     item.saldoSetelah = modalData.saldo;
     item.keterangan = newKeterangan.trim() || item.keterangan;
@@ -5329,7 +5027,6 @@ function editModalCash(index) {
     renderModalCash();
 }
 
-// --- HAPUS MODAL CASH (UNTUK ITEM RIWAYAT) ---
 function hapusModalCash(index) {
     if (!confirm('Yakin ingin menghapus riwayat ini?')) return;
 
@@ -5341,61 +5038,43 @@ function hapusModalCash(index) {
         return;
     }
     var item = modalData.riwayat[index];
-    // Hanya bisa hapus Tambahan Modal atau Belanja Modal
     if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
         tampilkanToast('Item ini tidak dapat dihapus!', 'warning');
         return;
     }
-
-    // Rollback saldo
     if (item.jenis === 'Tambahan Modal') {
         modalData.saldo = (modalData.saldo || 0) - item.jumlah;
-    } else { // Belanja Modal
+    } else {
         modalData.saldo = (modalData.saldo || 0) + item.jumlah;
     }
-
-    // Hapus item dari riwayat
     modalData.riwayat.splice(index, 1);
-
     localStorage.setItem(modalKey, JSON.stringify(modalData));
     tampilkanToast('Riwayat berhasil dihapus!', 'success');
     renderModalCash();
 }
 // ===== AKHIR BLOK 8.16.4 =====
-
-// ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY UNTUK PENGUJIAN =====
-// Fungsi ini akan membuat contoh produk gudang dan modal cash jika belum ada
+    // ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY UNTUK PENGUJIAN =====
 function inisialisasiDataDummyTransaksi(targetId) {
-    // Jika targetId tidak diberikan, gunakan user yang sedang login
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var idTarget = targetId || user.id;
     if (!idTarget) return;
 
-    // Cek apakah user/target memiliki produk gudang
     var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
     var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === idTarget; });
     if (produkSaya.length === 0) {
-        // Buat 3 produk dummy
         var dummy = [
-            { id: Date.now() + 1, tokoId: idTarget, namaProduk: 'Beras 5kg', kodeProduk: 'BR-001', hargaBeli: 55000, hargaJual: 65000, jumlahStok: 20, jenis: 'Makanan', satuan: 'Kardus', tanggalKadaluarsa: '2027-01-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
-            { id: Date.now() + 2, tokoId: idTarget, namaProduk: 'Minyak Goreng 1L', kodeProduk: 'MG-002', hargaBeli: 13000, hargaJual: 15000, jumlahStok: 50, jenis: 'Makanan', satuan: 'Liter', tanggalKadaluarsa: '2026-12-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
-            { id: Date.now() + 3, tokoId: idTarget, namaProduk: 'Gula Pasir 1kg', kodeProduk: 'GP-003', hargaBeli: 14000, hargaJual: 17000, jumlahStok: 30, jenis: 'Makanan', satuan: 'Kg', tanggalKadaluarsa: '2027-06-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 }
+            { id: Date.now() + 1, tokoId: idTarget, namaProduk: 'Beras 5kg', kodeProduk: 'BR-001', hargaBeli: 55000, hargaJual: 65000, hargaGrosir: 60000, minBeliGrosir: 5, jumlahStok: 20, jenis: 'Makanan', satuan: 'Kardus', tanggalKadaluarsa: '2027-01-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
+            { id: Date.now() + 2, tokoId: idTarget, namaProduk: 'Minyak Goreng 1L', kodeProduk: 'MG-002', hargaBeli: 13000, hargaJual: 15000, hargaGrosir: 14000, minBeliGrosir: 10, jumlahStok: 50, jenis: 'Makanan', satuan: 'Liter', tanggalKadaluarsa: '2026-12-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
+            { id: Date.now() + 3, tokoId: idTarget, namaProduk: 'Gula Pasir 1kg', kodeProduk: 'GP-003', hargaBeli: 14000, hargaJual: 17000, hargaGrosir: 16000, minBeliGrosir: 5, jumlahStok: 30, jenis: 'Makanan', satuan: 'Kg', tanggalKadaluarsa: '2027-06-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 }
         ];
         semuaProdukGudang = semuaProdukGudang.concat(dummy);
         localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
         
-        // Setup modal cash untuk target (jika belum ada)
         var modalKey = '2r_modal_cash_' + idTarget;
         var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
         if (modalData.saldo === 0) {
             modalData.saldo = 1000000;
-            modalData.riwayat.push({
-                tanggal: new Date().toISOString(),
-                jenis: 'Tambahan Modal',
-                jumlah: 1000000,
-                saldoSetelah: 1000000,
-                keterangan: 'Modal awal dari SuperAdmin'
-            });
+            modalData.riwayat.push({ tanggal: new Date().toISOString(), jenis: 'Tambahan Modal', jumlah: 1000000, saldoSetelah: 1000000, keterangan: 'Modal awal dari SuperAdmin' });
             localStorage.setItem(modalKey, JSON.stringify(modalData));
         }
         tampilkanToast('Data dummy produk dan modal cash telah dibuat untuk target ID: ' + idTarget, 'info');
