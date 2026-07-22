@@ -650,8 +650,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                     { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                     { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                     { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                    { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },        
                 );
             }
             if (paket.includes('paket2')) {
@@ -687,8 +686,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                     { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                     { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                     { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                    { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                 );
             }
             if (paket.includes('paket2')) {
@@ -722,8 +720,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                     { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                     { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                     { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                    { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                 );
             }
             if (paket.includes('paket2')) {
@@ -832,7 +829,6 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
-    else if (namaHalaman === 'statusAkun') renderStatusAkun();
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -3519,15 +3515,15 @@ function tampilkanDashboard(user) {
 // ===== AKHIR BLOK 8.6.1 =====
 
     // ===== BLOK 8.6.2 - DOMContentLoaded =====
-document.addEventListener('DOMContentLoaded', async function() {
-    await inisialisasiSuperAdmin();
-    var dataUser = localStorage.getItem('2r_user');
-    if (dataUser) {
-        var user = JSON.parse(dataUser);
-        tampilkanDashboard(user);
-    }
-});
-// ===== AKHIR BLOK 8.6.2 =====
+    document.addEventListener('DOMContentLoaded', async function() {
+        await inisialisasiSuperAdmin();
+        var dataUser = localStorage.getItem('2r_user');
+        if (dataUser) {
+            var user = JSON.parse(dataUser);
+            tampilkanDashboard(user);
+        }
+    });
+    // ===== AKHIR BLOK 8.6.2 =====
 </script>
 <!-- ===== AKHIR BLOK 8.6 ===== -->
 
@@ -4770,7 +4766,7 @@ function bukaChat(targetId) {
 </script>
 <!-- ===== AKHIR BLOK 8.15 ===== -->
 <script>
-// ===== BLOK 8.16 - JS_PAKET_TRANSAKSI_1 (Transaksi Langsung Offline) =====
+  // ===== BLOK 8.16 - JS_PAKET_TRANSAKSI_1 (Transaksi Langsung Offline) =====
 
 // ------------------------------------------------------------
 // 1. FUNGSI NAVIGASI UNTUK 4 HALAMAN
@@ -4781,7 +4777,613 @@ function bukaChat(targetId) {
 // else if (namaHalaman === 'pengeluaran') renderPengeluaran();
 // else if (namaHalaman === 'modalCash') renderModalCash();
 
-// ===== BLOK 8.16.6 - DISKON & SCAN BARCODE (FINAL) =====
+// ===== BLOK 8.16.1 - RENDER TRANSAKSI PENJUALAN =====
+function renderTransaksiPenjualan() {
+    // Panggil dummy otomatis (jika produk belum ada, akan dibuat)
+    inisialisasiDataDummyTransaksi();
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+
+    var html = '';
+    html += '<div class="page-header"><h2>Transaksi Penjualan</h2><p>Catat penjualan langsung ke pelanggan. Stok akan berkurang otomatis.</p></div>';
+
+    html += '<div class="card" id="formTransaksiPenjualan">';
+    html += '  <div class="card-header">Form Transaksi</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Tanggal</label><input type="date" id="trxTanggal" class="form-input" value="' + new Date().toISOString().slice(0,10) + '"></div>';
+    html += '    <div><label class="form-label">Metode Pembayaran</label><select id="trxMetode" class="form-input"><option value="Tunai">Tunai</option><option value="Transfer">Transfer</option></select></div>';
+    html += '  </div>';
+    
+    html += '  <div id="trxItemContainer">';
+    html += '    <div class="grid-2" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;" id="trxItemRow0">';
+    html += '      <div><label class="form-label">Pilih Produk</label><select id="trxProduk0" class="form-input" onchange="updateHargaSatuan(0)">';
+    if (produkSaya.length === 0) {
+        html += '        <option value="">-- Tidak ada produk di gudang --</option>';
+    } else {
+        html += '        <option value="">-- Pilih Produk --</option>';
+        for (var i = 0; i < produkSaya.length; i++) {
+            var p = produkSaya[i];
+            html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+        }
+    }
+    html += '      </select></div>';
+    html += '      <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah0" class="form-input" min="1" onchange="hitungSubtotal(0)" oninput="hitungSubtotal(0)"></div>';
+    html += '      <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga0" class="form-input" readonly></div>';
+    html += '      <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal0" class="form-input" readonly></div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary button-small" onclick="tambahItemTransaksi()"><i class="fas fa-plus"></i> Tambah Item</button>';
+    html += '  <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+    html += '    <div style="text-align:right; font-size:18px; font-weight:700;">Total: Rp <span id="trxTotal">0</span></div>';
+    html += '  </div>';
+    html += '  <div class="form-group"><label class="form-label">Catatan</label><input type="text" id="trxCatatan" class="form-input" placeholder="Opsional"></div>';
+    html += '  <button class="button button-primary" onclick="simpanTransaksiPenjualan()" style="width:100%;"><i class="fas fa-save"></i> Simpan Transaksi</button>';
+    html += '</div>';
+
+    // Tabel riwayat penjualan (5 transaksi terakhir)
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+    transaksiSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+
+    html += '<div class="card">';
+    html += '  <div class="card-header">Transaksi Terakhir</div>';
+    if (transaksiSaya.length === 0) {
+        html += '  <div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi</h3></div>';
+    } else {
+        html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Item</th><th>Total</th><th>Metode</th></tr></thead><tbody>';
+        var max = Math.min(transaksiSaya.length, 5);
+        for (var i = 0; i < max; i++) {
+            var t = transaksiSaya[i];
+            html += '  <tr><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td>';
+            html += '  <td>' + t.items.length + ' item</td>';
+            html += '  <td>Rp ' + t.total.toLocaleString('id-ID') + '</td>';
+            html += '  <td>' + t.metodePembayaran + '</td></tr>';
+        }
+        html += '  </tbody></table></div>';
+        html += '  <div style="text-align:right; margin-top:10px;"><button class="button button-primary button-small" onclick="renderRekapPenjualan()">Lihat Semua</button></div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// ----- Helper: update harga satuan saat produk dipilih -----
+function updateHargaSatuan(index) {
+    var select = document.getElementById('trxProduk' + index);
+    if (!select) return;
+    var selected = select.options[select.selectedIndex];
+    if (selected && selected.dataset.harga) {
+        document.getElementById('trxHarga' + index).value = selected.dataset.harga;
+    } else {
+        document.getElementById('trxHarga' + index).value = '';
+    }
+    hitungSubtotal(index);
+}
+
+// ----- Helper: hitung subtotal dan total -----
+function hitungSubtotal(index) {
+    var harga = parseFloat(document.getElementById('trxHarga' + index).value) || 0;
+    var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
+    var subtotal = harga * jumlah;
+    document.getElementById('trxSubtotal' + index).value = subtotal;
+
+    // Hitung total semua baris
+    var total = 0;
+    var i = 0;
+    while (document.getElementById('trxSubtotal' + i)) {
+        total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+        i++;
+    }
+    document.getElementById('trxTotal').textContent = total.toLocaleString('id-ID');
+}
+
+// ----- Helper: tambah item baru -----
+function tambahItemTransaksi() {
+    var container = document.getElementById('trxItemContainer');
+    var index = container.children.length;
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+
+    var row = document.createElement('div');
+    row.className = 'grid-2';
+    row.style.marginTop = '10px';
+    row.style.borderTop = '1px solid #eee';
+    row.style.paddingTop = '10px';
+    row.id = 'trxItemRow' + index;
+
+    var html = '';
+    html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
+    html += '    <option value="">-- Pilih Produk --</option>';
+    for (var i = 0; i < produkSaya.length; i++) {
+        var p = produkSaya[i];
+        html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+    }
+    html += '  </select></div>';
+    html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
+    html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
+    html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
+    row.innerHTML = html;
+    container.appendChild(row);
+}
+
+// ----- Fungsi simpan transaksi penjualan -----
+function simpanTransaksiPenjualan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var tanggal = document.getElementById('trxTanggal').value;
+    var metode = document.getElementById('trxMetode').value;
+    var catatan = document.getElementById('trxCatatan').value.trim();
+
+    // Kumpulkan item
+    var items = [];
+    var i = 0;
+    while (document.getElementById('trxProduk' + i)) {
+        var select = document.getElementById('trxProduk' + i);
+        var produkId = select.value;
+        if (!produkId) { i++; continue; }
+        var jumlah = parseInt(document.getElementById('trxJumlah' + i).value) || 0;
+        var harga = parseFloat(document.getElementById('trxHarga' + i).value) || 0;
+        var subtotal = parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+        if (jumlah <= 0) { tampilkanToast('Jumlah barang harus lebih dari 0!', 'warning'); return; }
+        // Validasi stok
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produk = null;
+        for (var j = 0; j < semuaProdukGudang.length; j++) {
+            if (semuaProdukGudang[j].id == produkId) { produk = semuaProdukGudang[j]; break; }
+        }
+        if (!produk) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+        if (produk.jumlahStok < jumlah) {
+            tampilkanToast('Stok produk ' + produk.namaProduk + ' tidak cukup! Tersedia: ' + produk.jumlahStok, 'error');
+            return;
+        }
+        items.push({
+            produkId: parseInt(produkId),
+            nama: produk.namaProduk,
+            harga: harga,
+            jumlah: jumlah,
+            subtotal: subtotal
+        });
+        i++;
+    }
+
+    if (items.length === 0) { tampilkanToast('Minimal satu item harus ditambahkan!', 'warning'); return; }
+
+    var total = 0;
+    for (var i = 0; i < items.length; i++) { total += items[i].subtotal; }
+
+    // Simpan transaksi
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiBaru = {
+        id: 'TRX-' + Date.now(),
+        tokoId: user.id,
+        tanggal: tanggal,
+        items: items,
+        total: total,
+        metodePembayaran: metode,
+        catatan: catatan,
+        createdAt: new Date().toISOString()
+    };
+    semuaTransaksi.push(transaksiBaru);
+    localStorage.setItem('2r_transaksi_penjualan', JSON.stringify(semuaTransaksi));
+
+    // Kurangi stok gudang
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        for (var j = 0; j < semuaProdukGudang.length; j++) {
+            if (semuaProdukGudang[j].id == item.produkId) {
+                semuaProdukGudang[j].jumlahStok -= item.jumlah;
+                semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) + item.jumlah;
+                break;
+            }
+        }
+    }
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+
+    // Update modal cash (jika pembayaran tunai)
+    if (metode === 'Tunai') {
+        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
+        modalData.saldo = (modalData.saldo || 0) + total;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Penjualan',
+            jumlah: total,
+            saldoSetelah: modalData.saldo,
+            keterangan: 'Transaksi #' + transaksiBaru.id
+        });
+        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
+    }
+
+    tampilkanToast('Transaksi berhasil disimpan! Stok telah diperbarui.', 'success');
+    renderTransaksiPenjualan();
+}
+// ===== AKHIR BLOK 8.16.1 =====
+
+// ===== BLOK 8.16.2 - RENDER REKAP PENJUALAN =====
+function renderRekapPenjualan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+    var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+
+    // Filter hari ini, minggu ini, bulan ini
+    var filter = 'hari'; // default
+    if (window.location.hash) {
+        var hash = window.location.hash.replace('#', '');
+        if (hash === 'hari' || hash === 'minggu' || hash === 'bulan') filter = hash;
+    }
+
+    var now = new Date();
+    var startDate = new Date();
+    if (filter === 'hari') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (filter === 'minggu') {
+        var day = now.getDay();
+        var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+    } else if (filter === 'bulan') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+
+    var filtered = transaksiSaya.filter(function(t) {
+        var d = new Date(t.tanggal);
+        return d >= startDate;
+    });
+
+    var totalPenjualan = 0;
+    for (var i = 0; i < filtered.length; i++) { totalPenjualan += filtered[i].total; }
+
+    var html = '';
+    html += '<div class="page-header"><h2>Rekap Penjualan</h2><p>Total penjualan ' + (filter === 'hari' ? 'hari ini' : filter === 'minggu' ? 'minggu ini' : 'bulan ini') + ': <strong>Rp ' + totalPenjualan.toLocaleString('id-ID') + '</strong></p></div>';
+
+    html += '<div style="margin-bottom:15px; display:flex; gap:10px;">';
+    html += '  <button class="button ' + (filter === 'hari' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'hari\')">Hari Ini</button>';
+    html += '  <button class="button ' + (filter === 'minggu' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'minggu\')">Minggu Ini</button>';
+    html += '  <button class="button ' + (filter === 'bulan' ? 'button-primary' : 'button-secondary') + '" onclick="renderRekapPenjualan(\'bulan\')">Bulan Ini</button>';
+    html += '  <button class="button button-primary button-small" onclick="renderTransaksiPenjualan()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+    html += '</div>';
+
+    if (filtered.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi pada periode ini</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Tanggal</th><th>Item</th><th>Total</th><th>Metode</th><th>Catatan</th></tr></thead><tbody>';
+        var no = 1;
+        for (var i = 0; i < filtered.length; i++) {
+            var t = filtered[i];
+            html += '<tr><td>' + (no++) + '</td><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td><td>' + t.items.length + ' item</td><td>Rp ' + t.total.toLocaleString('id-ID') + '</td><td>' + t.metodePembayaran + '</td><td>' + escapeHtml(t.catatan || '-') + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total Penjualan: Rp ' + totalPenjualan.toLocaleString('id-ID') + '</div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 8.16.2 =====
+
+// ===== BLOK 8.16.3 - RENDER REKAP PENGELUARAN =====
+function renderPengeluaran() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+    var pengeluaranSaya = semuaPengeluaran.filter(function(p) { return p.tokoId === user.id; });
+
+    var totalPengeluaran = 0;
+    for (var i = 0; i < pengeluaranSaya.length; i++) { totalPengeluaran += pengeluaranSaya[i].jumlah; }
+
+    var html = '';
+    html += '<div class="page-header"><h2>Rekap Pengeluaran</h2><p>Total pengeluaran: <strong>Rp ' + totalPengeluaran.toLocaleString('id-ID') + '</strong></p></div>';
+
+    // Form input pengeluaran
+    html += '<div class="card"><div class="card-header">Tambah Pengeluaran</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Tanggal</label><input type="date" id="pengTanggal" class="form-input" value="' + new Date().toISOString().slice(0,10) + '"></div>';
+    html += '    <div><label class="form-label">Kategori</label><select id="pengKategori" class="form-input"><option value="Belanja Bahan Baku">Belanja Bahan Baku</option><option value="Operasional">Operasional</option><option value="Transportasi">Transportasi</option><option value="Lainnya">Lainnya</option></select></div>';
+    html += '  </div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Jumlah (Rp)</label><input type="number" id="pengJumlah" class="form-input" placeholder="0"></div>';
+    html += '    <div><label class="form-label">Catatan</label><input type="text" id="pengCatatan" class="form-input" placeholder="Opsional"></div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary margin-top-10" onclick="simpanPengeluaran()"><i class="fas fa-save"></i> Simpan Pengeluaran</button>';
+    html += '</div>';
+
+    // Daftar pengeluaran
+    if (pengeluaranSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada pengeluaran</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Tanggal</th><th>Kategori</th><th>Jumlah</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody>';
+        var no = 1;
+        for (var i = 0; i < pengeluaranSaya.length; i++) {
+            var p = pengeluaranSaya[i];
+            html += '<tr><td>' + (no++) + '</td><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.kategori + '</td><td>Rp ' + p.jumlah.toLocaleString('id-ID') + '</td><td>' + escapeHtml(p.catatan || '-') + '</td><td><button class="button button-danger button-extra-small" onclick="hapusPengeluaran(' + i + ')"><i class="fas fa-trash"></i></button></td></tr>';
+        }
+        html += '</tbody></table></div>';
+        html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total: Rp ' + totalPengeluaran.toLocaleString('id-ID') + '</div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+function simpanPengeluaran() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var tanggal = document.getElementById('pengTanggal').value;
+    var kategori = document.getElementById('pengKategori').value;
+    var jumlah = parseFloat(document.getElementById('pengJumlah').value) || 0;
+    var catatan = document.getElementById('pengCatatan').value.trim();
+
+    if (jumlah <= 0) { tampilkanToast('Jumlah harus lebih dari 0!', 'warning'); return; }
+
+    var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+    semuaPengeluaran.push({
+        id: 'OUT-' + Date.now(),
+        tokoId: user.id,
+        tanggal: tanggal,
+        kategori: kategori,
+        jumlah: jumlah,
+        catatan: catatan,
+        createdAt: new Date().toISOString()
+    });
+    localStorage.setItem('2r_pengeluaran', JSON.stringify(semuaPengeluaran));
+    tampilkanToast('Pengeluaran berhasil disimpan!', 'success');
+    renderPengeluaran();
+}
+
+function hapusPengeluaran(index) {
+    if (!confirm('Yakin ingin menghapus pengeluaran ini?')) return;
+    var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+    semuaPengeluaran.splice(index, 1);
+    localStorage.setItem('2r_pengeluaran', JSON.stringify(semuaPengeluaran));
+    renderPengeluaran();
+    tampilkanToast('Pengeluaran dihapus!', 'success');
+}
+// ===== AKHIR BLOK 8.16.3 =====
+
+// ===== BLOK 8.16.4 - RENDER MODAL CASH & BELANJA (LENGKAP: TAMBAH, EDIT, HAPUS) =====
+function renderModalCash() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+
+    var html = '';
+    html += '<div class="page-header"><h2>Modal Cash & Belanja</h2>';
+    html += '<p>Saldo Kas Saat Ini: <strong style="font-size:24px; color:#FF6B00;">Rp ' + (modalData.saldo || 0).toLocaleString('id-ID') + '</strong></p></div>';
+
+    // --- Form Tambah Modal ---
+    html += '<div class="card"><div class="card-header">Tambah Modal Kas</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Jumlah Tambahan</label><input type="number" id="modalTambah" class="form-input" placeholder="0"></div>';
+    html += '    <div><label class="form-label">Keterangan</label><input type="text" id="modalKeteranganTambah" class="form-input" placeholder="Misal: Setoran modal awal"></div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary margin-top-10" onclick="tambahModalCash()"><i class="fas fa-plus"></i> Tambah Modal</button>';
+    html += '</div>';
+
+    // --- Form Catat Belanja Modal (Mengurangi Saldo) ---
+    html += '<div class="card"><div class="card-header">Catat Belanja Modal (Mengurangi Kas)</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Jumlah Belanja</label><input type="number" id="modalBelanja" class="form-input" placeholder="0"></div>';
+    html += '    <div><label class="form-label">Keterangan</label><input type="text" id="modalKeteranganBelanja" class="form-input" placeholder="Misal: Beli bahan baku"></div>';
+    html += '  </div>';
+    html += '  <button class="button button-primary margin-top-10" onclick="catatBelanjaModal()"><i class="fas fa-minus"></i> Catat Belanja</button>';
+    html += '</div>';
+
+    // --- Riwayat Kas (Dengan Tombol Edit & Hapus) ---
+    html += '<div class="card"><div class="card-header">Riwayat Kas</div>';
+    if (modalData.riwayat && modalData.riwayat.length === 0) {
+        html += '  <div class="empty-state"><i class="fas fa-coins"></i><h3>Belum ada riwayat</h3></div>';
+    } else {
+        html += '  <div class="table-container">';
+        html += '    <table class="table">';
+        html += '      <thead><tr><th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Saldo Setelah</th><th>Keterangan</th><th>Aksi</th></tr></thead>';
+        html += '      <tbody>';
+
+        var riwayat = modalData.riwayat || [];
+        riwayat.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+
+        for (var i = 0; i < riwayat.length; i++) {
+            var r = riwayat[i];
+            var sign = (r.jenis === 'Penjualan' || r.jenis === 'Tambahan Modal') ? '+' : '-';
+            var color = (sign === '+') ? 'green' : 'red';
+            html += '      <tr>';
+            html += '        <td>' + new Date(r.tanggal).toLocaleDateString('id-ID') + '</td>';
+            html += '        <td>' + r.jenis + '</td>';
+            html += '        <td style="color:' + color + ';">' + sign + ' Rp ' + r.jumlah.toLocaleString('id-ID') + '</td>';
+            html += '        <td>Rp ' + r.saldoSetelah.toLocaleString('id-ID') + '</td>';
+            html += '        <td>' + escapeHtml(r.keterangan || '-') + '</td>';
+            // Tombol Edit & Hapus hanya untuk Tambahan Modal dan Belanja Modal (bukan Penjualan)
+            if (r.jenis === 'Tambahan Modal' || r.jenis === 'Belanja Modal') {
+                html += '        <td>';
+                html += '          <button class="button button-primary button-extra-small" onclick="editModalCash(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
+                html += '          <button class="button button-danger button-extra-small" onclick="hapusModalCash(' + i + ')"><i class="fas fa-trash"></i> Hapus</button>';
+                html += '        </td>';
+            } else {
+                html += '        <td><span style="color:#999; font-size:12px;">Otomatis</span></td>';
+            }
+            html += '      </tr>';
+        }
+        html += '      </tbody></table></div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// --- TAMBAH MODAL CASH ---
+function tambahModalCash() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var jumlah = parseFloat(document.getElementById('modalTambah').value) || 0;
+    var keterangan = document.getElementById('modalKeteranganTambah').value.trim();
+    if (jumlah <= 0) { tampilkanToast('Jumlah harus lebih dari 0!', 'warning'); return; }
+
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    modalData.saldo = (modalData.saldo || 0) + jumlah;
+    modalData.riwayat.push({
+        tanggal: new Date().toISOString(),
+        jenis: 'Tambahan Modal',
+        jumlah: jumlah,
+        saldoSetelah: modalData.saldo,
+        keterangan: keterangan || 'Tambahan modal'
+    });
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Modal berhasil ditambahkan!', 'success');
+    renderModalCash();
+}
+
+// --- CATAT BELANJA MODAL (MENGURANGI SALDO) ---
+function catatBelanjaModal() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var jumlah = parseFloat(document.getElementById('modalBelanja').value) || 0;
+    var keterangan = document.getElementById('modalKeteranganBelanja').value.trim();
+    if (jumlah <= 0) { tampilkanToast('Jumlah harus lebih dari 0!', 'warning'); return; }
+
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if ((modalData.saldo || 0) < jumlah) {
+        tampilkanToast('Saldo tidak cukup! Saldo saat ini: Rp ' + modalData.saldo.toLocaleString('id-ID'), 'error');
+        return;
+    }
+    modalData.saldo = (modalData.saldo || 0) - jumlah;
+    modalData.riwayat.push({
+        tanggal: new Date().toISOString(),
+        jenis: 'Belanja Modal',
+        jumlah: jumlah,
+        saldoSetelah: modalData.saldo,
+        keterangan: keterangan || 'Belanja modal'
+    });
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Belanja modal berhasil dicatat!', 'success');
+    renderModalCash();
+}
+
+// --- EDIT MODAL CASH (UNTUK ITEM RIWAYAT) ---
+function editModalCash(index) {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if (!modalData.riwayat || index >= modalData.riwayat.length) {
+        tampilkanToast('Data tidak ditemukan!', 'error');
+        return;
+    }
+    var item = modalData.riwayat[index];
+    // Hanya bisa edit jenis Tambahan Modal atau Belanja Modal
+    if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
+        tampilkanToast('Item ini tidak dapat diedit!', 'warning');
+        return;
+    }
+
+    // Tampilkan prompt untuk mengedit
+    var newJumlah = prompt('Edit jumlah (Rp):', item.jumlah);
+    if (newJumlah === null) return;
+    newJumlah = parseFloat(newJumlah);
+    if (isNaN(newJumlah) || newJumlah <= 0) {
+        tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+        return;
+    }
+    var newKeterangan = prompt('Edit keterangan:', item.keterangan || '');
+    if (newKeterangan === null) return;
+
+    // Hitung ulang saldo: saldo sekarang dikurangi nilai lama, ditambah nilai baru
+    // Karena saldo saat ini sudah mencakup transaksi ini, kita perlu "rollback" dulu
+    var selisih = newJumlah - item.jumlah;
+    modalData.saldo = (modalData.saldo || 0) + selisih;
+
+    // Update item
+    item.jumlah = newJumlah;
+    item.saldoSetelah = modalData.saldo;
+    item.keterangan = newKeterangan.trim() || item.keterangan;
+
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Riwayat berhasil diperbarui!', 'success');
+    renderModalCash();
+}
+
+// --- HAPUS MODAL CASH (UNTUK ITEM RIWAYAT) ---
+function hapusModalCash(index) {
+    if (!confirm('Yakin ingin menghapus riwayat ini?')) return;
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var modalKey = '2r_modal_cash_' + user.id;
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if (!modalData.riwayat || index >= modalData.riwayat.length) {
+        tampilkanToast('Data tidak ditemukan!', 'error');
+        return;
+    }
+    var item = modalData.riwayat[index];
+    // Hanya bisa hapus Tambahan Modal atau Belanja Modal
+    if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
+        tampilkanToast('Item ini tidak dapat dihapus!', 'warning');
+        return;
+    }
+
+    // Rollback saldo
+    if (item.jenis === 'Tambahan Modal') {
+        modalData.saldo = (modalData.saldo || 0) - item.jumlah;
+    } else { // Belanja Modal
+        modalData.saldo = (modalData.saldo || 0) + item.jumlah;
+    }
+
+    // Hapus item dari riwayat
+    modalData.riwayat.splice(index, 1);
+
+    localStorage.setItem(modalKey, JSON.stringify(modalData));
+    tampilkanToast('Riwayat berhasil dihapus!', 'success');
+    renderModalCash();
+}
+// ===== AKHIR BLOK 8.16.4 =====
+
+// ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY UNTUK PENGUJIAN =====
+// Fungsi ini akan membuat contoh produk gudang dan modal cash jika belum ada
+function inisialisasiDataDummyTransaksi(targetId) {
+    // Jika targetId tidak diberikan, gunakan user yang sedang login
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var idTarget = targetId || user.id;
+    if (!idTarget) return;
+
+    // Cek apakah user/target memiliki produk gudang
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === idTarget; });
+    if (produkSaya.length === 0) {
+        // Buat 3 produk dummy
+        var dummy = [
+            { id: Date.now() + 1, tokoId: idTarget, namaProduk: 'Beras 5kg', kodeProduk: 'BR-001', hargaBeli: 55000, hargaJual: 65000, jumlahStok: 20, jenis: 'Makanan', satuan: 'Kardus', tanggalKadaluarsa: '2027-01-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
+            { id: Date.now() + 2, tokoId: idTarget, namaProduk: 'Minyak Goreng 1L', kodeProduk: 'MG-002', hargaBeli: 13000, hargaJual: 15000, jumlahStok: 50, jenis: 'Makanan', satuan: 'Liter', tanggalKadaluarsa: '2026-12-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
+            { id: Date.now() + 3, tokoId: idTarget, namaProduk: 'Gula Pasir 1kg', kodeProduk: 'GP-003', hargaBeli: 14000, hargaJual: 17000, jumlahStok: 30, jenis: 'Makanan', satuan: 'Kg', tanggalKadaluarsa: '2027-06-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 }
+        ];
+        semuaProdukGudang = semuaProdukGudang.concat(dummy);
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        
+        // Setup modal cash untuk target (jika belum ada)
+        var modalKey = '2r_modal_cash_' + idTarget;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        if (modalData.saldo === 0) {
+            modalData.saldo = 1000000;
+            modalData.riwayat.push({
+                tanggal: new Date().toISOString(),
+                jenis: 'Tambahan Modal',
+                jumlah: 1000000,
+                saldoSetelah: 1000000,
+                keterangan: 'Modal awal dari SuperAdmin'
+            });
+            localStorage.setItem(modalKey, JSON.stringify(modalData));
+        }
+        tampilkanToast('Data dummy produk dan modal cash telah dibuat untuk target ID: ' + idTarget, 'info');
+    }
+}
+// ===== AKHIR BLOK 8.16.5 =====
+    // ===== BLOK 8.16.6 - DISKON & SCAN BARCODE (FINAL) =====
 function renderTransaksiPenjualan() {
     inisialisasiDataDummyTransaksi();
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
@@ -4822,7 +5424,7 @@ function renderTransaksiPenjualan() {
         html += '        <option value="">-- Pilih Produk --</option>';
         for (var i = 0; i < produkSaya.length; i++) {
             var p = produkSaya[i];
-            html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+            html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
         }
     }
     html += '      </select></div>';
@@ -4884,19 +5486,6 @@ function renderTransaksiPenjualan() {
         if (document.getElementById('trxDiskon')) document.getElementById('trxDiskon').value = 0;
         hitungTotalAkhir();
     }, 300);
-}
-
-function toggleHutangInput() {
-    var metode = document.getElementById('trxMetode').value;
-    var container = document.getElementById('trxHutangContainer');
-    if (container) {
-        if (metode === 'Hutang') {
-            container.style.display = 'block';
-        } else {
-            container.style.display = 'none';
-            document.getElementById('trxNamaPelanggan').value = '';
-        }
-    }
 }
 
 function prosesScanBarcode() {
@@ -5010,16 +5599,7 @@ function updateHargaSatuan(index) {
     var select = document.getElementById('trxProduk' + index);
     if (!select) return;
     var selected = select.options[select.selectedIndex];
-    var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
-    if (selected && selected.dataset.harga) {
-        var hargaJual = parseFloat(selected.dataset.harga);
-        var hargaGrosir = parseFloat(selected.dataset.hargaGrosir) || 0;
-        var minBeli = parseInt(selected.dataset.minBeli) || 99999;
-        var hargaAkhir = (hargaGrosir > 0 && jumlah >= minBeli) ? hargaGrosir : hargaJual;
-        document.getElementById('trxHarga' + index).value = hargaAkhir;
-    } else {
-        document.getElementById('trxHarga' + index).value = '';
-    }
+    if (selected && selected.dataset.harga) { document.getElementById('trxHarga' + index).value = selected.dataset.harga; } else { document.getElementById('trxHarga' + index).value = ''; }
     hitungSubtotal(index);
 }
 function hitungSubtotal(index) {
@@ -5042,15 +5622,15 @@ function tambahItemTransaksi() {
     var html = '';
     html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
     html += '    <option value="">-- Pilih Produk --</option>';
-    for (var i = 0; i < produkSaya.length; i++) { var p = produkSaya[i]; html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>'; }
+    for (var i = 0; i < produkSaya.length; i++) { var p = produkSaya[i]; html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>'; }
     html += '  </select></div>';
     html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
     html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
     html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
     row.innerHTML = html; container.appendChild(row);
 }
-
-// ===== BLOK 8.16.7 - CETAK NOTA STRUK =====
+// ===== AKHIR BLOK 8.16.6 =====
+    // ===== BLOK 8.16.7 - CETAK NOTA STRUK =====
 function cetakNota(trxId) {
     var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
     var transaksi = null;
@@ -5153,8 +5733,8 @@ function cetakNota(trxId) {
         }, 1000);
     };
 }
-
-// ===== BLOK 8.16.8 - EDIT & HAPUS TRANSAKSI (BERSIH) =====
+// ===== AKHIR BLOK 8.16.7 =====
+    // ===== BLOK 8.16.8 - EDIT & HAPUS TRANSAKSI (BERSIH) =====
 function hapusTransaksiPenjualan(trxId) {
     bukaModalDelete('Hapus Transaksi', 'Tindakan ini akan menghapus data transaksi dan mengembalikan stok barang ke gudang. Data tidak dapat dikembalikan!', function() {
         var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
@@ -5270,66 +5850,110 @@ function simpanEditTransaksi() {
     tampilkanToast('Transaksi berhasil diperbarui! Stok telah disesuaikan.', 'success');
     renderTransaksiPenjualan();
 }
+// ===== AKHIR BLOK 8.16.8 =====
+    // ===== BLOK 8.16.9 - BAGIKAN NOTA VIA WHATSAPP =====
 
-// ===== BLOK 8.16.9 - BAGIKAN NOTA VIA WHATSAPP =====
+// --- Helper: Ambil data nota dan format ke teks ---
 function ambilDataNotaWA(trxId) {
     var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
     var transaksi = null;
-    for (var i = 0; i < semuaTransaksi.length; i++) { if (semuaTransaksi[i].id === trxId) { transaksi = semuaTransaksi[i]; break; } }
+    for (var i = 0; i < semuaTransaksi.length; i++) {
+        if (semuaTransaksi[i].id === trxId) {
+            transaksi = semuaTransaksi[i];
+            break;
+        }
+    }
     if (!transaksi) return null;
+
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var namaToko = user.nama || 'Toko Online 2R';
+    
+    // Bangun teks struk
     var teks = '═══════════════════════════\n';
     teks += '     ' + namaToko + '\n';
     teks += '═══════════════════════════\n';
     teks += 'ID Transaksi: ' + transaksi.id + '\n';
     teks += 'Tanggal: ' + new Date(transaksi.tanggal).toLocaleDateString('id-ID') + '\n';
     teks += '───────────────────────────\n';
+    
     for (var i = 0; i < transaksi.items.length; i++) {
         var item = transaksi.items[i];
         teks += item.nama + ' x' + item.jumlah + '\n';
         teks += '   Rp ' + item.subtotal.toLocaleString('id-ID') + '\n';
     }
+    
     teks += '───────────────────────────\n';
     teks += 'Total      : Rp ' + transaksi.total.toLocaleString('id-ID') + '\n';
+    
     var diskon = transaksi.diskon || 0;
-    if (diskon > 0) { teks += 'Diskon     : -Rp ' + diskon.toLocaleString('id-ID') + '\n'; }
+    if (diskon > 0) {
+        teks += 'Diskon     : -Rp ' + diskon.toLocaleString('id-ID') + '\n';
+    }
     teks += '═══════════════════════════\n';
     teks += 'BAYAR      : Rp ' + transaksi.grandTotal.toLocaleString('id-ID') + '\n';
     teks += 'Metode     : ' + transaksi.metodePembayaran + '\n';
-    if (transaksi.catatan) { teks += 'Catatan    : ' + transaksi.catatan + '\n'; }
+    if (transaksi.catatan) {
+        teks += 'Catatan    : ' + transaksi.catatan + '\n';
+    }
     teks += '═══════════════════════════\n';
     teks += 'Terima kasih sudah berbelanja!';
+
     return teks;
 }
+
+// --- Fungsi utama Bagikan WA ---
 function bagikanNotaWA(trxId) {
     var teks = ambilDataNotaWA(trxId);
     if (!teks) { tampilkanToast('Transaksi tidak ditemukan!', 'error'); return; }
+
+    // Encode teks agar aman untuk URL
     var urlWA = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(teks);
+    
+    // Buka di tab baru
     window.open(urlWA, '_blank');
     tampilkanToast('Nota sedang dibuka di WhatsApp!', 'success');
 }
+// ===== AKHIR BLOK 8.16.9 =====
+    // ===== BLOK 8.16.10 - LOG STOK (RIWAYAT PERUBAHAN STOK) =====
 
-// ===== BLOK 8.16.10 - LOG STOK (RIWAYAT PERUBAHAN STOK) =====
+// --- 1. Fungsi Menyimpan Log Stok ---
 function simpanLogStok(produkId, produkNama, perubahan, keterangan) {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var logKey = '2r_log_stok';
     var dataLog = JSON.parse(localStorage.getItem(logKey) || '[]');
-    var logBaru = { id: Date.now(), tokoId: user.id, produkId: produkId, produkNama: produkNama, perubahan: perubahan, stokAkhir: 0, keterangan: keterangan, waktu: new Date().toISOString() };
+
+    var logBaru = {
+        id: Date.now(),
+        tokoId: user.id,
+        produkId: produkId,
+        produkNama: produkNama,
+        perubahan: perubahan, // Angka positif (+) jika stok bertambah, negatif (-) jika berkurang
+        stokAkhir: 0, // akan diisi oleh fungsi pemanggil jika perlu, atau kita hitung ulang
+        keterangan: keterangan,
+        waktu: new Date().toISOString()
+    };
+
     dataLog.push(logBaru);
-    if (dataLog.length > 1000) { dataLog.splice(0, dataLog.length - 1000); }
+    // Batasi log maksimal 1000 entri agar localStorage tidak penuh
+    if (dataLog.length > 1000) {
+        dataLog.splice(0, dataLog.length - 1000);
+    }
     localStorage.setItem(logKey, JSON.stringify(dataLog));
 }
 
+// --- 2. Render Halaman Log Stok (Untuk Dilihat Pemilik Toko) ---
 function renderLogStok() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
+
     var logKey = '2r_log_stok';
     var dataLog = JSON.parse(localStorage.getItem(logKey) || '[]');
     var logSaya = dataLog.filter(function(l) { return l.tokoId === user.id; });
     logSaya.sort(function(a, b) { return new Date(b.waktu) - new Date(a.waktu); });
+
     var html = '<div class="page-header"><h2>Log / Riwayat Stok</h2><p>Catatan perubahan stok produk (Penjualan, Hapus, Edit).</p></div>';
+    
     if (logSaya.length === 0) {
         html += '<div class="card"><div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada perubahan stok</h3></div></div>';
     } else {
@@ -5345,16 +5969,22 @@ function renderLogStok() {
             html += '<td>' + escapeHtml(l.keterangan) + '</td></tr>';
         }
         html += '</tbody></table></div>';
-        if (logSaya.length > 50) { html += '<div style="text-align:right; font-size:12px; color:#888;">Menampilkan 50 data terbaru dari ' + logSaya.length + ' total.</div>'; }
+        if (logSaya.length > 50) {
+            html += '<div style="text-align:right; font-size:12px; color:#888;">Menampilkan 50 data terbaru dari ' + logSaya.length + ' total.</div>';
+        }
         html += '</div>';
     }
     areaKonten.innerHTML = html;
 }
+// ===== AKHIR BLOK 8.16.10 =====
+    // ===== BLOK 8.16.11 - MODAL KONFIRMASI DELETE (KETIK "DELETE") =====
 
-// ===== BLOK 8.16.11 - MODAL KONFIRMASI DELETE (KETIK "DELETE") =====
+// --- 1. HTML Modal DELETE (Disuntikkan ke body saat dipanggil) ---
 function bukaModalDelete(judul, pesan, callbackHapus) {
+    // Hapus modal lama jika masih ada
     var modalLama = document.getElementById('modalDeleteConfirm');
     if (modalLama) modalLama.remove();
+
     var htmlModal = `
     <div id="modalDeleteConfirm" class="modal-overlay active" style="display:flex; z-index:99999;">
         <div class="modal" style="max-width:450px;">
@@ -5375,239 +6005,658 @@ function bukaModalDelete(judul, pesan, callbackHapus) {
         </div>
     </div>
     `;
-    var body = document.body; var container = document.createElement('div'); container.innerHTML = htmlModal; body.appendChild(container);
+
+    var body = document.body;
+    var container = document.createElement('div');
+    container.innerHTML = htmlModal;
+    body.appendChild(container);
+
+    // Simpan callback ke window agar bisa dipanggil oleh eksekusiDelete
     window._deleteCallback = callbackHapus;
+
+    // Event listener untuk input
     setTimeout(function() {
         var input = document.getElementById('deleteConfirmInput');
         var btn = document.getElementById('deleteConfirmBtn');
         var error = document.getElementById('deleteErrorMsg');
+        
         if (input && btn) {
             input.focus();
             input.addEventListener('input', function() {
-                if (this.value === 'DELETE') { btn.disabled = false; btn.style.opacity = '1'; error.style.display = 'none'; } else { btn.disabled = true; btn.style.opacity = '0.6'; }
+                if (this.value === 'DELETE') {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    error.style.display = 'none';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+                }
             });
             input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') { if (this.value === 'DELETE') { eksekusiDelete(); } else { error.style.display = 'block'; } }
+                if (e.key === 'Enter') {
+                    if (this.value === 'DELETE') {
+                        eksekusiDelete();
+                    } else {
+                        error.style.display = 'block';
+                    }
+                }
             });
         }
     }, 100);
 }
-function tutupModalDelete() { var modal = document.getElementById('modalDeleteConfirm'); if (modal) modal.remove(); window._deleteCallback = null; }
+
+function tutupModalDelete() {
+    var modal = document.getElementById('modalDeleteConfirm');
+    if (modal) modal.remove();
+    window._deleteCallback = null;
+}
+
 function eksekusiDelete() {
     var input = document.getElementById('deleteConfirmInput');
-    if (input && input.value === 'DELETE') { if (typeof window._deleteCallback === 'function') { window._deleteCallback(); } tutupModalDelete(); } else { document.getElementById('deleteErrorMsg').style.display = 'block'; }
-}
-
-// ===== BLOK 8.16.5 - INISIALISASI DATA DUMMY =====
-function inisialisasiDataDummyTransaksi(targetId) {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var idTarget = targetId || user.id;
-    if (!idTarget) return;
-    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === idTarget; });
-    if (produkSaya.length === 0) {
-        var dummy = [
-            { id: Date.now() + 1, tokoId: idTarget, namaProduk: 'Beras 5kg', kodeProduk: 'BR-001', hargaBeli: 55000, hargaJual: 65000, hargaGrosir: 60000, minBeliGrosir: 5, jumlahStok: 20, jenis: 'Makanan', satuan: 'Kardus', tanggalKadaluarsa: '2027-01-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
-            { id: Date.now() + 2, tokoId: idTarget, namaProduk: 'Minyak Goreng 1L', kodeProduk: 'MG-002', hargaBeli: 13000, hargaJual: 15000, hargaGrosir: 14000, minBeliGrosir: 10, jumlahStok: 50, jenis: 'Makanan', satuan: 'Liter', tanggalKadaluarsa: '2026-12-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 },
-            { id: Date.now() + 3, tokoId: idTarget, namaProduk: 'Gula Pasir 1kg', kodeProduk: 'GP-003', hargaBeli: 14000, hargaJual: 17000, hargaGrosir: 16000, minBeliGrosir: 5, jumlahStok: 30, jenis: 'Makanan', satuan: 'Kg', tanggalKadaluarsa: '2027-06-01', fotoProduk: [], tanggalInput: new Date().toISOString().slice(0,10), namaPenginput: 'Demo', totalTerjual: 0 }
-        ];
-        semuaProdukGudang = semuaProdukGudang.concat(dummy);
-        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
-        var modalKey = '2r_modal_cash_' + idTarget;
-        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
-        if (modalData.saldo === 0) {
-            modalData.saldo = 1000000;
-            modalData.riwayat.push({ tanggal: new Date().toISOString(), jenis: 'Tambahan Modal', jumlah: 1000000, saldoSetelah: 1000000, keterangan: 'Modal awal dari SuperAdmin' });
-            localStorage.setItem(modalKey, JSON.stringify(modalData));
+    if (input && input.value === 'DELETE') {
+        if (typeof window._deleteCallback === 'function') {
+            window._deleteCallback();
         }
-        tampilkanToast('Data dummy produk dan modal cash telah dibuat untuk target ID: ' + idTarget, 'info');
+        tutupModalDelete();
+    } else {
+        document.getElementById('deleteErrorMsg').style.display = 'block';
     }
 }
-
+// ===== AKHIR BLOK 8.16.11 =====
+// ===== AKHIR BLOK 8.16 =====
 // ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
+// Fitur ini hanya bisa diakses oleh SuperAdmin
+// Data disimpan di localStorage key: 2r_harga_produk_publik, 2r_harga_akun_pro, 2r_penagihan_item
+
+// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
+// Tambahkan ini di fungsi navigasiKeHalaman:
+// else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
+
+// ===== 8.17.1 - RENDER HALAMAN SETTING HARGA =====
 function renderSettingHargaAplikasi() {
     var role = localStorage.getItem('2r_user_role');
-    if (role !== 'superadmin') { tampilkanToast('Hanya SuperAdmin yang dapat mengakses halaman ini!', 'error'); return; }
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin yang dapat mengakses halaman ini!', 'error');
+        return;
+    }
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
+
+    // Ambil data harga yang tersimpan
     var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
     var hargaAkunPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
     var itemPenagihan = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
-    var html = '<div class="page-header"><h2>Setting Harga Aplikasi</h2><p>Kelola harga upload produk publik, Akun Pro, dan item penagihan otomatis.</p></div>';
-    html += '<div class="card"><div class="card-header">Harga Upload Produk Publik <button class="button button-primary button-small" onclick="tambahBarisHargaUpload()"><i class="fas fa-plus"></i> Tambah Paket</button></div><div class="table-container"><table class="table" id="tabelHargaUpload"><thead><tr><th>Jumlah Produk</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead><tbody>';
+
+    var html = '';
+    html += '<div class="page-header"><h2>Setting Harga Aplikasi</h2><p>Kelola harga upload produk publik, Akun Pro, dan item penagihan otomatis.</p></div>';
+
+    // ===== BAGIAN 1: HARGA UPLOAD PRODUK PUBLIK =====
+    html += '<div class="card">';
+    html += '  <div class="card-header">Harga Upload Produk Publik <button class="button button-primary button-small" onclick="tambahBarisHargaUpload()"><i class="fas fa-plus"></i> Tambah Paket</button></div>';
+    html += '  <div class="table-container">';
+    html += '    <table class="table" id="tabelHargaUpload">';
+    html += '      <thead><tr><th>Jumlah Produk</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>';
+    html += '      <tbody>';
+
+    // Looping data harga upload yang sudah ada
     var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-    if (keys.length === 0) { html += '<tr><td colspan="3" style="text-align:center; color:#888;">Belum ada paket harga. Tambahkan sekarang.</td></tr>'; } else {
+    if (keys.length === 0) {
+        html += '      <tr><td colspan="3" style="text-align:center; color:#888;">Belum ada paket harga. Tambahkan sekarang.</td></tr>';
+    } else {
         for (var i = 0; i < keys.length; i++) {
-            var jml = keys[i]; var hrg = hargaUpload[jml];
-            html += '<tr id="rowUpload_' + i + '"><td><input type="number" class="form-input" id="editUploadJml_' + i + '" value="' + jml + '" style="width:80px;"></td><td><input type="number" class="form-input" id="editUploadHrg_' + i + '" value="' + hrg + '" style="width:120px;"></td><td><button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(' + i + ')"><i class="fas fa-save"></i> Simpan</button><button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td></tr>';
+            var jml = keys[i];
+            var hrg = hargaUpload[jml];
+            html += '      <tr id="rowUpload_' + i + '">';
+            html += '        <td><input type="number" class="form-input" id="editUploadJml_' + i + '" value="' + jml + '" style="width:80px;"></td>';
+            html += '        <td><input type="number" class="form-input" id="editUploadHrg_' + i + '" value="' + hrg + '" style="width:120px;"></td>';
+            html += '        <td><button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(' + i + ')"><i class="fas fa-save"></i> Simpan</button>';
+            html += '        <button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td>';
+            html += '      </tr>';
         }
     }
-    html += '</tbody></table></div></div>';
-    html += '<div class="card"><div class="card-header">Harga Akun Pro</div><div class="grid-2"><div><label class="form-label">Harga Berlangganan Akun Pro (Rp)</label><input type="number" id="hargaAkunProInput" class="form-input" value="' + hargaAkunPro + '"></div><div style="display:flex; align-items:flex-end;"><button class="button button-primary" onclick="simpanHargaAkunPro()"><i class="fas fa-save"></i> Simpan</button></div></div></div>';
-    html += '<div class="card"><div class="card-header">Item Penagihan Otomatis <button class="button button-primary button-small" onclick="tambahItemPenagihan()"><i class="fas fa-plus"></i> Tambah Item</button></div><div class="table-container"><table class="table" id="tabelItemPenagihan"><thead><tr><th>Nama Item</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead><tbody>';
-    if (itemPenagihan.length === 0) { html += '<tr><td colspan="3" style="text-align:center; color:#888;">Belum ada item penagihan.</td></tr>'; } else {
+    html += '      </tbody></table></div></div>';
+
+    // ===== BAGIAN 2: HARGA AKUN PRO =====
+    html += '<div class="card">';
+    html += '  <div class="card-header">Harga Akun Pro</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Harga Berlangganan Akun Pro (Rp)</label><input type="number" id="hargaAkunProInput" class="form-input" value="' + hargaAkunPro + '"></div>';
+    html += '    <div style="display:flex; align-items:flex-end;"><button class="button button-primary" onclick="simpanHargaAkunPro()"><i class="fas fa-save"></i> Simpan</button></div>';
+    html += '  </div>';
+    html += '</div>';
+
+    // ===== BAGIAN 3: ITEM PENAGIHAN OTOMATIS =====
+    html += '<div class="card">';
+    html += '  <div class="card-header">Item Penagihan Otomatis <button class="button button-primary button-small" onclick="tambahItemPenagihan()"><i class="fas fa-plus"></i> Tambah Item</button></div>';
+    html += '  <div class="table-container">';
+    html += '    <table class="table" id="tabelItemPenagihan">';
+    html += '      <thead><tr><th>Nama Item</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>';
+    html += '      <tbody>';
+
+    if (itemPenagihan.length === 0) {
+        html += '      <tr><td colspan="3" style="text-align:center; color:#888;">Belum ada item penagihan.</td></tr>';
+    } else {
         for (var i = 0; i < itemPenagihan.length; i++) {
             var item = itemPenagihan[i];
-            html += '<tr id="rowItem_' + i + '"><td><input type="text" class="form-input" id="editItemNama_' + i + '" value="' + escapeHtml(item.nama) + '" style="width:200px;"></td><td><input type="number" class="form-input" id="editItemHrg_' + i + '" value="' + item.harga + '" style="width:120px;"></td><td><button class="button button-success button-extra-small" onclick="simpanItemPenagihan(' + i + ')"><i class="fas fa-save"></i> Simpan</button><button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td></tr>';
+            html += '      <tr id="rowItem_' + i + '">';
+            html += '        <td><input type="text" class="form-input" id="editItemNama_' + i + '" value="' + escapeHtml(item.nama) + '" style="width:200px;"></td>';
+            html += '        <td><input type="number" class="form-input" id="editItemHrg_' + i + '" value="' + item.harga + '" style="width:120px;"></td>';
+            html += '        <td><button class="button button-success button-extra-small" onclick="simpanItemPenagihan(' + i + ')"><i class="fas fa-save"></i> Simpan</button>';
+            html += '        <button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td>';
+            html += '      </tr>';
         }
     }
-    html += '</tbody></table></div></div>';
+    html += '      </tbody></table></div></div>';
+
     areaKonten.innerHTML = html;
 }
 
-function tambahBarisHargaUpload() { var table = document.getElementById('tabelHargaUpload').getElementsByTagName('tbody')[0]; var row = table.insertRow(); var idx = table.rows.length - 1; row.id = 'rowUpload_' + idx; row.innerHTML = `<td><input type="number" class="form-input" id="editUploadJml_${idx}" value="10" style="width:80px;"></td><td><input type="number" class="form-input" id="editUploadHrg_${idx}" value="1000" style="width:120px;"></td><td><button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(${idx})"><i class="fas fa-save"></i> Simpan</button><button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(${idx})"><i class="fas fa-trash"></i> Hapus</button></td>`; }
-function simpanBarisHargaUpload(index) { var jmlInput = document.getElementById('editUploadJml_' + index); var hrgInput = document.getElementById('editUploadHrg_' + index); if (!jmlInput || !hrgInput) return; var jumlah = parseInt(jmlInput.value); var harga = parseInt(hrgInput.value); if (isNaN(jumlah) || jumlah <= 0) { tampilkanToast('Jumlah produk harus lebih dari 0!', 'warning'); return; } if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; } var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}'); data[jumlah] = harga; localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data)); tampilkanToast('Harga paket ' + jumlah + ' produk berhasil disimpan!', 'success'); renderSettingHargaAplikasi(); }
-function hapusBarisHargaUpload(index) { if (!confirm('Yakin ingin menghapus paket harga ini?')) return; var jmlInput = document.getElementById('editUploadJml_' + index); if (!jmlInput) return; var jumlah = parseInt(jmlInput.value); var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}'); delete data[jumlah]; localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data)); tampilkanToast('Paket harga dihapus!', 'success'); renderSettingHargaAplikasi(); }
-function simpanHargaAkunPro() { var input = document.getElementById('hargaAkunProInput'); var harga = parseFloat(input.value); if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; } localStorage.setItem('2r_harga_akun_pro', String(harga)); tampilkanToast('Harga Akun Pro berhasil disimpan!', 'success'); }
-function tambahItemPenagihan() { var table = document.getElementById('tabelItemPenagihan').getElementsByTagName('tbody')[0]; var row = table.insertRow(); var idx = table.rows.length - 1; row.id = 'rowItem_' + idx; row.innerHTML = `<td><input type="text" class="form-input" id="editItemNama_${idx}" value="Item Baru" style="width:200px;"></td><td><input type="number" class="form-input" id="editItemHrg_${idx}" value="10000" style="width:120px;"></td><td><button class="button button-success button-extra-small" onclick="simpanItemPenagihan(${idx})"><i class="fas fa-save"></i> Simpan</button><button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(${idx})"><i class="fas fa-trash"></i> Hapus</button></td>`; }
-function simpanItemPenagihan(index) { var namaInput = document.getElementById('editItemNama_' + index); var hrgInput = document.getElementById('editItemHrg_' + index); if (!namaInput || !hrgInput) return; var nama = namaInput.value.trim(); var harga = parseInt(hrgInput.value); if (!nama) { tampilkanToast('Nama item wajib diisi!', 'warning'); return; } if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; } var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]'); if (data[index]) { data[index] = { nama: nama, harga: harga }; } else { data.push({ nama: nama, harga: harga }); } localStorage.setItem('2r_penagihan_item', JSON.stringify(data)); tampilkanToast('Item penagihan berhasil disimpan!', 'success'); renderSettingHargaAplikasi(); }
-function hapusItemPenagihan(index) { if (!confirm('Yakin ingin menghapus item penagihan ini?')) return; var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]'); data.splice(index, 1); localStorage.setItem('2r_penagihan_item', JSON.stringify(data)); tampilkanToast('Item penagihan dihapus!', 'success'); renderSettingHargaAplikasi(); }
+// ===== 8.17.2 - FUNGSI KELOLA HARGA UPLOAD PRODUK =====
+function tambahBarisHargaUpload() {
+    var table = document.getElementById('tabelHargaUpload').getElementsByTagName('tbody')[0];
+    var row = table.insertRow();
+    var idx = table.rows.length - 1;
+    row.id = 'rowUpload_' + idx;
+    row.innerHTML = `
+        <td><input type="number" class="form-input" id="editUploadJml_${idx}" value="10" style="width:80px;"></td>
+        <td><input type="number" class="form-input" id="editUploadHrg_${idx}" value="1000" style="width:120px;"></td>
+        <td>
+            <button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(${idx})"><i class="fas fa-save"></i> Simpan</button>
+            <button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(${idx})"><i class="fas fa-trash"></i> Hapus</button>
+        </td>
+    `;
+}
 
+function simpanBarisHargaUpload(index) {
+    var jmlInput = document.getElementById('editUploadJml_' + index);
+    var hrgInput = document.getElementById('editUploadHrg_' + index);
+    if (!jmlInput || !hrgInput) return;
+
+    var jumlah = parseInt(jmlInput.value);
+    var harga = parseInt(hrgInput.value);
+    if (isNaN(jumlah) || jumlah <= 0) { tampilkanToast('Jumlah produk harus lebih dari 0!', 'warning'); return; }
+    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
+
+    var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}');
+    data[jumlah] = harga;
+    localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data));
+    tampilkanToast('Harga paket ' + jumlah + ' produk berhasil disimpan!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+function hapusBarisHargaUpload(index) {
+    if (!confirm('Yakin ingin menghapus paket harga ini?')) return;
+    var jmlInput = document.getElementById('editUploadJml_' + index);
+    if (!jmlInput) return;
+    var jumlah = parseInt(jmlInput.value);
+    var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}');
+    delete data[jumlah];
+    localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data));
+    tampilkanToast('Paket harga dihapus!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+// ===== 8.17.3 - FUNGSI KELOLA HARGA AKUN PRO =====
+function simpanHargaAkunPro() {
+    var input = document.getElementById('hargaAkunProInput');
+    var harga = parseFloat(input.value);
+    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
+    localStorage.setItem('2r_harga_akun_pro', String(harga));
+    tampilkanToast('Harga Akun Pro berhasil disimpan!', 'success');
+}
+
+// ===== 8.17.4 - FUNGSI KELOLA ITEM PENAGIHAN =====
+function tambahItemPenagihan() {
+    var table = document.getElementById('tabelItemPenagihan').getElementsByTagName('tbody')[0];
+    var row = table.insertRow();
+    var idx = table.rows.length - 1;
+    row.id = 'rowItem_' + idx;
+    row.innerHTML = `
+        <td><input type="text" class="form-input" id="editItemNama_${idx}" value="Item Baru" style="width:200px;"></td>
+        <td><input type="number" class="form-input" id="editItemHrg_${idx}" value="10000" style="width:120px;"></td>
+        <td>
+            <button class="button button-success button-extra-small" onclick="simpanItemPenagihan(${idx})"><i class="fas fa-save"></i> Simpan</button>
+            <button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(${idx})"><i class="fas fa-trash"></i> Hapus</button>
+        </td>
+    `;
+}
+
+function simpanItemPenagihan(index) {
+    var namaInput = document.getElementById('editItemNama_' + index);
+    var hrgInput = document.getElementById('editItemHrg_' + index);
+    if (!namaInput || !hrgInput) return;
+
+    var nama = namaInput.value.trim();
+    var harga = parseInt(hrgInput.value);
+    if (!nama) { tampilkanToast('Nama item wajib diisi!', 'warning'); return; }
+    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
+
+    var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
+    // Cek apakah item dengan nama yang sama sudah ada (kecuali sedang edit)
+    if (data[index]) {
+        // Edit data yang sudah ada
+        data[index] = { nama: nama, harga: harga };
+    } else {
+        // Tambah baru
+        data.push({ nama: nama, harga: harga });
+    }
+    localStorage.setItem('2r_penagihan_item', JSON.stringify(data));
+    tampilkanToast('Item penagihan berhasil disimpan!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+function hapusItemPenagihan(index) {
+    if (!confirm('Yakin ingin menghapus item penagihan ini?')) return;
+    var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
+    data.splice(index, 1);
+    localStorage.setItem('2r_penagihan_item', JSON.stringify(data));
+    tampilkanToast('Item penagihan dihapus!', 'success');
+    renderSettingHargaAplikasi();
+}
+// ===== AKHIR BLOK 8.17 =====
 // ===== BLOK 8.18 - JS_PENGAJUAN_UPLOAD_PRODUK =====
+// Data disimpan di localStorage key: 2r_pengajuan_upload
+
+// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
+// else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+
+// ===== 8.18.1 - RENDER HALAMAN PENGAJUAN UPLOAD =====
 function renderPengajuanUploadProduk() {
     var role = localStorage.getItem('2r_user_role');
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
+
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
     var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
-    var opsiHarga = ''; var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-    for (var i = 0; i < keys.length; i++) { var jml = keys[i]; var hrg = hargaUpload[jml]; opsiHarga += '<option value="' + jml + '">' + jml + ' Produk (Rp ' + hrg.toLocaleString('id-ID') + ')</option>'; }
+    
+    // Format harga untuk dropdown
+    var opsiHarga = '';
+    var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+    for (var i = 0; i < keys.length; i++) {
+        var jml = keys[i];
+        var hrg = hargaUpload[jml];
+        opsiHarga += '<option value="' + jml + '">' + jml + ' Produk (Rp ' + hrg.toLocaleString('id-ID') + ')</option>';
+    }
     if (!opsiHarga) opsiHarga = '<option value="">Belum ada paket harga</option>';
-    var html = '<div class="page-header"><h2>Pengajuan Upload Produk Publik</h2><p>Ajukan penambahan slot upload produk publik ke SuperAdmin.</p></div>';
+
+    var html = '';
+    html += '<div class="page-header"><h2>Pengajuan Upload Produk Publik</h2><p>Ajukan penambahan slot upload produk publik ke SuperAdmin.</p></div>';
+
+    // --- BAGIAN UNTUK PENGAJU (Toko, Pedagang, COD Seller) ---
     if (role === 'toko' || role === 'pedagang' || role === 'codseller') {
+        // Filter pengajuan milik user sendiri
         var pengajuanSaya = dataPengajuan.filter(function(p) { return p.pengajuId === user.id; });
-        html += '<div class="card"><div class="card-header">Form Pengajuan Baru</div><div class="grid-2"><div><label class="form-label">Pilih Paket Upload</label><select id="pilihPaketUpload" class="form-input">' + opsiHarga + '</select></div><div><label class="form-label">Alasan Permintaan</label><input type="text" id="alasanPengajuan" class="form-input" placeholder="Misal: Butuh lebih banyak untuk produk baru"></div></div><button class="button button-primary margin-top-10" onclick="simpanPengajuanUpload()"><i class="fas fa-paper-plane"></i> Ajukan</button></div>';
+
+        html += '<div class="card"><div class="card-header">Form Pengajuan Baru</div>';
+        html += '  <div class="grid-2">';
+        html += '    <div><label class="form-label">Pilih Paket Upload</label><select id="pilihPaketUpload" class="form-input">' + opsiHarga + '</select></div>';
+        html += '    <div><label class="form-label">Alasan Permintaan</label><input type="text" id="alasanPengajuan" class="form-input" placeholder="Misal: Butuh lebih banyak untuk produk baru"></div>';
+        html += '  </div>';
+        html += '  <button class="button button-primary margin-top-10" onclick="simpanPengajuanUpload()"><i class="fas fa-paper-plane"></i> Ajukan</button>';
+        html += '</div>';
+
         html += '<div class="card"><div class="card-header">Riwayat Pengajuan Saya</div>';
-        if (pengajuanSaya.length === 0) { html += '<div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div>'; } else {
-            html += '<div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jumlah Diminta</th><th>Alasan</th><th>Status</th></tr></thead><tbody>';
+        if (pengajuanSaya.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jumlah Diminta</th><th>Alasan</th><th>Status</th></tr></thead><tbody>';
             pengajuanSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
             for (var i = 0; i < pengajuanSaya.length; i++) {
                 var p = pengajuanSaya[i];
                 var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
-                html += '<tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
+                html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
             }
-            html += '</tbody></table></div>';
+            html += '  </tbody></table></div>';
         }
         html += '</div>';
+
+    // --- BAGIAN UNTUK SUPERADMIN & STAF ADMIN ---
     } else if (role === 'superadmin' || role === 'staf_admin') {
+        // Filter pengajuan yang masih MENUNGGU
         var pengajuanMasuk = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
+
         html += '<div class="card"><div class="card-header">Daftar Pengajuan Masuk (Menunggu)</div>';
-        if (pengajuanMasuk.length === 0) { html += '<div class="empty-state"><i class="fas fa-check-double"></i><h3>Tidak ada pengajuan menunggu</h3></div>'; } else {
-            html += '<div class="table-container"><table class="table"><thead><tr><th>No</th><th>Pengaju</th><th>Akun</th><th>Jumlah Diminta</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
+        if (pengajuanMasuk.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-check-double"></i><h3>Tidak ada pengajuan menunggu</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>No</th><th>Pengaju</th><th>Akun</th><th>Jumlah Diminta</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
             for (var i = 0; i < pengajuanMasuk.length; i++) {
                 var p = pengajuanMasuk[i];
-                html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td><td>' + p.pengajuId + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td><button class="button button-success button-extra-small" onclick="setujuiPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui</button><button class="button button-danger button-extra-small" onclick="tolakPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button></td></tr>';
+                html += '  <tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td><td>' + p.pengajuId + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td>';
+                html += '    <button class="button button-success button-extra-small" onclick="setujuiPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui</button>';
+                html += '    <button class="button button-danger button-extra-small" onclick="tolakPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
+                html += '  </td></tr>';
             }
-            html += '</tbody></table></div>';
+            html += '  </tbody></table></div>';
         }
         html += '</div>';
+        
+        // Tampilkan semua riwayat untuk admin
         html += '<div class="card"><div class="card-header">Semua Riwayat Pengajuan</div>';
-        if (dataPengajuan.length === 0) { html += '<div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada riwayat</h3></div>'; } else {
-            html += '<div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Pengaju</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
+        if (dataPengajuan.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada riwayat</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Pengaju</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
             dataPengajuan.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
             for (var i = 0; i < dataPengajuan.length; i++) {
                 var p = dataPengajuan[i];
                 var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
-                html += '<tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
+                html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
             }
-            html += '</tbody></table></div>';
+            html += '  </tbody></table></div>';
         }
         html += '</div>';
-    } else { html += '<div class="card"><div class="empty-state"><i class="fas fa-lock"></i><h3>Akses Dibatasi</h3><p>Halaman ini hanya untuk akun Toko, Pedagang, COD Seller, dan Admin.</p></div></div>'; }
+    } else {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-lock"></i><h3>Akses Dibatasi</h3><p>Halaman ini hanya untuk akun Toko, Pedagang, COD Seller, dan Admin.</p></div></div>';
+    }
+
     areaKonten.innerHTML = html;
 }
+
+// ===== 8.18.2 - SIMPAN PENGAJUAN BARU (DARI TOKO/PEDAGANG/COD SELLER) =====
 function simpanPengajuanUpload() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var role = localStorage.getItem('2r_user_role');
-    if (role !== 'toko' && role !== 'pedagang' && role !== 'codseller') { tampilkanToast('Anda tidak memiliki akses untuk mengajukan!', 'error'); return; }
+    if (role !== 'toko' && role !== 'pedagang' && role !== 'codseller') {
+        tampilkanToast('Anda tidak memiliki akses untuk mengajukan!', 'error');
+        return;
+    }
+
     var paketSelect = document.getElementById('pilihPaketUpload');
     var alasanInput = document.getElementById('alasanPengajuan');
+    
     var jumlahDiminta = parseInt(paketSelect.value);
     var alasan = alasanInput.value.trim();
+
     if (!jumlahDiminta || jumlahDiminta <= 0) { tampilkanToast('Pilih paket yang valid!', 'warning'); return; }
     if (!alasan) { tampilkanToast('Isi alasan permintaan Anda!', 'warning'); return; }
+
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
-    for (var i = 0; i < dataPengajuan.length; i++) { if (dataPengajuan[i].pengajuId === user.id && dataPengajuan[i].status === 'MENUNGGU') { tampilkanToast('Anda masih memiliki pengajuan yang menunggu!', 'warning'); return; } }
-    var pengajuanBaru = { id: 'AJU-' + Date.now(), pengajuId: user.id, namaPengaju: user.nama || user.username, jumlahDiminta: jumlahDiminta, alasan: alasan, status: 'MENUNGGU', tanggal: new Date().toISOString() };
+
+    // Cegah double ajuan yang masih menunggu
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].pengajuId === user.id && dataPengajuan[i].status === 'MENUNGGU') {
+            tampilkanToast('Anda masih memiliki pengajuan yang menunggu!', 'warning');
+            return;
+        }
+    }
+
+    var pengajuanBaru = {
+        id: 'AJU-' + Date.now(),
+        pengajuId: user.id,
+        namaPengaju: user.nama || user.username,
+        jumlahDiminta: jumlahDiminta,
+        alasan: alasan,
+        status: 'MENUNGGU',
+        tanggal: new Date().toISOString()
+    };
+
     dataPengajuan.push(pengajuanBaru);
     localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+
     document.getElementById('alasanPengajuan').value = '';
     tampilkanToast('Pengajuan berhasil dikirim ke SuperAdmin!', 'success');
     renderPengajuanUploadProduk();
 }
+
+// ===== 8.18.3 - SETUJUI PENGAJUAN (OLEH SUPERADMIN/STAF ADMIN) =====
 function setujuiPengajuanUpload(idPengajuan) {
     if (!confirm('Setujui pengajuan ini? Kapasitas upload akan ditambahkan.')) return;
+
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
     var dataAkun = getDataAkun();
-    var targetPengajuan = null; var indexPengajuan = -1;
-    for (var i = 0; i < dataPengajuan.length; i++) { if (dataPengajuan[i].id === idPengajuan) { targetPengajuan = dataPengajuan[i]; indexPengajuan = i; break; } }
+
+    var targetPengajuan = null;
+    var indexPengajuan = -1;
+
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            targetPengajuan = dataPengajuan[i];
+            indexPengajuan = i;
+            break;
+        }
+    }
+
     if (!targetPengajuan) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
+
+    // Update kapasitas produk di data akun
     var akunDitemukan = false;
-    for (var i = 0; i < dataAkun.length; i++) { if (dataAkun[i].id === targetPengajuan.pengajuId) { if (!dataAkun[i].fitur) dataAkun[i].fitur = {}; var currentMaks = dataAkun[i].fitur.maksProdukPublik || 5; dataAkun[i].fitur.maksProdukPublik = currentMaks + targetPengajuan.jumlahDiminta; akunDitemukan = true; break; } }
-    if (akunDitemukan) { dataPengajuan[indexPengajuan].status = 'DISETUJUI'; localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan)); simpanDataAkun(dataAkun); tampilkanToast('Pengajuan disetujui! Kapasitas produk telah ditambah.', 'success'); } else { tampilkanToast('Akun pengaju tidak ditemukan!', 'error'); }
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === targetPengajuan.pengajuId) {
+            if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+            // Tambahkan kapasitas sesuai yang diminta
+            var currentMaks = dataAkun[i].fitur.maksProdukPublik || 5;
+            dataAkun[i].fitur.maksProdukPublik = currentMaks + targetPengajuan.jumlahDiminta;
+            akunDitemukan = true;
+            break;
+        }
+    }
+
+    if (akunDitemukan) {
+        // Update status pengajuan
+        dataPengajuan[indexPengajuan].status = 'DISETUJUI';
+        localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+        simpanDataAkun(dataAkun);
+        tampilkanToast('Pengajuan disetujui! Kapasitas produk telah ditambah.', 'success');
+    } else {
+        tampilkanToast('Akun pengaju tidak ditemukan!', 'error');
+    }
+
     renderPengajuanUploadProduk();
 }
+
+// ===== 8.18.4 - TOLAK PENGAJUAN (OLEH SUPERADMIN/STAF ADMIN) =====
 function tolakPengajuanUpload(idPengajuan) {
     if (!confirm('Tolak pengajuan ini?')) return;
+
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
-    for (var i = 0; i < dataPengajuan.length; i++) { if (dataPengajuan[i].id === idPengajuan) { dataPengajuan[i].status = 'DITOLAK'; break; } }
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            dataPengajuan[i].status = 'DITOLAK';
+            break;
+        }
+    }
     localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
     tampilkanToast('Pengajuan ditolak!', 'success');
     renderPengajuanUploadProduk();
 }
-
+// ===== AKHIR BLOK 8.18 =====
 // ===== BLOK 8.19 - JS_HUTANG_PIUTANG =====
+
+// --- 1. MODIFIKASI RENDER TRANSAKSI (Tambahkan input Nama Pelanggan saat pilih Hutang) ---
+// CATATAN: Anda HARUS mengganti bagian dropdown Metode Pembayaran di fungsi renderTransaksiPenjualan() (BLOK 8.16.6)
+// dengan kode di bawah ini. Saya tulis di sini agar Abang gampang copy-paste-nya.
+
+/* 
+GANTI KODE INI DI renderTransaksiPenjualan():
+<div><label class="form-label">Metode Pembayaran</label><select id="trxMetode" class="form-input"><option value="Tunai">Tunai</option><option value="Transfer">Transfer</option></select></div>
+
+MENJADI:
+<div><label class="form-label">Metode Pembayaran</label>
+    <select id="trxMetode" class="form-input" onchange="toggleHutangInput()">
+        <option value="Tunai">Tunai</option>
+        <option value="Transfer">Transfer</option>
+        <option value="Hutang">Hutang</option>
+    </select>
+</div>
+<div id="trxHutangContainer" style="display:none; margin-top:10px;">
+    <label class="form-label">Nama Pelanggan (Hutang)</label>
+    <input type="text" id="trxNamaPelanggan" class="form-input" placeholder="Nama pelanggan berhutang">
+</div>
+*/
+
+// --- Fungsi toggle input hutang ---
+function toggleHutangInput() {
+    var metode = document.getElementById('trxMetode').value;
+    var container = document.getElementById('trxHutangContainer');
+    if (container) {
+        if (metode === 'Hutang') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+            document.getElementById('trxNamaPelanggan').value = '';
+        }
+    }
+}
+
+// --- 2. MODIFIKASI SIMPAN TRANSAKSI (Sisipkan logika hutang) ---
+// CATATAN: Di dalam fungsi simpanTransaksiPenjualan() (BLOK 8.16.6), 
+// ganti bagian // Update modal cash dengan kode di bawah ini:
+
+/* 
+GANTI BAGIAN INI:
+    // Update modal cash (jika pembayaran tunai)
+    if (metode === 'Tunai') {
+        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
+        modalData.saldo = (modalData.saldo || 0) + grandTotal;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Penjualan',
+            jumlah: grandTotal,
+            saldoSetelah: modalData.saldo,
+            keterangan: 'Transaksi #' + transaksiBaru.id
+        });
+        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
+    }
+
+MENJADI:
+    // Update modal cash (jika pembayaran tunai) / Hutang
+    if (metode === 'Tunai') {
+        var modalData = JSON.parse(localStorage.getItem('2r_modal_cash_' + user.id) || '{"saldo":0,"riwayat":[]}');
+        modalData.saldo = (modalData.saldo || 0) + grandTotal;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Penjualan',
+            jumlah: grandTotal,
+            saldoSetelah: modalData.saldo,
+            keterangan: 'Transaksi #' + transaksiBaru.id
+        });
+        localStorage.setItem('2r_modal_cash_' + user.id, JSON.stringify(modalData));
+    } 
+    else if (metode === 'Hutang') {
+        var namaPelanggan = document.getElementById('trxNamaPelanggan').value.trim();
+        if (!namaPelanggan) {
+            tampilkanToast('Nama pelanggan wajib diisi untuk pembayaran Hutang!', 'warning');
+            return; // Batalkan simpan
+        }
+        
+        // Simpan data hutang
+        var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+        dataHutang.push({
+            id: 'HUT-' + Date.now(),
+            tokoId: user.id,
+            transaksiId: transaksiBaru.id,
+            namaPelanggan: namaPelanggan,
+            jumlahHutang: grandTotal,
+            sisaHutang: grandTotal,
+            tanggalTransaksi: tanggal,
+            status: 'Belum Lunas',
+            catatan: catatan || 'Hutang transaksi',
+            createdAt: new Date().toISOString()
+        });
+        localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataHutang));
+        tampilkanToast('Transaksi Hutang berhasil dicatat untuk ' + namaPelanggan, 'info');
+    }
+*/
+
+// --- 3. RENDER HALAMAN MANAJEMEN HUTANG PIUTANG ---
 function renderHutangPiutang() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
+
     var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
     var hutangSaya = dataHutang.filter(function(h) { return h.tokoId === user.id; });
     hutangSaya.sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+
     var totalPiutang = 0;
-    for (var i = 0; i < hutangSaya.length; i++) { if (hutangSaya[i].status === 'Belum Lunas') { totalPiutang += hutangSaya[i].sisaHutang; } }
+    for (var i = 0; i < hutangSaya.length; i++) {
+        if (hutangSaya[i].status === 'Belum Lunas') {
+            totalPiutang += hutangSaya[i].sisaHutang;
+        }
+    }
+
     var html = '<div class="page-header"><h2>Hutang Piutang Pelanggan</h2><p>Total Piutang Belum Lunas: <strong style="color:#d32f2f; font-size:20px;">Rp ' + totalPiutang.toLocaleString('id-ID') + '</strong></p></div>';
-    if (hutangSaya.length === 0) { html += '<div class="card"><div class="empty-state"><i class="fas fa-hand-holding-usd"></i><h3>Belum ada data hutang</h3></div></div>'; } else {
+
+    if (hutangSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-hand-holding-usd"></i><h3>Belum ada data hutang</h3></div></div>';
+    } else {
         html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Pelanggan</th><th>Total Hutang</th><th>Sisa Hutang</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
         for (var i = 0; i < hutangSaya.length; i++) {
             var h = hutangSaya[i];
             var badge = h.status === 'Lunas' ? 'badge-success' : 'badge-warning';
             var disabled = h.status === 'Lunas' ? 'disabled style="opacity:0.5;"' : '';
-            html += '<tr><td>' + new Date(h.tanggalTransaksi).toLocaleDateString('id-ID') + '</td><td>' + escapeHtml(h.namaPelanggan) + '</td><td>Rp ' + h.jumlahHutang.toLocaleString('id-ID') + '</td><td>Rp ' + h.sisaHutang.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + h.status + '</span></td><td style="display:flex; gap:4px; flex-wrap:wrap;"><button class="button button-success button-extra-small" onclick="bayarHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-check"></i> Bayar</button><button class="button button-danger button-extra-small" onclick="hapusHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-trash"></i> Hapus</button></td></tr>';
+            
+            html += '<tr><td>' + new Date(h.tanggalTransaksi).toLocaleDateString('id-ID') + '</td>';
+            html += '<td>' + escapeHtml(h.namaPelanggan) + '</td>';
+            html += '<td>Rp ' + h.jumlahHutang.toLocaleString('id-ID') + '</td>';
+            html += '<td>Rp ' + h.sisaHutang.toLocaleString('id-ID') + '</td>';
+            html += '<td><span class="badge ' + badge + '">' + h.status + '</span></td>';
+            html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+            html += '  <button class="button button-success button-extra-small" onclick="bayarHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-check"></i> Bayar</button>';
+            html += '  <button class="button button-danger button-extra-small" onclick="hapusHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-trash"></i> Hapus</button>';
+            html += '</td></tr>';
         }
         html += '</tbody></table></div></div>';
     }
     areaKonten.innerHTML = html;
 }
+
+// --- 4. FUNGSI BAYAR HUTANG ---
 function bayarHutang(idHutang) {
     var nominalBayar = prompt('Masukkan nominal yang akan dibayarkan (Rp):');
     if (nominalBayar === null) return;
     var bayar = parseFloat(nominalBayar);
     if (isNaN(bayar) || bayar <= 0) { tampilkanToast('Nominal tidak valid!', 'warning'); return; }
+
     var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
     var index = -1;
-    for (var i = 0; i < dataHutang.length; i++) { if (dataHutang[i].id === idHutang) { index = i; break; } }
+    for (var i = 0; i < dataHutang.length; i++) {
+        if (dataHutang[i].id === idHutang) { index = i; break; }
+    }
     if (index === -1) { tampilkanToast('Data hutang tidak ditemukan!', 'error'); return; }
+
     var hutang = dataHutang[index];
     if (hutang.status === 'Lunas') { tampilkanToast('Hutang sudah lunas!', 'warning'); return; }
-    if (bayar > hutang.sisaHutang) { if (!confirm('Nominal bayar (' + bayar + ') melebihi sisa hutang (' + hutang.sisaHutang + '). Apakah akan membayar lunas?')) return; bayar = hutang.sisaHutang; }
+
+    if (bayar > hutang.sisaHutang) {
+        if (!confirm('Nominal bayar (' + bayar + ') melebihi sisa hutang (' + hutang.sisaHutang + '). Apakah akan membayar lunas?')) return;
+        bayar = hutang.sisaHutang;
+    }
+
     hutang.sisaHutang -= bayar;
-    if (hutang.sisaHutang <= 0) { hutang.status = 'Lunas'; hutang.sisaHutang = 0; tampilkanToast('Hutang atas nama ' + hutang.namaPelanggan + ' telah LUNAS!', 'success'); } else { tampilkanToast('Pembayaran Rp ' + bayar.toLocaleString('id-ID') + ' berhasil. Sisa hutang: Rp ' + hutang.sisaHutang.toLocaleString('id-ID'), 'success'); }
+    if (hutang.sisaHutang <= 0) {
+        hutang.status = 'Lunas';
+        hutang.sisaHutang = 0;
+        tampilkanToast('Hutang atas nama ' + hutang.namaPelanggan + ' telah LUNAS!', 'success');
+    } else {
+        tampilkanToast('Pembayaran Rp ' + bayar.toLocaleString('id-ID') + ' berhasil. Sisa hutang: Rp ' + hutang.sisaHutang.toLocaleString('id-ID'), 'success');
+    }
+    
     localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataHutang));
     renderHutangPiutang();
 }
+
+// --- 5. FUNGSI HAPUS HUTANG ---
 function hapusHutang(idHutang) {
     if (!confirm('Yakin ingin menghapus data hutang ini? Data tidak dapat dikembalikan.')) return;
+    
     var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
     var dataBaru = [];
-    for (var i = 0; i < dataHutang.length; i++) { if (dataHutang[i].id !== idHutang) { dataBaru.push(dataHutang[i]); } }
+    for (var i = 0; i < dataHutang.length; i++) {
+        if (dataHutang[i].id !== idHutang) {
+            dataBaru.push(dataHutang[i]);
+        }
+    }
     localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataBaru));
     tampilkanToast('Data hutang berhasil dihapus!', 'success');
     renderHutangPiutang();
 }
+// ===== AKHIR BLOK 8.19 =====    
+// ===== BLOK 8.20 - HARGA GROSIR (Modifikasi 4 Fungsi) =====
 
-// ===== BLOK 8.20 - HARGA GROSIR (Modifikasi Produk) =====
+// 1. Ganti renderFormTambahProdukGudang (BLOK 8.7.2)
 function renderFormTambahProdukGudang() {
     var html = '<div class="card"><div class="card-header">Tambah Produk Baru <button class="button button-danger button-small" onclick="tutupFormTambahProdukGudang()"><i class="fas fa-times"></i> Tutup</button></div>';
     html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="gudangNamaProduk" class="form-input" placeholder="Nama produk"></div>';
@@ -5621,10 +6670,13 @@ function renderFormTambahProdukGudang() {
     html += '<div><label class="form-label">Satuan</label><select id="gudangSatuan" class="form-input"><option value="Pcs">Pcs</option><option value="Liter">Liter</option><option value="Kg">Kg</option><option value="Box">Box</option><option value="Kardus">Kardus</option><option value="Lusin">Lusin</option></select></div>';
     html += '<div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="gudangTanggalKadaluarsa" class="form-input"></div>';
     html += '<div><label class="form-label">Upload Foto Produk</label><input type="file" id="gudangFotoProduk" multiple accept=".jpg,.jpeg,.png" style="display:none;"><button class="button button-primary button-small" onclick="document.getElementById(\'gudangFotoProduk\').click();">Pilih Foto</button><span id="gudangNamaFoto" style="font-size:12px; color:#888; margin-left:10px;">Belum ada foto</span></div></div>';
-    html += '<div class="grid-2" style="margin-top:10px;"><div><label class="form-label">Tanggal Input</label><input type="date" id="gudangTanggalInput" class="form-input"></div><div><label class="form-label">Penginput</label><input type="text" id="gudangPenginput" class="form-input" placeholder="Nama penginput"></div></div>';
+    html += '<div class="grid-2" style="margin-top:10px;"><div><label class="form-label">Tanggal Input</label><input type="date" id="gudangTanggalInput" class="form-input"></div>';
+    html += '<div><label class="form-label">Penginput</label><input type="text" id="gudangPenginput" class="form-input" placeholder="Nama penginput"></div></div>';
     html += '<button class="button button-primary margin-top-10" onclick="simpanProdukGudang()"><i class="fas fa-save"></i> Simpan Produk</button></div>';
     return html;
 }
+
+// 2. Ganti simpanProdukGudang (BLOK 8.7.3)
 function simpanProdukGudang() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var nama = document.getElementById('gudangNamaProduk').value.trim();
@@ -5640,36 +6692,81 @@ function simpanProdukGudang() {
     var foto = localStorage.getItem('2r_produk_gudang_foto_temp') || '';
     var tanggalInput = document.getElementById('gudangTanggalInput').value;
     var penginput = document.getElementById('gudangPenginput').value.trim();
-    if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) { tampilkanToast('Semua data wajib diisi!', 'warning'); return; }
-    if (parseInt(hargaBeli) <= 0 || parseInt(hargaJual) <= 0 || parseInt(stok) < 0) { tampilkanToast('Harga dan stok harus bernilai positif!', 'warning'); return; }
+    if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
+        tampilkanToast('Semua data wajib diisi!', 'warning'); return;
+    }
+    if (parseInt(hargaBeli) <= 0 || parseInt(hargaJual) <= 0 || parseInt(stok) < 0) {
+        tampilkanToast('Harga dan stok harus bernilai positif!', 'warning'); return;
+    }
     var hariIni = new Date(); hariIni.setHours(0,0,0,0);
     if (new Date(kadaluarsa) < hariIni) { tampilkanToast('Tanggal kadaluarsa tidak boleh kurang dari hari ini!', 'warning'); return; }
     var arrayFoto = foto ? [foto] : [];
-    var produkBaru = { id: Date.now(), tokoId: user.id, namaProduk: nama, kodeProduk: kode || '-', hargaBeli: parseInt(hargaBeli), hargaJual: parseInt(hargaJual), hargaGrosir: parseInt(hargaGrosir) || 0, minBeliGrosir: parseInt(minBeli) || 0, jumlahStok: parseInt(stok), jenis: jenis, satuan: satuan, tanggalKadaluarsa: kadaluarsa, fotoProduk: arrayFoto, tanggalInput: tanggalInput, namaPenginput: penginput, tanggalMasuk: new Date().toISOString(), status: 'Aktif', totalTerjual: 0 };
+    var produkBaru = {
+        id: Date.now(), tokoId: user.id, namaProduk: nama, kodeProduk: kode || '-',
+        hargaBeli: parseInt(hargaBeli), hargaJual: parseInt(hargaJual),
+        hargaGrosir: parseInt(hargaGrosir) || 0, minBeliGrosir: parseInt(minBeli) || 0,
+        jumlahStok: parseInt(stok),
+        jenis: jenis, satuan: satuan, tanggalKadaluarsa: kadaluarsa, fotoProduk: arrayFoto,
+        tanggalInput: tanggalInput, namaPenginput: penginput, tanggalMasuk: new Date().toISOString(),
+        status: 'Aktif', totalTerjual: 0
+    };
     var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
     semuaProdukGudang.push(produkBaru);
     localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
     localStorage.removeItem('2r_produk_gudang_foto_temp');
-    document.getElementById('gudangNamaProduk').value = ''; document.getElementById('gudangKodeProduk').value = ''; document.getElementById('gudangHargaBeli').value = ''; document.getElementById('gudangHargaJual').value = ''; document.getElementById('gudangHargaGrosir').value = ''; document.getElementById('gudangMinBeli').value = ''; document.getElementById('gudangJumlahStok').value = ''; document.getElementById('gudangTanggalKadaluarsa').value = ''; document.getElementById('gudangTanggalInput').value = ''; document.getElementById('gudangPenginput').value = ''; document.getElementById('gudangNamaFoto').textContent = 'Belum ada foto';
+    document.getElementById('gudangNamaProduk').value = '';
+    document.getElementById('gudangKodeProduk').value = '';
+    document.getElementById('gudangHargaBeli').value = '';
+    document.getElementById('gudangHargaJual').value = '';
+    document.getElementById('gudangHargaGrosir').value = '';
+    document.getElementById('gudangMinBeli').value = '';
+    document.getElementById('gudangJumlahStok').value = '';
+    document.getElementById('gudangTanggalKadaluarsa').value = '';
+    document.getElementById('gudangTanggalInput').value = '';
+    document.getElementById('gudangPenginput').value = '';
+    document.getElementById('gudangNamaFoto').textContent = 'Belum ada foto';
     tutupFormTambahProdukGudang();
     renderManajemenStokGudang();
     tampilkanToast('Produk berhasil ditambahkan ke gudang!', 'success');
 }
+
+// 3. Ganti renderEditProdukGudang (BLOK 8.7.5) - potongan form edit
 function renderEditProdukGudang(id) {
     var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
     var target = null;
-    for (var i = 0; i < semua.length; i++) { if (semua[i].id === id) { target = semua[i]; break; } }
+    for (var i = 0; i < semua.length; i++) {
+        if (semua[i].id === id) { target = semua[i]; break; }
+    }
     if (!target) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
     var areaKonten = document.getElementById('mainContent');
     var html = '<div class="page-header"><h2>Edit Produk Gudang</h2><p>Ubah data produk yang sudah ada.</p></div>';
-    html += '<div class="card"><div class="card-header">Form Edit Produk <button class="button button-danger button-small" onclick="renderKelolaProduk()"><i class="fas fa-times"></i> Batal</button></div><div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="editGudangNamaProduk" class="form-input" value="' + escapeHtml(target.namaProduk) + '"></div><div><label class="form-label">Kode Produk</label><input type="text" id="editGudangKodeProduk" class="form-input" value="' + escapeHtml(target.kodeProduk) + '"></div><div><label class="form-label">Harga Beli</label><input type="number" id="editGudangHargaBeli" class="form-input" value="' + target.hargaBeli + '"></div><div><label class="form-label">Harga Jual</label><input type="number" id="editGudangHargaJual" class="form-input" value="' + target.hargaJual + '"></div><div><label class="form-label">Harga Grosir</label><input type="number" id="editGudangHargaGrosir" class="form-input" value="' + (target.hargaGrosir || 0) + '"></div><div><label class="form-label">Minimal Beli Grosir</label><input type="number" id="editGudangMinBeli" class="form-input" value="' + (target.minBeliGrosir || 0) + '"></div><div><label class="form-label">Jumlah Stok</label><input type="number" id="editGudangJumlahStok" class="form-input" value="' + target.jumlahStok + '"></div><div><label class="form-label">Jenis</label><select id="editGudangJenis" class="form-input">';
+    html += '<div class="card"><div class="card-header">Form Edit Produk <button class="button button-danger button-small" onclick="renderKelolaProduk()"><i class="fas fa-times"></i> Batal</button></div>';
+    html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="editGudangNamaProduk" class="form-input" value="' + escapeHtml(target.namaProduk) + '"></div>';
+    html += '<div><label class="form-label">Kode Produk</label><input type="text" id="editGudangKodeProduk" class="form-input" value="' + escapeHtml(target.kodeProduk) + '"></div>';
+    html += '<div><label class="form-label">Harga Beli</label><input type="number" id="editGudangHargaBeli" class="form-input" value="' + target.hargaBeli + '"></div>';
+    html += '<div><label class="form-label">Harga Jual</label><input type="number" id="editGudangHargaJual" class="form-input" value="' + target.hargaJual + '"></div>';
+    html += '<div><label class="form-label">Harga Grosir</label><input type="number" id="editGudangHargaGrosir" class="form-input" value="' + (target.hargaGrosir || 0) + '"></div>';
+    html += '<div><label class="form-label">Minimal Beli Grosir</label><input type="number" id="editGudangMinBeli" class="form-input" value="' + (target.minBeliGrosir || 0) + '"></div>';
+    html += '<div><label class="form-label">Jumlah Stok</label><input type="number" id="editGudangJumlahStok" class="form-input" value="' + target.jumlahStok + '"></div>';
+    html += '<div><label class="form-label">Jenis</label><select id="editGudangJenis" class="form-input">';
     var jenisList = ['Makanan','Minuman','Obat-Obatan','Pakaian','Elektronik','Lainnya'];
-    for (var i = 0; i < jenisList.length; i++) { var selected = jenisList[i] === target.jenis ? 'selected' : ''; html += '<option value="' + jenisList[i] + '" ' + selected + '>' + jenisList[i] + '</option>'; }
+    for (var i = 0; i < jenisList.length; i++) {
+        var selected = jenisList[i] === target.jenis ? 'selected' : '';
+        html += '<option value="' + jenisList[i] + '" ' + selected + '>' + jenisList[i] + '</option>';
+    }
     html += '</select></div><div><label class="form-label">Satuan</label><select id="editGudangSatuan" class="form-input">';
     var satuanList = ['Pcs','Liter','Kg','Box','Kardus','Lusin'];
-    for (var i = 0; i < satuanList.length; i++) { var selected = satuanList[i] === target.satuan ? 'selected' : ''; html += '<option value="' + satuanList[i] + '" ' + selected + '>' + satuanList[i] + '</option>'; }
-    html += '</select></div><div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="editGudangTanggalKadaluarsa" class="form-input" value="' + target.tanggalKadaluarsa + '"></div><div><label class="form-label">Tanggal Input</label><input type="date" id="editGudangTanggalInput" class="form-input" value="' + (target.tanggalInput || '') + '"></div><div><label class="form-label">Penginput</label><input type="text" id="editGudangPenginput" class="form-input" value="' + escapeHtml(target.namaPenginput || '') + '"></div><div style="grid-column:1/-1;"><label class="form-label">Foto Produk</label>';
-    if (target.fotoProduk && target.fotoProduk.length > 0) { html += '<div style="margin-bottom:10px;"><img src="' + target.fotoProduk[0] + '" style="width:100px;height:100px;object-fit:cover;border-radius:6px;"></div>'; } else { html += '<p style="color:#888;font-size:13px;">Belum ada foto</p>'; }
+    for (var i = 0; i < satuanList.length; i++) {
+        var selected = satuanList[i] === target.satuan ? 'selected' : '';
+        html += '<option value="' + satuanList[i] + '" ' + selected + '>' + satuanList[i] + '</option>';
+    }
+    html += '</select></div><div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="editGudangTanggalKadaluarsa" class="form-input" value="' + target.tanggalKadaluarsa + '"></div>';
+    html += '<div><label class="form-label">Tanggal Input</label><input type="date" id="editGudangTanggalInput" class="form-input" value="' + (target.tanggalInput || '') + '"></div>';
+    html += '<div><label class="form-label">Penginput</label><input type="text" id="editGudangPenginput" class="form-input" value="' + escapeHtml(target.namaPenginput || '') + '"></div>';
+    html += '<div style="grid-column:1/-1;"><label class="form-label">Foto Produk</label>';
+    if (target.fotoProduk && target.fotoProduk.length > 0) {
+        html += '<div style="margin-bottom:10px;"><img src="' + target.fotoProduk[0] + '" style="width:100px;height:100px;object-fit:cover;border-radius:6px;"></div>';
+    } else { html += '<p style="color:#888;font-size:13px;">Belum ada foto</p>'; }
     html += '<input type="file" id="editGudangFotoProduk" accept=".jpg,.jpeg,.png" style="display:none;">';
     html += '<button class="button button-primary button-small" onclick="document.getElementById(\'editGudangFotoProduk\').click();">Pilih Foto Baru</button>';
     html += '<span id="editGudangNamaFoto" style="font-size:12px;color:#888;margin-left:10px;">Kosongkan jika tidak ganti</span></div></div>';
@@ -5677,10 +6774,14 @@ function renderEditProdukGudang(id) {
     areaKonten.innerHTML = html;
     setTimeout(function() { pasangEventListenerFotoEdit(); }, 300);
 }
+
+// 4. Ganti simpanEditProdukGudang (BLOK 8.7.5)
 function simpanEditProdukGudang(id) {
     var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
     var index = -1;
-    for (var i = 0; i < semua.length; i++) { if (semua[i].id === id) { index = i; break; } }
+    for (var i = 0; i < semua.length; i++) {
+        if (semua[i].id === id) { index = i; break; }
+    }
     if (index === -1) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
     var nama = document.getElementById('editGudangNamaProduk').value.trim();
     var kode = document.getElementById('editGudangKodeProduk').value.trim();
@@ -5695,21 +6796,81 @@ function simpanEditProdukGudang(id) {
     var fotoBaru = localStorage.getItem('2r_edit_produk_gudang_foto_temp') || '';
     var tanggalInput = document.getElementById('editGudangTanggalInput').value;
     var penginput = document.getElementById('editGudangPenginput').value.trim();
-    if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) { tampilkanToast('Semua data wajib diisi!', 'warning'); return; }
-    semua[index].namaProduk = nama; semua[index].kodeProduk = kode || '-'; semua[index].hargaBeli = parseInt(hargaBeli); semua[index].hargaJual = parseInt(hargaJual); semua[index].hargaGrosir = parseInt(hargaGrosir) || 0; semua[index].minBeliGrosir = parseInt(minBeli) || 0; semua[index].jumlahStok = parseInt(stok); semua[index].jenis = jenis; semua[index].satuan = satuan; semua[index].tanggalKadaluarsa = kadaluarsa; semua[index].tanggalInput = tanggalInput; semua[index].namaPenginput = penginput; if (fotoBaru) { semua[index].fotoProduk = [fotoBaru]; localStorage.removeItem('2r_edit_produk_gudang_foto_temp'); }
+    if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
+        tampilkanToast('Semua data wajib diisi!', 'warning'); return;
+    }
+    semua[index].namaProduk = nama;
+    semua[index].kodeProduk = kode || '-';
+    semua[index].hargaBeli = parseInt(hargaBeli);
+    semua[index].hargaJual = parseInt(hargaJual);
+    semua[index].hargaGrosir = parseInt(hargaGrosir) || 0;
+    semua[index].minBeliGrosir = parseInt(minBeli) || 0;
+    semua[index].jumlahStok = parseInt(stok);
+    semua[index].jenis = jenis;
+    semua[index].satuan = satuan;
+    semua[index].tanggalKadaluarsa = kadaluarsa;
+    semua[index].tanggalInput = tanggalInput;
+    semua[index].namaPenginput = penginput;
+    if (fotoBaru) { semua[index].fotoProduk = [fotoBaru]; localStorage.removeItem('2r_edit_produk_gudang_foto_temp'); }
     localStorage.setItem('2r_produk_gudang', JSON.stringify(semua));
     renderKelolaProduk();
     tampilkanToast('Produk berhasil diperbarui!', 'success');
 }
+// ===== AKHIR BLOK 8.20 =====
+// ===== BLOK 8.21 - KATEGORI FILTER & HARGA GROSIR =====
 
-// ===== BLOK 8.21 - KATEGORI FILTER & HARGA GROSIR (Transaksi) =====
-// updateHargaSatuan sudah dimodifikasi di BLOK 8.16.6, dan updateProdukDropdowns sudah ditambahkan di bawah
+// 1. Ganti renderTransaksiPenjualan (Bagian form & data option)
+// CARI: html += '  <div id="trxItemContainer">'; 
+// LALU DI ATASNYA, TAMBAHKAN KODE INI:
+/*
+html += '  <div class="grid-2" style="margin-bottom:10px;">';
+html += '    <div><label class="form-label">Filter Kategori</label><select id="trxKategoriFilter" class="form-input" onchange="updateProdukDropdowns()"><option value="">Semua Kategori</option>';
+var uniqueKategori = [];
+for (var i = 0; i < produkSaya.length; i++) {
+    if (uniqueKategori.indexOf(produkSaya[i].jenis) === -1) {
+        uniqueKategori.push(produkSaya[i].jenis);
+    }
+}
+for (var i = 0; i < uniqueKategori.length; i++) {
+    html += '<option value="' + uniqueKategori[i] + '">' + uniqueKategori[i] + '</option>';
+}
+html += '</select></div><div></div></div>';
+*/
+// DAN GANTI BAGIAN OPTION DI DALEM LOOP MENJADI:
+/*
+html += '        <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+*/
+
+// --- KARENA PERUBAHANNYA BANYAK, LANGSUNG GANTI FUNGSI updateHargaSatuan DAN TAMBAHKAN updateProdukDropdowns DI BAWAH INI ---
+
+// Ganti updateHargaSatuan
+function updateHargaSatuan(index) {
+    var select = document.getElementById('trxProduk' + index);
+    if (!select) return;
+    var selected = select.options[select.selectedIndex];
+    var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
+    if (selected && selected.dataset.harga) {
+        var hargaJual = parseFloat(selected.dataset.harga);
+        var hargaGrosir = parseFloat(selected.dataset.hargaGrosir) || 0;
+        var minBeli = parseInt(selected.dataset.minBeli) || 99999;
+        // Logika: Jika Jumlah >= Minimal Beli DAN harga grosir > 0, pakai harga grosir
+        var hargaAkhir = (hargaGrosir > 0 && jumlah >= minBeli) ? hargaGrosir : hargaJual;
+        document.getElementById('trxHarga' + index).value = hargaAkhir;
+    } else {
+        document.getElementById('trxHarga' + index).value = '';
+    }
+    hitungSubtotal(index);
+}
+
+// Tambahkan fungsi baru ini di bawah updateHargaSatuan:
 function updateProdukDropdowns() {
     var filter = document.getElementById('trxKategoriFilter').value;
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
     var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
-    if (filter) { produkSaya = produkSaya.filter(function(p) { return p.jenis === filter; }); }
+    if (filter) {
+        produkSaya = produkSaya.filter(function(p) { return p.jenis === filter; });
+    }
     var i = 0;
     while (document.getElementById('trxProduk' + i)) {
         var select = document.getElementById('trxProduk' + i);
@@ -5724,8 +6885,10 @@ function updateProdukDropdowns() {
         i++;
     }
 }
+// ===== AKHIR BLOK 8.21 =====
+// ===== BLOK 8.22 - DOWNLOAD LAPORAN CSV =====
 
-// ===== BLOK 8.22 - LAPORAN BULANAN (CSV) =====
+// 1. Ganti renderRekapPenjualan
 function renderRekapPenjualan() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
@@ -5737,16 +6900,27 @@ function renderRekapPenjualan() {
     var filter = window._currentRekapFilter || 'hari';
     var now = new Date();
     var startDate = new Date();
-    if (filter === 'hari') { startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
-    else if (filter === 'minggu') { var day = now.getDay(); var diff = now.getDate() - day + (day === 0 ? -6 : 1); startDate = new Date(now.getFullYear(), now.getMonth(), diff); }
-    else if (filter === 'bulan') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); }
+    if (filter === 'hari') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (filter === 'minggu') {
+        var day = now.getDay();
+        var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+    } else if (filter === 'bulan') {
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
 
-    var filtered = transaksiSaya.filter(function(t) { return new Date(t.tanggal) >= startDate; });
+    var filtered = transaksiSaya.filter(function(t) {
+        var d = new Date(t.tanggal);
+        return d >= startDate;
+    });
+
     var totalPenjualan = 0;
     for (var i = 0; i < filtered.length; i++) { totalPenjualan += filtered[i].grandTotal || filtered[i].total; }
 
     var html = '';
     html += '<div class="page-header"><h2>Rekap Penjualan</h2><p>Total penjualan ' + (filter === 'hari' ? 'hari ini' : filter === 'minggu' ? 'minggu ini' : 'bulan ini') + ': <strong>Rp ' + totalPenjualan.toLocaleString('id-ID') + '</strong></p></div>';
+
     html += '<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">';
     html += '  <button class="button ' + (filter === 'hari' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'hari\'; renderRekapPenjualan()">Hari Ini</button>';
     html += '  <button class="button ' + (filter === 'minggu' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'minggu\'; renderRekapPenjualan()">Minggu Ini</button>';
@@ -5774,6 +6948,7 @@ function renderRekapPenjualan() {
     areaKonten.innerHTML = html;
 }
 
+// 2. Tambahkan fungsi download CSV
 function downloadLaporanCSV() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
@@ -5786,6 +6961,7 @@ function downloadLaporanCSV() {
     else if (filter === 'bulan') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); }
 
     var filtered = transaksiSaya.filter(function(t) { return new Date(t.tanggal) >= startDate; });
+
     if (filtered.length === 0) { tampilkanToast('Tidak ada data untuk periode ini!', 'warning'); return; }
 
     var csv = "Tanggal;Item;Total;Diskon;Bayar;Metode;Catatan\n";
@@ -5806,256 +6982,7 @@ function downloadLaporanCSV() {
     URL.revokeObjectURL(url);
     tampilkanToast('Laporan CSV berhasil didownload!', 'success');
 }
-
-// ===== BLOK 8.23 - LOGIKA STATUS AKUN, TAGIHAN, & SUSPEN =====
-function inisialisasiSistemTagihan() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) return;
-    if (!userData.isPro) userData.isPro = false;
-    var sekarang = new Date();
-    var hariIni = sekarang.getDate();
-    var bulanIni = sekarang.getMonth() + 1;
-    var tahunIni = sekarang.getFullYear();
-
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var tagihanBulanIni = null;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
-            tagihanBulanIni = dataTagihan[i];
-            break;
-        }
-    }
-
-    if (hariIni >= 5 && !tagihanBulanIni) {
-        var totalTagihan = 0;
-        if (userData.isPro) {
-            var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
-            totalTagihan += hargaPro;
-        }
-        var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-        var produkSaya = produkPublik.filter(function(p) { return p.ownerId === user.id; });
-        var jmlProduk = produkSaya.length;
-        var batasDasar = userData.isPro ? 50 : 5;
-        if (jmlProduk > batasDasar) {
-            var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
-            var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-            var ketemuPaket = false;
-            for (var k = 0; k < keys.length; k++) {
-                var jmlKey = parseInt(keys[k]);
-                if (jmlProduk <= jmlKey) {
-                    totalTagihan += hargaUpload[keys[k]];
-                    ketemuPaket = true;
-                    break;
-                }
-            }
-            if (!ketemuPaket) { totalTagihan += hargaUpload[keys[keys.length - 1]]; }
-        }
-        if (totalTagihan > 0) {
-            dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: totalTagihan, status: 'BELUM_BAYAR' });
-            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-            tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihan.toLocaleString('id-ID'), 'info');
-            tagihanBulanIni = dataTagihan[dataTagihan.length - 1];
-        }
-    }
-
-    if (hariIni >= 10 && tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
-        if (userData.status !== 'SUSPEN') {
-            userData.status = 'SUSPEN';
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === user.id) {
-                    dataAkun[i].status = 'SUSPEN';
-                    break;
-                }
-            }
-            localStorage.setItem('2r_user', JSON.stringify(userData));
-            simpanDataAkun(dataAkun);
-            tampilkanToast('Status akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
-            location.reload();
-        }
-    } else {
-        if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
-            userData.status = 'AKTIF';
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === user.id) {
-                    dataAkun[i].status = 'AKTIF';
-                    break;
-                }
-            }
-            localStorage.setItem('2r_user', JSON.stringify(userData));
-            simpanDataAkun(dataAkun);
-            tampilkanToast('Selamat! Status akun Anda telah kembali AKTIF.', 'success');
-            location.reload();
-        }
-    }
-}
-
-function tampilkanDashboard(user) {
-    if (!user || !user.nama) {
-        localStorage.removeItem('2r_user');
-        localStorage.removeItem('2r_user_role');
-        location.reload();
-        return;
-    }
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (userData && userData.status === 'SUSPEN') {
-        document.getElementById('pageAuthentication').style.display = 'none';
-        document.getElementById('pageDashboard').style.display = 'block';
-        document.getElementById('userNama').textContent = user.nama;
-        document.getElementById('roleBadge').textContent = user.role;
-        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
-        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
-        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
-        document.getElementById('mainContent').innerHTML = '';
-        renderStatusAkun();
-        return;
-    }
-    document.getElementById('pageAuthentication').style.display = 'none';
-    document.getElementById('pageDashboard').style.display = 'block';
-    document.getElementById('userNama').textContent = user.nama;
-    var daftarRole = { superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek', pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service', staf_owner_toko: 'Staf Owner Toko', staf_owner_ojek: 'Staf Owner Ojek', sponsor: 'Sponsor' };
-    document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
-    document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
-    setupNavigasiSidebar();
-    var avatar = document.getElementById('userAvatar');
-    var placeholder = document.getElementById('userAvatarPlaceholder');
-    if (user.fotoProfil) { avatar.src = user.fotoProfil; avatar.style.display = 'block'; placeholder.style.display = 'none'; } else { avatar.style.display = 'none'; placeholder.style.display = 'block'; }
-    inisialisasiSistemTagihan();
-    renderDashboard();
-}
-
-// ===== BLOK 8.24 - MENU STATUS AKUN & UPGRADE PRO =====
-function renderStatusAkun() {
-    var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
-    tagihanSaya.sort(function(a,b) { return new Date(b.id) - new Date(a.id); });
-    var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
-    if (userData && userData.status === 'SUSPEN') {
-        html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
-    }
-    html += '</div>';
-    html += '<div class="card"><div class="card-header">Info Akun</div><div class="grid-2"><div><strong>ID Akun:</strong> ' + user.id + '</div><div><strong>Role:</strong> ' + user.role + '</div><div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div><div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div></div>';
-    if (!userData.isPro) {
-        html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
-        html += '  <button class="button button-primary" onclick="upgradeKePro()"><i class="fas fa-crown"></i> Upgrade ke Akun Pro (Rp 50.000)</button>';
-        html += '  <p style="font-size:12px; color:#888; margin-top:5px;">Keuntungan: Batas upload 50 produk, chat prioritas, dan layanan ekstra.</p>';
-        html += '</div>';
-    }
-    html += '</div>';
-    html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
-    if (tagihanSaya.length === 0) {
-        html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
-    } else {
-        html += '<div class="table-container"><table class="table"><thead><tr><th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
-        for (var i = 0; i < tagihanSaya.length; i++) {
-            var t = tagihanSaya[i];
-            var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
-            html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
-        }
-        html += '</tbody></table></div>';
-    }
-    html += '</div>';
-    if (userData && userData.status === 'SUSPEN') {
-        html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
-        html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
-        var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
-        html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
-        html += '<strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
-        html += '<strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
-        html += '<strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
-        html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
-        html += '</div>';
-    }
-    areaKonten.innerHTML = html;
-}
-
-function upgradeKePro() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
-    if (userData.isPro) { tampilkanToast('Anda sudah menjadi Akun Pro!', 'info'); return; }
-    if (!confirm('Anda akan melakukan upgrade ke Akun Pro dengan biaya Rp 50.000. Lanjutkan?')) return;
-    userData.isPro = true;
-    userData.status = 'AKTIF';
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            dataAkun[i].isPro = true;
-            dataAkun[i].status = 'AKTIF';
-            break;
-        }
-    }
-    simpanDataAkun(dataAkun);
-    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
-    userLogin.isPro = true;
-    userLogin.status = 'AKTIF';
-    localStorage.setItem('2r_user', JSON.stringify(userLogin));
-    var sekarang = new Date();
-    var bulanIni = sekarang.getMonth() + 1;
-    var tahunIni = sekarang.getFullYear();
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var sudahAda = false;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
-            sudahAda = true;
-            break;
-        }
-    }
-    if (!sudahAda) {
-        var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
-        dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: hargaPro, status: 'BELUM_BAYAR' });
-        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-    }
-    tampilkanToast('Selamat! Anda kini menjadi Akun PRO. Tagihan bulan ini akan ditagihkan.', 'success');
-    renderStatusAkun();
-}
-
-function konfirmasiPembayaran() {
-    if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
-            dataTagihan[i].status = 'LUNAS';
-            break;
-        }
-    }
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            dataAkun[i].status = 'AKTIF';
-            break;
-        }
-    }
-    localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-    simpanDataAkun(dataAkun);
-    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
-    userLogin.status = 'AKTIF';
-    localStorage.setItem('2r_user', JSON.stringify(userLogin));
-    tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
-    location.reload();
-}
-
-// ===== AKHIR BLOK 8.24 =====  
+// ===== AKHIR BLOK 8.22 =====    
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
