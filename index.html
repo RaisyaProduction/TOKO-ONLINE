@@ -820,6 +820,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'notifikasi') renderNotifikasi();
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
+    else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
@@ -5562,6 +5563,214 @@ function hapusItemPenagihan(index) {
     renderSettingHargaAplikasi();
 }
 // ===== AKHIR BLOK 8.17 =====
+// ===== BLOK 8.18 - JS_PENGAJUAN_UPLOAD_PRODUK =====
+// Data disimpan di localStorage key: 2r_pengajuan_upload
+
+// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
+// else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+
+// ===== 8.18.1 - RENDER HALAMAN PENGAJUAN UPLOAD =====
+function renderPengajuanUploadProduk() {
+    var role = localStorage.getItem('2r_user_role');
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+    var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+    
+    // Format harga untuk dropdown
+    var opsiHarga = '';
+    var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+    for (var i = 0; i < keys.length; i++) {
+        var jml = keys[i];
+        var hrg = hargaUpload[jml];
+        opsiHarga += '<option value="' + jml + '">' + jml + ' Produk (Rp ' + hrg.toLocaleString('id-ID') + ')</option>';
+    }
+    if (!opsiHarga) opsiHarga = '<option value="">Belum ada paket harga</option>';
+
+    var html = '';
+    html += '<div class="page-header"><h2>Pengajuan Upload Produk Publik</h2><p>Ajukan penambahan slot upload produk publik ke SuperAdmin.</p></div>';
+
+    // --- BAGIAN UNTUK PENGAJU (Toko, Pedagang, COD Seller) ---
+    if (role === 'toko' || role === 'pedagang' || role === 'codseller') {
+        // Filter pengajuan milik user sendiri
+        var pengajuanSaya = dataPengajuan.filter(function(p) { return p.pengajuId === user.id; });
+
+        html += '<div class="card"><div class="card-header">Form Pengajuan Baru</div>';
+        html += '  <div class="grid-2">';
+        html += '    <div><label class="form-label">Pilih Paket Upload</label><select id="pilihPaketUpload" class="form-input">' + opsiHarga + '</select></div>';
+        html += '    <div><label class="form-label">Alasan Permintaan</label><input type="text" id="alasanPengajuan" class="form-input" placeholder="Misal: Butuh lebih banyak untuk produk baru"></div>';
+        html += '  </div>';
+        html += '  <button class="button button-primary margin-top-10" onclick="simpanPengajuanUpload()"><i class="fas fa-paper-plane"></i> Ajukan</button>';
+        html += '</div>';
+
+        html += '<div class="card"><div class="card-header">Riwayat Pengajuan Saya</div>';
+        if (pengajuanSaya.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jumlah Diminta</th><th>Alasan</th><th>Status</th></tr></thead><tbody>';
+            pengajuanSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+            for (var i = 0; i < pengajuanSaya.length; i++) {
+                var p = pengajuanSaya[i];
+                var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
+                html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
+            }
+            html += '  </tbody></table></div>';
+        }
+        html += '</div>';
+
+    // --- BAGIAN UNTUK SUPERADMIN & STAF ADMIN ---
+    } else if (role === 'superadmin' || role === 'staf_admin') {
+        // Filter pengajuan yang masih MENUNGGU
+        var pengajuanMasuk = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
+
+        html += '<div class="card"><div class="card-header">Daftar Pengajuan Masuk (Menunggu)</div>';
+        if (pengajuanMasuk.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-check-double"></i><h3>Tidak ada pengajuan menunggu</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>No</th><th>Pengaju</th><th>Akun</th><th>Jumlah Diminta</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
+            for (var i = 0; i < pengajuanMasuk.length; i++) {
+                var p = pengajuanMasuk[i];
+                html += '  <tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td><td>' + p.pengajuId + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td>';
+                html += '    <button class="button button-success button-extra-small" onclick="setujuiPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui</button>';
+                html += '    <button class="button button-danger button-extra-small" onclick="tolakPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
+                html += '  </td></tr>';
+            }
+            html += '  </tbody></table></div>';
+        }
+        html += '</div>';
+        
+        // Tampilkan semua riwayat untuk admin
+        html += '<div class="card"><div class="card-header">Semua Riwayat Pengajuan</div>';
+        if (dataPengajuan.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada riwayat</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Pengaju</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
+            dataPengajuan.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+            for (var i = 0; i < dataPengajuan.length; i++) {
+                var p = dataPengajuan[i];
+                var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
+                html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
+            }
+            html += '  </tbody></table></div>';
+        }
+        html += '</div>';
+    } else {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-lock"></i><h3>Akses Dibatasi</h3><p>Halaman ini hanya untuk akun Toko, Pedagang, COD Seller, dan Admin.</p></div></div>';
+    }
+
+    areaKonten.innerHTML = html;
+}
+
+// ===== 8.18.2 - SIMPAN PENGAJUAN BARU (DARI TOKO/PEDAGANG/COD SELLER) =====
+function simpanPengajuanUpload() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'toko' && role !== 'pedagang' && role !== 'codseller') {
+        tampilkanToast('Anda tidak memiliki akses untuk mengajukan!', 'error');
+        return;
+    }
+
+    var paketSelect = document.getElementById('pilihPaketUpload');
+    var alasanInput = document.getElementById('alasanPengajuan');
+    
+    var jumlahDiminta = parseInt(paketSelect.value);
+    var alasan = alasanInput.value.trim();
+
+    if (!jumlahDiminta || jumlahDiminta <= 0) { tampilkanToast('Pilih paket yang valid!', 'warning'); return; }
+    if (!alasan) { tampilkanToast('Isi alasan permintaan Anda!', 'warning'); return; }
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+
+    // Cegah double ajuan yang masih menunggu
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].pengajuId === user.id && dataPengajuan[i].status === 'MENUNGGU') {
+            tampilkanToast('Anda masih memiliki pengajuan yang menunggu!', 'warning');
+            return;
+        }
+    }
+
+    var pengajuanBaru = {
+        id: 'AJU-' + Date.now(),
+        pengajuId: user.id,
+        namaPengaju: user.nama || user.username,
+        jumlahDiminta: jumlahDiminta,
+        alasan: alasan,
+        status: 'MENUNGGU',
+        tanggal: new Date().toISOString()
+    };
+
+    dataPengajuan.push(pengajuanBaru);
+    localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+
+    document.getElementById('alasanPengajuan').value = '';
+    tampilkanToast('Pengajuan berhasil dikirim ke SuperAdmin!', 'success');
+    renderPengajuanUploadProduk();
+}
+
+// ===== 8.18.3 - SETUJUI PENGAJUAN (OLEH SUPERADMIN/STAF ADMIN) =====
+function setujuiPengajuanUpload(idPengajuan) {
+    if (!confirm('Setujui pengajuan ini? Kapasitas upload akan ditambahkan.')) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+    var dataAkun = getDataAkun();
+
+    var targetPengajuan = null;
+    var indexPengajuan = -1;
+
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            targetPengajuan = dataPengajuan[i];
+            indexPengajuan = i;
+            break;
+        }
+    }
+
+    if (!targetPengajuan) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
+
+    // Update kapasitas produk di data akun
+    var akunDitemukan = false;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === targetPengajuan.pengajuId) {
+            if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+            // Tambahkan kapasitas sesuai yang diminta
+            var currentMaks = dataAkun[i].fitur.maksProdukPublik || 5;
+            dataAkun[i].fitur.maksProdukPublik = currentMaks + targetPengajuan.jumlahDiminta;
+            akunDitemukan = true;
+            break;
+        }
+    }
+
+    if (akunDitemukan) {
+        // Update status pengajuan
+        dataPengajuan[indexPengajuan].status = 'DISETUJUI';
+        localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+        simpanDataAkun(dataAkun);
+        tampilkanToast('Pengajuan disetujui! Kapasitas produk telah ditambah.', 'success');
+    } else {
+        tampilkanToast('Akun pengaju tidak ditemukan!', 'error');
+    }
+
+    renderPengajuanUploadProduk();
+}
+
+// ===== 8.18.4 - TOLAK PENGAJUAN (OLEH SUPERADMIN/STAF ADMIN) =====
+function tolakPengajuanUpload(idPengajuan) {
+    if (!confirm('Tolak pengajuan ini?')) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            dataPengajuan[i].status = 'DITOLAK';
+            break;
+        }
+    }
+    localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+    tampilkanToast('Pengajuan ditolak!', 'success');
+    renderPengajuanUploadProduk();
+}
+// ===== AKHIR BLOK 8.18 =====
     
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
