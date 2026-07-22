@@ -765,46 +765,54 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 <!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
 <script>
     // ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
-    function navigasiKeHalaman(namaHalaman) {
-        var areaKonten = document.getElementById('mainContent');
-        if (!areaKonten) return;
+function navigasiKeHalaman(namaHalaman) {
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
 
-        if (namaHalaman === 'dashboard') renderDashboard();
-        else if (namaHalaman === 'profile') renderProfil();
-        else if (namaHalaman === 'daftarAkun') renderDaftarAkun();
-        else if (namaHalaman === 'persetujuan') renderPersetujuanAkun();
-        else if (namaHalaman === 'kelolaAkun') renderKelolaAkun();
-        else if (namaHalaman === 'settingRekening') renderSettingRekening();
-        else if (namaHalaman === 'belanja') renderBelanja();
-        else if (namaHalaman === 'pesananSaya') renderPesananSaya();
-        else if (namaHalaman === 'kelolaIklan') renderMenuIklan();
-        else if (namaHalaman === 'menuIklan') renderMenuIklan();
-        else if (namaHalaman === 'pengajuanHapus') renderPengajuanHapusAkun();
-        else if (namaHalaman === 'uploadProdukPublik') renderUploadProdukPublik();
-        else if (namaHalaman === 'manajemenStokGudang') renderManajemenStokGudang();
-        else if (namaHalaman === 'kelolaProduk') renderKelolaProduk();
-        else if (namaHalaman === 'helloFriends') renderHelloFriends();
-        else if (namaHalaman === 'transferMenu') renderTransferMenu();
-        else if (namaHalaman === 'kelolaWilayah') renderKelolaWilayah();
-        else if (namaHalaman === 'dashboardCustomer') renderDashboardCustomer();
-        else if (namaHalaman === 'profilCustomer') renderProfilCustomer();
-        else if (namaHalaman === 'lihatTokoTerdekat') renderLihatTokoTerdekat();
-        else if (namaHalaman === 'lihatOjekTerdekat') renderLihatOjekTerdekat();
-        else if (namaHalaman === 'lihatProduk') renderLihatProduk();
-        else if (namaHalaman === 'keranjang') renderKeranjang();
-        else if (namaHalaman === 'chat') renderChat();
-        else if (namaHalaman === 'papanInformasi') renderPapanInformasi();
-        else if (namaHalaman === 'daftarBelanja') renderDaftarBelanja();
-        else if (namaHalaman === 'riwayatBelanja') renderRiwayatBelanja();
-        else if (namaHalaman === 'pembayaran') renderPembayaran();
-        else if (namaHalaman === 'ulasanRating') renderUlasanRating();
-        else if (namaHalaman === 'bantuanFAQ') renderBantuanFAQ();
-        else if (namaHalaman === 'notifikasi') renderNotifikasi();
-        else if (namaHalaman === 'hapusAkun') renderHapusAkun();
-        else if (namaHalaman === 'backupRestore') renderBackupRestore();
-        else renderPlaceholder(namaHalaman);
-    }
-    // ===== AKHIR BLOK 6.2.1 =====
+    if (namaHalaman === 'dashboard') renderDashboard();
+    else if (namaHalaman === 'profile') renderProfil();
+    else if (namaHalaman === 'daftarAkun') renderDaftarAkun();
+    else if (namaHalaman === 'persetujuan') renderPersetujuanAkun();
+    else if (namaHalaman === 'kelolaAkun') renderKelolaAkun();
+    else if (namaHalaman === 'settingRekening') renderSettingRekening();
+    else if (namaHalaman === 'belanja') renderBelanja();
+    else if (namaHalaman === 'pesananSaya') renderPesananSaya();
+    else if (namaHalaman === 'kelolaIklan') renderMenuIklan();
+    else if (namaHalaman === 'menuIklan') renderMenuIklan();
+    else if (namaHalaman === 'pengajuanHapus') renderPengajuanHapusAkun();
+    else if (namaHalaman === 'uploadProdukPublik') renderUploadProdukPublik();
+    else if (namaHalaman === 'manajemenStokGudang') renderManajemenStokGudang();
+    else if (namaHalaman === 'kelolaProduk') renderKelolaProduk();
+    else if (namaHalaman === 'helloFriends') renderHelloFriends();
+    else if (namaHalaman === 'transferMenu') renderTransferMenu();
+    else if (namaHalaman === 'kelolaWilayah') renderKelolaWilayah();
+    else if (namaHalaman === 'dashboardCustomer') renderDashboardCustomer();
+    else if (namaHalaman === 'profilCustomer') renderProfilCustomer();
+    else if (namaHalaman === 'lihatTokoTerdekat') renderLihatTokoTerdekat();
+    else if (namaHalaman === 'lihatOjekTerdekat') renderLihatOjekTerdekat();
+    else if (namaHalaman === 'lihatProduk') renderLihatProduk();
+    else if (namaHalaman === 'keranjang') renderKeranjang();
+    else if (namaHalaman === 'chat') renderChat();
+    else if (namaHalaman === 'papanInformasi') renderPapanInformasi();
+    else if (namaHalaman === 'daftarBelanja') renderDaftarBelanja();
+    else if (namaHalaman === 'riwayatBelanja') renderRiwayatBelanja();
+    else if (namaHalaman === 'pembayaran') renderPembayaran();
+    else if (namaHalaman === 'ulasanRating') renderUlasanRating();
+    else if (namaHalaman === 'bantuanFAQ') renderBantuanFAQ();
+    else if (namaHalaman === 'notifikasi') renderNotifikasi();
+    else if (namaHalaman === 'hapusAkun') renderHapusAkun();
+    else if (namaHalaman === 'backupRestore') renderBackupRestore();
+    
+    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
+    else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
+    else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
+    else if (namaHalaman === 'pengeluaran') renderPengeluaran();
+    else if (namaHalaman === 'modalCash') renderModalCash();
+    // ------------------------------------------------
+    
+    else renderPlaceholder(namaHalaman);
+}
+// ===== AKHIR BLOK 6.2.1 =====
 
     // ===== BLOK 6.2.2 - RENDER PLACEHOLDER =====
     function renderPlaceholder(judul) {
