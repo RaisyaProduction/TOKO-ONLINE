@@ -5386,12 +5386,13 @@ function renderTransaksiPenjualan() {
     var html = '';
     html += '<div class="page-header"><h2>Transaksi Penjualan</h2><p>Catat penjualan langsung ke pelanggan. Stok akan berkurang otomatis.</p></div>';
 
-    // --- INPUT SCAN BARCODE (MANUAL) ---
+    // --- INPUT SCAN BARCODE (MANUAL) + DOWNLOAD EXCEL ---
     html += '<div class="card" style="background:#f8f9fa; border:2px solid #FF6B00; margin-bottom:15px;">';
-    html += '  <div class="card-header"><i class="fas fa-qrcode"></i> Scan Barcode (Manual)</div>';
-    html += '  <div style="display:flex; gap:10px;">';
-    html += '    <input type="text" id="trxScanInput" class="form-input" placeholder="Scan / Ketik Kode Produk lalu Enter" style="flex:1;">';
+    html += '  <div class="card-header"><i class="fas fa-qrcode"></i> Scan Barcode (Manual) & Data Produk</div>';
+    html += '  <div style="display:flex; gap:10px; flex-wrap:wrap;">';
+    html += '    <input type="text" id="trxScanInput" class="form-input" placeholder="Scan / Ketik Kode Produk lalu Enter" style="flex:1; min-width:150px;">';
     html += '    <button class="button button-primary button-small" onclick="prosesScanBarcode()"><i class="fas fa-arrow-right"></i> Cari</button>';
+    html += '    <button class="button button-success button-small" onclick="downloadExcelStokGudang()"><i class="fas fa-file-excel"></i> Download Excel</button>';
     html += '  </div>';
     html += '  <div id="scanResult" style="font-size:13px; margin-top:5px; color:#888;"></div>';
     html += '</div>';
