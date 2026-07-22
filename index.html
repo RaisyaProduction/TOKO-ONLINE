@@ -602,28 +602,30 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
         var menuRole = {
             // === SUPERADMIN ===
             // === SUPERADMIN ===
-'superadmin': [
-    { judul: 'Menu Utama', items: [ 
-        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
-        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
-        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }
-    ] },
-    { judul: 'Menu Admin', items: [ 
-        { halaman: 'daftarAkun', icon: 'fa-user-plus', label: 'Daftar Akun Baru' },
-        { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' },
-        { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Semua Akun' },
-        { halaman: 'transferMenu', icon: 'fa-exchange-alt', label: 'Transfer Menu' },
-        { halaman: 'settingRekening', icon: 'fa-university', label: 'Setting Rekening' },
-        { halaman: 'settingHargaAplikasi', icon: 'fa-tags', label: 'Setting Harga Aplikasi' }, // <-- BARU
-        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
-        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
-        { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
-        { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
-        { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },        
-        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
-        { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
-    ] }
-],
+            // === SUPERADMIN ===
+            'superadmin': [
+                { judul: 'Menu Utama', items: [ 
+                    { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                    { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                    { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }
+                ] },
+                { judul: 'Menu Admin', items: [ 
+                    { halaman: 'daftarAkun', icon: 'fa-user-plus', label: 'Daftar Akun Baru' },
+                    { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' },
+                    { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Semua Akun' },
+                    { halaman: 'transferMenu', icon: 'fa-exchange-alt', label: 'Transfer Menu' },
+                    { halaman: 'settingRekening', icon: 'fa-university', label: 'Setting Rekening' },
+                    { halaman: 'settingHargaAplikasi', icon: 'fa-tags', label: 'Setting Harga Aplikasi' },
+                    { halaman: 'pengajuanBukaAkun', icon: 'fa-user-plus', label: 'Pengajuan Buka Akun' }, // <-- Sudah ditambahkan dengan koma
+                    { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                    { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                    { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
+                    { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+                    { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
+                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                    { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
+                ] }
+            ],    
             // === CUSTOMER ===
             'customer': [
                 { judul: 'Menu Belanja', items: [ { halaman: 'dashboardCustomer', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profilCustomer', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'lihatTokoTerdekat', icon: 'fa-store', label: 'Lihat Toko Terdekat' }, { halaman: 'lihatOjekTerdekat', icon: 'fa-motorcycle', label: 'Lihat Ojek Terdekat' }, { halaman: 'lihatProduk', icon: 'fa-box', label: 'Lihat Produk' }, { halaman: 'keranjang', icon: 'fa-shopping-cart', label: 'Keranjang' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' } ] },
