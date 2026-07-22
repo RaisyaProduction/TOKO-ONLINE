@@ -619,7 +619,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
         { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
         { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
         { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
-        { halaman: 'pengajuanBukaAkun', icon: 'fa-user-plus', label: 'Pengajuan Buka Akun' }
+        { halaman: 'pengajuanBukaAkun', icon: 'fa-user-plus', label: 'Pengajuan Buka Akun' },
         { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
         { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
     ] }
@@ -729,7 +729,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 ],
             // === STAF ADMIN, CS, STAF OWNER, SPONSOR ===
             'staf_admin': [
-                { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' }, { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun(); { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
+                { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' }, { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun(), { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
             ],
             'customer_service': [
                 { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'tiketBantuan', icon: 'fa-ticket-alt', label: 'Tiket Bantuan' }, { halaman: 'liveChat', icon: 'fa-comments', label: 'Live Chat' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
@@ -781,9 +781,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 </script>
 <!-- ===== AKHIR BLOK 6.1 ===== -->
 
-<!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
-<script>
-    // ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
+// ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
@@ -795,13 +793,14 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'kelolaAkun') renderKelolaAkun();
     else if (namaHalaman === 'settingRekening') renderSettingRekening();
     else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
+    else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun(); // <-- BARIS INI PENTING
     else if (namaHalaman === 'belanja') renderBelanja();
     else if (namaHalaman === 'pesananSaya') renderPesananSaya();
     else if (namaHalaman === 'kelolaIklan') renderMenuIklan();
     else if (namaHalaman === 'menuIklan') renderMenuIklan();
     else if (namaHalaman === 'pengajuanHapus') renderPengajuanHapusAkun();
     else if (namaHalaman === 'uploadProdukPublik') renderUploadProdukPublik();
-    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'manajemenStokGudang') renderManajemenStokGudang();
     else if (namaHalaman === 'kelolaProduk') renderKelolaProduk();
     else if (namaHalaman === 'helloFriends') renderHelloFriends();
@@ -823,15 +822,10 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'notifikasi') renderNotifikasi();
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
-    else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
-    
-    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
-    // ------------------------------------------------
-    
     else renderPlaceholder(namaHalaman);
 }
 // ===== AKHIR BLOK 6.2.1 =====
