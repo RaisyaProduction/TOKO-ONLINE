@@ -640,6 +640,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                 { halaman: 'uploadProdukPublik', icon: 'fa-upload', label: 'Upload Produk Publik' },
                 { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                 { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
+                { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' }    
             ];
             var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
             if (paket.includes('paket1')) {
@@ -822,6 +823,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+    else if (namaHalaman === 'logStok') renderLogStok();
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
@@ -5624,6 +5626,7 @@ function simpanTransaksiPenjualan() {
             if (semuaProdukGudang[j].id == item.produkId) {
                 semuaProdukGudang[j].jumlahStok -= item.jumlah;
                 semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) + item.jumlah;
+                simpanLogStok(item.produkId, item.nama, -item.jumlah, 'Penjualan #' + transaksiBaru.id);
                 break;
             }
         }
@@ -5756,7 +5759,41 @@ function cetakNota(trxId) {
 
 // --- 1. HAPUS TRANSAKSI (Stok Kembali) ---
 function hapusTransaksiPenjualan(trxId) {
-    if (!confirm('Yakin ingin menghapus transaksi ini? Stok barang akan dikembalikan.')) return;
+    bukaModalDelete(
+    'Hapus Transaksi',
+    'Tindakan ini akan menghapus data transaksi dan mengembalikan stok barang ke gudang. Data tidak dapat dikembalikan!',
+    function() {
+        // Kode logika hapus yang asli dipindahkan ke sini
+        var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var indexTransaksi = -1;
+        for (var i = 0; i < semuaTransaksi.length; i++) {
+            if (semuaTransaksi[i].id === trxId) { indexTransaksi = i; break; }
+        }
+        if (indexTransaksi === -1) { tampilkanToast('Transaksi tidak ditemukan!', 'error'); return; }
+        var transaksi = semuaTransaksi[indexTransaksi];
+        
+        // Kembalikan stok
+        for (var i = 0; i < transaksi.items.length; i++) {
+            var item = transaksi.items[i];
+            for (var j = 0; j < semuaProdukGudang.length; j++) {
+                if (semuaProdukGudang[j].id == item.produkId) {
+                    semuaProdukGudang[j].jumlahStok += item.jumlah;
+                    semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) - item.jumlah;
+                    simpanLogStok(item.produkId, item.nama, item.jumlah, 'Pengembalian stok (Hapus Transaksi #' + trxId + ')');
+                    break;
+                }
+            }
+        }
+        
+        semuaTransaksi.splice(indexTransaksi, 1);
+        localStorage.setItem('2r_transaksi_penjualan', JSON.stringify(semuaTransaksi));
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        tampilkanToast('Transaksi berhasil dihapus!', 'success');
+        renderTransaksiPenjualan();
+    }
+);
+return;
 
     var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
     var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
@@ -5783,6 +5820,7 @@ function hapusTransaksiPenjualan(trxId) {
                 semuaProdukGudang[j].jumlahStok += item.jumlah;
                 // Kurangi total terjual (optional)
                 semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) - item.jumlah;
+                simpanLogStok(item.produkId, item.nama, item.jumlah, 'Pengembalian stok (Hapus Transaksi #' + trxId + ')');
                 break;
             }
         }
@@ -5981,6 +6019,7 @@ function simpanEditTransaksi() {
             if (semuaProdukGudang[j].id == itemLama.produkId) {
                 semuaProdukGudang[j].jumlahStok += itemLama.jumlah;
                 semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) - itemLama.jumlah;
+                simpanLogStok(itemLama.produkId, itemLama.nama, itemLama.jumlah, 'Rollback stok lama (Edit Transaksi)');
                 break;
             }
         }
@@ -6032,6 +6071,7 @@ function simpanEditTransaksi() {
             if (semuaProdukGudang[j].id == itemBaru.produkId) {
                 semuaProdukGudang[j].jumlahStok -= itemBaru.jumlah;
                 semuaProdukGudang[j].totalTerjual = (semuaProdukGudang[j].totalTerjual || 0) + itemBaru.jumlah;
+                simpanLogStok(itemBaru.produkId, itemBaru.nama, -itemBaru.jumlah, 'Stok baru (Edit Transaksi)');
                 break;
             }
         }
@@ -6122,7 +6162,156 @@ function bagikanNotaWA(trxId) {
     window.open(urlWA, '_blank');
     tampilkanToast('Nota sedang dibuka di WhatsApp!', 'success');
 }
-// ===== AKHIR BLOK 8.16.9 =====  
+// ===== AKHIR BLOK 8.16.9 =====
+    // ===== BLOK 8.16.10 - LOG STOK (RIWAYAT PERUBAHAN STOK) =====
+
+// --- 1. Fungsi Menyimpan Log Stok ---
+function simpanLogStok(produkId, produkNama, perubahan, keterangan) {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var logKey = '2r_log_stok';
+    var dataLog = JSON.parse(localStorage.getItem(logKey) || '[]');
+
+    var logBaru = {
+        id: Date.now(),
+        tokoId: user.id,
+        produkId: produkId,
+        produkNama: produkNama,
+        perubahan: perubahan, // Angka positif (+) jika stok bertambah, negatif (-) jika berkurang
+        stokAkhir: 0, // akan diisi oleh fungsi pemanggil jika perlu, atau kita hitung ulang
+        keterangan: keterangan,
+        waktu: new Date().toISOString()
+    };
+
+    dataLog.push(logBaru);
+    // Batasi log maksimal 1000 entri agar localStorage tidak penuh
+    if (dataLog.length > 1000) {
+        dataLog.splice(0, dataLog.length - 1000);
+    }
+    localStorage.setItem(logKey, JSON.stringify(dataLog));
+}
+
+// --- 2. Render Halaman Log Stok (Untuk Dilihat Pemilik Toko) ---
+function renderLogStok() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var logKey = '2r_log_stok';
+    var dataLog = JSON.parse(localStorage.getItem(logKey) || '[]');
+    var logSaya = dataLog.filter(function(l) { return l.tokoId === user.id; });
+    logSaya.sort(function(a, b) { return new Date(b.waktu) - new Date(a.waktu); });
+
+    var html = '<div class="page-header"><h2>Log / Riwayat Stok</h2><p>Catatan perubahan stok produk (Penjualan, Hapus, Edit).</p></div>';
+    
+    if (logSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada perubahan stok</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>Waktu</th><th>Produk</th><th>Perubahan</th><th>Keterangan</th></tr></thead><tbody>';
+        var max = Math.min(logSaya.length, 50);
+        for (var i = 0; i < max; i++) {
+            var l = logSaya[i];
+            var warna = l.perubahan > 0 ? 'color:#2e7d32;' : 'color:#d32f2f;';
+            var tanda = l.perubahan > 0 ? '+' : '';
+            html += '<tr><td>' + new Date(l.waktu).toLocaleString('id-ID') + '</td>';
+            html += '<td>' + escapeHtml(l.produkNama) + '</td>';
+            html += '<td style="' + warna + ' font-weight:600;">' + tanda + l.perubahan + '</td>';
+            html += '<td>' + escapeHtml(l.keterangan) + '</td></tr>';
+        }
+        html += '</tbody></table></div>';
+        if (logSaya.length > 50) {
+            html += '<div style="text-align:right; font-size:12px; color:#888;">Menampilkan 50 data terbaru dari ' + logSaya.length + ' total.</div>';
+        }
+        html += '</div>';
+    }
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 8.16.10 =====
+    // ===== BLOK 8.16.11 - MODAL KONFIRMASI DELETE (KETIK "DELETE") =====
+
+// --- 1. HTML Modal DELETE (Disuntikkan ke body saat dipanggil) ---
+function bukaModalDelete(judul, pesan, callbackHapus) {
+    // Hapus modal lama jika masih ada
+    var modalLama = document.getElementById('modalDeleteConfirm');
+    if (modalLama) modalLama.remove();
+
+    var htmlModal = `
+    <div id="modalDeleteConfirm" class="modal-overlay active" style="display:flex; z-index:99999;">
+        <div class="modal" style="max-width:450px;">
+            <div class="modal-header">
+                <h3 style="color:#d32f2f;"><i class="fas fa-exclamation-triangle"></i> ${judul}</h3>
+                <button class="modal-close" onclick="tutupModalDelete()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>${pesan}</p>
+                <p style="font-weight:600; margin-top:15px;">Untuk mengonfirmasi, ketikkan kata <span style="color:#d32f2f;">"DELETE"</span> di bawah ini:</p>
+                <input type="text" id="deleteConfirmInput" class="form-input" placeholder="DELETE" style="text-transform:uppercase; font-weight:bold; text-align:center; letter-spacing:2px;">
+                <div id="deleteErrorMsg" style="color:#d32f2f; font-size:13px; margin-top:5px; display:none;">Harap ketik "DELETE" dengan benar!</div>
+            </div>
+            <div class="modal-footer">
+                <button class="button button-secondary" onclick="tutupModalDelete()">Batal</button>
+                <button class="button button-danger" id="deleteConfirmBtn" onclick="eksekusiDelete()" disabled style="opacity:0.6;">Hapus</button>
+            </div>
+        </div>
+    </div>
+    `;
+
+    var body = document.body;
+    var container = document.createElement('div');
+    container.innerHTML = htmlModal;
+    body.appendChild(container);
+
+    // Simpan callback ke window agar bisa dipanggil oleh eksekusiDelete
+    window._deleteCallback = callbackHapus;
+
+    // Event listener untuk input
+    setTimeout(function() {
+        var input = document.getElementById('deleteConfirmInput');
+        var btn = document.getElementById('deleteConfirmBtn');
+        var error = document.getElementById('deleteErrorMsg');
+        
+        if (input && btn) {
+            input.focus();
+            input.addEventListener('input', function() {
+                if (this.value === 'DELETE') {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    error.style.display = 'none';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+                }
+            });
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    if (this.value === 'DELETE') {
+                        eksekusiDelete();
+                    } else {
+                        error.style.display = 'block';
+                    }
+                }
+            });
+        }
+    }, 100);
+}
+
+function tutupModalDelete() {
+    var modal = document.getElementById('modalDeleteConfirm');
+    if (modal) modal.remove();
+    window._deleteCallback = null;
+}
+
+function eksekusiDelete() {
+    var input = document.getElementById('deleteConfirmInput');
+    if (input && input.value === 'DELETE') {
+        if (typeof window._deleteCallback === 'function') {
+            window._deleteCallback();
+        }
+        tutupModalDelete();
+    } else {
+        document.getElementById('deleteErrorMsg').style.display = 'block';
+    }
+}
+// ===== AKHIR BLOK 8.16.11 =====
 // ===== AKHIR BLOK 8.16 =====
 // ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
 // Fitur ini hanya bisa diakses oleh SuperAdmin
