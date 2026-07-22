@@ -679,12 +679,14 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                 { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
             ];
             var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
-            if (paket.includes('paket1')) {
+                        if (paket.includes('paket1')) {
                 base.push(
                     { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
                     { halaman: 'rekapPenjualan', icon: 'fa-chart-line', label: 'Rekap Penjualan' },
                     { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
-                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' }
+                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
+                    { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
+                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                 );
             }
             if (paket.includes('paket2')) {
@@ -711,12 +713,14 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
                 { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
             ];
             var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
-            if (paket.includes('paket1')) {
+                        if (paket.includes('paket1')) {
                 base.push(
                     { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
                     { halaman: 'rekapPenjualan', icon: 'fa-chart-line', label: 'Rekap Penjualan' },
                     { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
-                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' }
+                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
+                    { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
+                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                 );
             }
             if (paket.includes('paket2')) {
