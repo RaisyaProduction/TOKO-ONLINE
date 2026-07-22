@@ -601,8 +601,13 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
         var menuRole = {
             // === SUPERADMIN ===
-            'superadmin': [
-    { judul: 'Menu Utama', items: [ ... ] },
+            // === SUPERADMIN ===
+'superadmin': [
+    { judul: 'Menu Utama', items: [ 
+        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }
+    ] },
     { judul: 'Menu Admin', items: [ 
         { halaman: 'daftarAkun', icon: 'fa-user-plus', label: 'Daftar Akun Baru' },
         { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' },
