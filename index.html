@@ -3031,11 +3031,19 @@ function toggleForm(tipe) {
 }
 // ===== AKHIR BLOK 8.2.1 =====
 
-    // ===== BLOK 8.2.2 - LOGIN SUBMIT =====
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+// ===== BLOK 8.2.2 - LOGIN SUBMIT (GABUNGAN USER + KASIR) =====
+var loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         var username = document.getElementById('loginUsername').value.trim();
         var password = document.getElementById('loginPassword').value.trim();
+        var errorBox = document.getElementById('authenticationError');
+        var errorText = document.getElementById('authenticationErrorText');
+        
+        if (errorBox) errorBox.style.display = 'none';
+
+        // --- 1. Coba login sebagai user biasa ---
         var dataAkun = getDataAkun();
         var user = null;
         for (var i = 0; i < dataAkun.length; i++) {
@@ -3050,23 +3058,46 @@ function toggleForm(tipe) {
             var cocok = await verifikasiPassword(password, user.password);
             if (cocok) {
                 if (user.status !== 'AKTIF' && user.role !== 'superadmin') {
-                    document.getElementById('authenticationError').style.display = 'block';
-                    document.getElementById('authenticationErrorText').textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
+                    if (errorBox) {
+                        errorBox.style.display = 'block';
+                        errorText.textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
+                    }
                     return;
                 }
                 localStorage.setItem('2r_user', JSON.stringify(user));
                 localStorage.setItem('2r_user_role', user.role);
                 tampilkanDashboard(user);
-            } else {
-                document.getElementById('authenticationError').style.display = 'block';
-                document.getElementById('authenticationErrorText').textContent = 'Username atau password salah!';
+                return;
             }
-        } else {
-            document.getElementById('authenticationError').style.display = 'block';
-            document.getElementById('authenticationErrorText').textContent = 'Username atau password salah!';
+        }
+
+        // --- 2. Coba login sebagai kasir ---
+        var kasir = await validasiLoginKasir(username, password);
+        if (kasir) {
+            if (kasir.status === 'Aktif') {
+                localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
+                localStorage.setItem('2r_user_original_role', 'toko');
+                localStorage.setItem('2r_user_role', 'kasir');
+                tampilkanToast('Login sebagai kasir berhasil!', 'success');
+                tampilkanDashboardKasir(kasir);
+                return;
+            } else {
+                if (errorBox) {
+                    errorBox.style.display = 'block';
+                    errorText.textContent = 'Kasir tidak aktif!';
+                }
+                return;
+            }
+        }
+
+        // --- 3. Jika semua gagal ---
+        if (errorBox) {
+            errorBox.style.display = 'block';
+            errorText.textContent = 'Username atau password salah!';
         }
     });
-    // ===== AKHIR BLOK 8.2.2 =====
+}
+// ===== AKHIR BLOK 8.2.2 =====
 
     // ===== BLOK 8.2.3 - REGISTER SUBMIT =====
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
@@ -8550,16 +8581,19 @@ function downloadIndexHTML() {
 // AKHIR BLOK 8.34
 // ============================================================
 // ============================================================
-// BLOK 8.37 - DATA KASIR
+// BLOK 8.37 - DATA KASIR (LENGKAP)
 // ============================================================
 
+// --- Ambil dan simpan data kasir ---
 function getDataKasir() {
     return JSON.parse(localStorage.getItem('2r_kasir') || '[]');
 }
+
 function simpanDataKasir(data) {
     localStorage.setItem('2r_kasir', JSON.stringify(data));
 }
 
+// --- Generate ID kasir otomatis ---
 function generateIdKasir() {
     var data = getDataKasir();
     var max = 0;
@@ -8570,8 +8604,10 @@ function generateIdKasir() {
     return 'KSR-' + String(max + 1).padStart(3, '0');
 }
 
+// --- Tambah kasir baru ---
 async function tambahKasir(nama, username, password) {
     var data = getDataKasir();
+    // Cek username sudah ada
     for (var i = 0; i < data.length; i++) {
         if (data[i].username === username) {
             tampilkanToast('Username kasir sudah ada!', 'error');
@@ -8591,12 +8627,14 @@ async function tambahKasir(nama, username, password) {
     return true;
 }
 
+// --- Hapus kasir ---
 function hapusKasir(id) {
     var data = getDataKasir();
     var baru = data.filter(function(k) { return k.id !== id; });
     simpanDataKasir(baru);
 }
 
+// --- Validasi login kasir (digunakan di BLOK 8.2.2) ---
 async function validasiLoginKasir(username, password) {
     var data = getDataKasir();
     for (var i = 0; i < data.length; i++) {
@@ -8608,7 +8646,9 @@ async function validasiLoginKasir(username, password) {
     return null;
 }
 
-// ===== AKHIR BLOK 8.37 =====
+// ============================================================
+// AKHIR BLOK 8.37
+// ============================================================
 
 // ============================================================
 // BLOK 8.38 - KELOLA KASIR (UI)
