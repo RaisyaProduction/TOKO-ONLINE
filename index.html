@@ -5850,7 +5850,15 @@ function inisialisasiDataDummyTransaksi(targetId) {
 // ===== AKHIR BLOK 8.16.5 =====
     // ===== BLOK 8.16.6 - DISKON & SCAN BARCODE (FINAL - FREE vs PRO) =====
 function renderTransaksiPenjualan() {
-    inisialisasiDataDummyTransaksi();
+    function renderTransaksiPenjualan() {
+    // Hapus baris ini:
+    // inisialisasiDataDummyTransaksi();
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+    // ... sisa kode ...
+}
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
