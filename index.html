@@ -1120,6 +1120,7 @@ function navigasiKeHalaman(namaHalaman) {
         html += '<div class="card"><div class="card-header"><span><i class="fas fa-shield-alt" style="color:#FF6B00;"></i> Keamanan Akun</span><button class="button button-primary button-small" onclick="ubahPasswordSA()"><i class="fas fa-key"></i> Simpan</button></div>';
         html += '<div class="grid-2">';
         html += '<div><label class="form-label">Username</label><input type="text" id="saUsername" class="form-input" value="' + escapeHtml(user.username || '') + '"></div>';
+        html += '<div><label class="form-label">Password Lama</label><input type="password" id="saPasswordLama" class="form-input" placeholder="Wajib diisi untuk verifikasi"></div>'; // <-- TAMBAHKAN
         html += '<div><label class="form-label">Password Baru</label><input type="password" id="saPassword" class="form-input" placeholder="Kosongkan jika tidak diubah"></div>';
         html += '<div><label class="form-label">Konfirmasi Password</label><input type="password" id="saPasswordKonfirmasi" class="form-input" placeholder="Konfirmasi password"></div>';
         html += '</div></div>';
@@ -1176,32 +1177,49 @@ function navigasiKeHalaman(namaHalaman) {
     }
     // ===== AKHIR BLOK 7.2.2 =====
 
-    // ===== BLOK 7.2.3 - UBAH PASSWORD SA =====
-    async function ubahPasswordSA() {
-        var usernameBaru = document.getElementById('saUsername').value.trim();
-        var passwordBaru = document.getElementById('saPassword').value.trim();
-        var konfirmasi = document.getElementById('saPasswordKonfirmasi').value.trim();
-        if (!usernameBaru) { tampilkanToast('Username tidak boleh kosong!', 'warning'); return; }
-        if (passwordBaru && passwordBaru !== konfirmasi) { tampilkanToast('Password tidak cocok!', 'error'); return; }
-        if (passwordBaru && passwordBaru.length < 6) { tampilkanToast('Password minimal 6 karakter!', 'warning'); return; }
-        var user = JSON.parse(localStorage.getItem('2r_user'));
-        var dataAkun = getDataAkun();
-        user.username = usernameBaru;
-        if (passwordBaru) user.password = await hashPassword(passwordBaru);
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].id === user.id) {
-                dataAkun[i].username = usernameBaru;
-                if (passwordBaru) dataAkun[i].password = user.password;
-                break;
-            }
-        }
-        localStorage.setItem('2r_user', JSON.stringify(user));
-        simpanDataAkun(dataAkun);
-        document.getElementById('saPassword').value = '';
-        document.getElementById('saPasswordKonfirmasi').value = '';
-        tampilkanToast('Keamanan akun diperbarui!', 'success');
+    // ===== BLOK 7.2.3 - UBAH PASSWORD SA (DENGAN VERIFIKASI PASSWORD LAMA) =====
+async function ubahPasswordSA() {
+    var usernameBaru = document.getElementById('saUsername').value.trim();
+    var passwordLama = document.getElementById('saPasswordLama').value.trim();
+    var passwordBaru = document.getElementById('saPassword').value.trim();
+    var konfirmasi = document.getElementById('saPasswordKonfirmasi').value.trim();
+    
+    if (!usernameBaru) { tampilkanToast('Username tidak boleh kosong!', 'warning'); return; }
+    
+    var user = JSON.parse(localStorage.getItem('2r_user'));
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
     }
-    // ===== AKHIR BLOK 7.2.3 =====
+    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
+    
+    var cocok = await verifikasiPassword(passwordLama, userData.password);
+    if (!cocok) {
+        tampilkanToast('Password lama salah!', 'error');
+        return;
+    }
+    
+    if (passwordBaru && passwordBaru !== konfirmasi) { tampilkanToast('Password baru tidak cocok!', 'error'); return; }
+    if (passwordBaru && passwordBaru.length < 6) { tampilkanToast('Password baru minimal 6 karakter!', 'warning'); return; }
+    
+    user.username = usernameBaru;
+    if (passwordBaru) user.password = await hashPassword(passwordBaru);
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].username = usernameBaru;
+            if (passwordBaru) dataAkun[i].password = user.password;
+            break;
+        }
+    }
+    localStorage.setItem('2r_user', JSON.stringify(user));
+    simpanDataAkun(dataAkun);
+    document.getElementById('saPasswordLama').value = '';
+    document.getElementById('saPassword').value = '';
+    document.getElementById('saPasswordKonfirmasi').value = '';
+    tampilkanToast('Keamanan akun diperbarui!', 'success');
+}
+// ===== AKHIR BLOK 7.2.3 =====
 
     // ===== BLOK 7.2.4 - SIMPAN DATA PRIBADI SA =====
     function simpanDataPribadiSA() {
