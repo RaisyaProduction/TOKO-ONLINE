@@ -941,6 +941,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
     else if (namaHalaman === 'dataPenagihan') renderDataPenagihan();
+    else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -2687,16 +2688,29 @@ function renderTransferLainnya() {
 <!-- ===== AKHIR BLOK 8.1 ===== -->
 <!-- ===== BLOK 8.2 - JS_EVENT_AUTH, LOGOUT, SIDEBAR ===== -->
 <script>
-    // ===== BLOK 8.2.1 - TOGGLE FORM =====
-    function toggleForm(tipe) {
-        var error = document.getElementById('authenticationError');
-        if (error) error.style.display = 'none';
-        var login = document.getElementById('loginForm');
-        var register = document.getElementById('registerForm');
-        if (tipe === 'register') { login.classList.add('hidden-form'); register.classList.remove('hidden-form'); }
-        else { register.classList.add('hidden-form'); login.classList.remove('hidden-form'); }
+    // ===== BLOK 8.2.1 - TOGGLE FORM (VERSI LENGKAP) =====
+function toggleForm(tipe) {
+    var error = document.getElementById('authenticationError');
+    if (error) error.style.display = 'none';
+    var login = document.getElementById('loginForm');
+    var register = document.getElementById('registerForm');
+    var pengajuan = document.getElementById('pengajuanBukaAkunForm');
+    
+    if (tipe === 'register') {
+        login.classList.add('hidden-form');
+        register.classList.remove('hidden-form');
+        if (pengajuan) pengajuan.classList.add('hidden-form');
+    } else if (tipe === 'pengajuanBukaAkun') {
+        login.classList.add('hidden-form');
+        register.classList.add('hidden-form');
+        if (pengajuan) pengajuan.classList.remove('hidden-form');
+    } else { // login
+        register.classList.add('hidden-form');
+        if (pengajuan) pengajuan.classList.add('hidden-form');
+        login.classList.remove('hidden-form');
     }
-    // ===== AKHIR BLOK 8.2.1 =====
+}
+// ===== AKHIR BLOK 8.2.1 =====
 
     // ===== BLOK 8.2.2 - LOGIN SUBMIT =====
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
