@@ -786,6 +786,7 @@ function buatSidebarHTML(role) {
                 { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
                 { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                 { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
+                { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' }
                 { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                 { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
             ] }
@@ -1003,6 +1004,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
     else if (namaHalaman === 'dataPenagihan') renderDataPenagihan();
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
+    else if (namaHalaman === 'notepad') renderNotepad();
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -7770,6 +7772,353 @@ function tolakPengajuanBukaAkun(idPengajuan) {
     renderPengajuanBukaAkun();
 }
 // ===== AKHIR BLOK 8.26 =====
+// ============================================================
+// BLOK 8.34 - NOTEPAD+ (SuperAdmin)
+// ============================================================
+
+// ---------- DATA ----------
+function getNotepadBlok() {
+    return JSON.parse(localStorage.getItem('2r_notepad_blok') || '[]');
+}
+function simpanNotepadBlok(data) {
+    localStorage.setItem('2r_notepad_blok', JSON.stringify(data));
+}
+
+// ---------- PENOMORAN OTOMATIS ----------
+function generateNomorBlok(daftar, posisiSetelah) {
+    // posisiSetelah: string nomor (misal "1.1") atau null (tambah di akhir)
+    if (!posisiSetelah) {
+        // tambah di akhir: cari nomor terakhir, tambah 1
+        var last = daftar.length > 0 ? daftar[daftar.length-1].urutan.split('.') : ['0'];
+        var lastNum = parseInt(last[last.length-1]) || 0;
+        return last[0] + '.' + (lastNum + 1);
+    }
+    
+    // Cari indeks posisiSetelah
+    var idx = -1;
+    for (var i = 0; i < daftar.length; i++) {
+        if (daftar[i].urutan === posisiSetelah) { idx = i; break; }
+    }
+    if (idx === -1) return generateNomorBlok(daftar, null); // fallback
+    
+    // Ambil nomor posisi
+    var parts = posisiSetelah.split('.');
+    var level = parts.length;
+    
+    // Buat nomor baru: tambah level (misal 1.1 -> 1.1.1)
+    var baru = posisiSetelah + '.1';
+    
+    // Renumber semua blok setelah idx
+    var hasil = [];
+    for (var i = 0; i < daftar.length; i++) {
+        hasil.push(daftar[i]);
+    }
+    
+    // Sisipkan blok baru (akan ditambahkan nanti)
+    // Kita return nomor barunya, nanti di fungsi tambah yang handle
+    return baru;
+}
+
+function renumberSemua(daftar) {
+    // Sort berdasarkan urutan (string)
+    daftar.sort(function(a,b) {
+        var aa = a.urutan.split('.').map(Number);
+        var bb = b.urutan.split('.').map(Number);
+        for (var i=0; i<Math.max(aa.length,bb.length); i++) {
+            var va = aa[i] || 0;
+            var vb = bb[i] || 0;
+            if (va !== vb) return va - vb;
+        }
+        return 0;
+    });
+    return daftar;
+}
+
+// ---------- CRUD ----------
+function tambahBlok(nama, kode, posisiSetelah) {
+    var daftar = getNotepadBlok();
+    var urutanBaru = generateNomorBlok(daftar, posisiSetelah);
+    var blok = {
+        id: 'BLOK-' + Date.now(),
+        nama: nama,
+        kode: kode,
+        urutan: urutanBaru,
+        tanggal: new Date().toISOString()
+    };
+    // Sisipkan di posisi yang benar
+    var idx = -1;
+    for (var i = 0; i < daftar.length; i++) {
+        if (daftar[i].urutan === posisiSetelah) { idx = i+1; break; }
+    }
+    if (idx === -1) daftar.push(blok);
+    else daftar.splice(idx, 0, blok);
+    
+    // Renumber ulang semua
+    daftar = renumberSemua(daftar);
+    simpanNotepadBlok(daftar);
+    return daftar;
+}
+
+function editBlok(id, namaBaru, kodeBaru) {
+    var daftar = getNotepadBlok();
+    for (var i = 0; i < daftar.length; i++) {
+        if (daftar[i].id === id) {
+            daftar[i].nama = namaBaru;
+            daftar[i].kode = kodeBaru;
+            break;
+        }
+    }
+    simpanNotepadBlok(daftar);
+    return daftar;
+}
+
+function hapusBlok(id) {
+    var daftar = getNotepadBlok();
+    var baru = daftar.filter(function(b) { return b.id !== id; });
+    simpanNotepadBlok(baru);
+    return baru;
+}
+
+function gabungkanBlok() {
+    var daftar = getNotepadBlok();
+    daftar = renumberSemua(daftar);
+    var hasil = '';
+    for (var i = 0; i < daftar.length; i++) {
+        hasil += daftar[i].kode;
+        if (i < daftar.length - 1) hasil += '\n\n';
+    }
+    return hasil;
+}
+
+// ---------- RENDER HALAMAN ----------
+function renderNotepad() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var daftar = getNotepadBlok();
+    daftar = renumberSemua(daftar);
+    
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-sticky-note"></i> Notepad+</h2>
+        <p>Simpan dan susun blok kode HTML untuk aplikasi.</p>
+    </div>
+    <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+        <button class="button button-primary" onclick="bukaFormTambahBlok()"><i class="fas fa-plus"></i> Tambah Blok Baru</button>
+        <button class="button button-success" onclick="previewGabungan()"><i class="fas fa-eye"></i> Tampilkan Gabungan</button>
+        <button class="button button-primary" onclick="downloadIndexHTML()"><i class="fas fa-download"></i> Download index.html</button>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr; gap:15px;">
+    `;
+    
+    if (daftar.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-alt"></i><h3>Belum ada blok</h3></div></div>';
+    } else {
+        for (var i = 0; i < daftar.length; i++) {
+            var b = daftar[i];
+            html += `
+            <div class="card" style="padding:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="font-size:16px;">${escapeHtml(b.urutan)}</strong> — <span style="font-size:15px; font-weight:600;">${escapeHtml(b.nama)}</span>
+                        <span style="font-size:12px; color:#888; margin-left:10px;">${new Date(b.tanggal).toLocaleDateString('id-ID')}</span>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="button button-primary button-extra-small" onclick="bukaEditBlok('${b.id}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="button button-info button-extra-small" style="background:#17a2b8;color:white;" onclick="previewBlok('${b.id}')"><i class="fas fa-eye"></i> Preview</button>
+                        <button class="button button-danger button-extra-small" onclick="hapusBlokConfirm('${b.id}')"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>
+                <div style="margin-top:10px; background:#f8f9fa; padding:10px; border-radius:6px; font-family:monospace; font-size:12px; max-height:100px; overflow:hidden; white-space:pre-wrap; word-break:break-all;">
+                    ${escapeHtml(b.kode.substring(0, 200))}${b.kode.length > 200 ? '...' : ''}
+                </div>
+            </div>
+            `;
+        }
+    }
+    html += '</div>';
+    
+    // Modal Form Tambah/Edit (tersembunyi)
+    html += `
+    <div id="modalNotepad" class="modal-overlay" style="display:none;">
+        <div class="modal" style="max-width:800px; width:95%; max-height:90vh; overflow-y:auto;">
+            <div class="modal-header">
+                <h3 id="modalNotepadTitle">Tambah Blok Baru</h3>
+                <button class="modal-close" onclick="tutupModalNotepad()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nama Blok</label>
+                    <input type="text" id="notepadNama" class="form-input" placeholder="Contoh: Header">
+                </div>
+                <div class="form-group">
+                    <label>Posisi Setelah (Kosongkan untuk akhir)</label>
+                    <select id="notepadPosisi" class="form-input">
+                        <option value="">-- Akhir --</option>
+    `;
+    for (var i = 0; i < daftar.length; i++) {
+        var b = daftar[i];
+        html += `<option value="${b.urutan}">${b.urutan} — ${escapeHtml(b.nama)}</option>`;
+    }
+    html += `
+                    </select>
+                    <small style="color:#888;">Blok baru akan ditempatkan setelah posisi yang dipilih.</small>
+                </div>
+                <div class="form-group">
+                    <label>Kode HTML</label>
+                    <textarea id="notepadKode" class="form-input" rows="10" style="font-family:monospace; font-size:13px;"></textarea>
+                </div>
+                <input type="hidden" id="notepadEditId" value="">
+            </div>
+            <div class="modal-footer">
+                <button class="button button-secondary" onclick="tutupModalNotepad()">Batal</button>
+                <button class="button button-primary" onclick="simpanBlokNotepad()"><i class="fas fa-save"></i> Simpan</button>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    // Modal Preview Halaman Penuh
+    html += `
+    <div id="modalPreviewNotepad" class="modal-overlay" style="display:none;">
+        <div class="modal" style="max-width:95%; width:95%; max-height:95vh; background:transparent; box-shadow:none;">
+            <div style="background:white; border-radius:12px; padding:15px; max-height:95vh; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
+                    <h3 id="previewNotepadTitle">Preview</h3>
+                    <button class="button button-danger button-small" onclick="tutupPreviewNotepad()"><i class="fas fa-times"></i> Tutup</button>
+                </div>
+                <div id="previewNotepadContent" style="background:white; border:1px solid #eee; padding:10px; min-height:200px; border-radius:6px; overflow:auto;"></div>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    // Modal Preview Gabungan
+    html += `
+    <div id="modalGabungan" class="modal-overlay" style="display:none;">
+        <div class="modal" style="max-width:95%; width:95%; max-height:95vh; background:transparent; box-shadow:none;">
+            <div style="background:white; border-radius:12px; padding:15px; max-height:95vh; overflow-y:auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
+                    <h3>Hasil Gabungan Semua Blok</h3>
+                    <button class="button button-danger button-small" onclick="tutupModalGabungan()"><i class="fas fa-times"></i> Tutup</button>
+                </div>
+                <div id="previewGabunganContent" style="background:white; border:1px solid #eee; padding:10px; min-height:300px; border-radius:6px; overflow:auto;"></div>
+                <div style="margin-top:10px; text-align:right;">
+                    <button class="button button-primary" onclick="downloadIndexHTML()"><i class="fas fa-download"></i> Download index.html</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    areaKonten.innerHTML = html;
+}
+
+// ---------- FUNGSI BANTUAN ----------
+function bukaFormTambahBlok() {
+    document.getElementById('modalNotepadTitle').textContent = 'Tambah Blok Baru';
+    document.getElementById('notepadEditId').value = '';
+    document.getElementById('notepadNama').value = '';
+    document.getElementById('notepadKode').value = '';
+    document.getElementById('notepadPosisi').value = '';
+    document.getElementById('modalNotepad').style.display = 'flex';
+}
+
+function bukaEditBlok(id) {
+    var daftar = getNotepadBlok();
+    var blok = null;
+    for (var i = 0; i < daftar.length; i++) {
+        if (daftar[i].id === id) { blok = daftar[i]; break; }
+    }
+    if (!blok) { tampilkanToast('Blok tidak ditemukan!', 'error'); return; }
+    document.getElementById('modalNotepadTitle').textContent = 'Edit Blok';
+    document.getElementById('notepadEditId').value = id;
+    document.getElementById('notepadNama').value = blok.nama;
+    document.getElementById('notepadKode').value = blok.kode;
+    // Posisi tidak bisa diubah saat edit (biarkan saja)
+    document.getElementById('modalNotepad').style.display = 'flex';
+}
+
+function tutupModalNotepad() {
+    document.getElementById('modalNotepad').style.display = 'none';
+}
+
+function simpanBlokNotepad() {
+    var editId = document.getElementById('notepadEditId').value;
+    var nama = document.getElementById('notepadNama').value.trim();
+    var kode = document.getElementById('notepadKode').value.trim();
+    var posisi = document.getElementById('notepadPosisi').value || null;
+    
+    if (!nama || !kode) { tampilkanToast('Nama dan kode wajib diisi!', 'warning'); return; }
+    
+    if (editId) {
+        // Edit
+        editBlok(editId, nama, kode);
+        tampilkanToast('Blok berhasil diperbarui!', 'success');
+    } else {
+        // Tambah
+        tambahBlok(nama, kode, posisi);
+        tampilkanToast('Blok berhasil ditambahkan!', 'success');
+    }
+    tutupModalNotepad();
+    renderNotepad();
+}
+
+function hapusBlokConfirm(id) {
+    if (!confirm('Yakin ingin menghapus blok ini?')) return;
+    hapusBlok(id);
+    renderNotepad();
+    tampilkanToast('Blok dihapus!', 'success');
+}
+
+// ---------- PREVIEW ----------
+function previewBlok(id) {
+    var daftar = getNotepadBlok();
+    var blok = null;
+    for (var i = 0; i < daftar.length; i++) {
+        if (daftar[i].id === id) { blok = daftar[i]; break; }
+    }
+    if (!blok) { tampilkanToast('Blok tidak ditemukan!', 'error'); return; }
+    document.getElementById('previewNotepadTitle').textContent = 'Preview: ' + blok.nama;
+    document.getElementById('previewNotepadContent').innerHTML = blok.kode;
+    document.getElementById('modalPreviewNotepad').style.display = 'flex';
+}
+
+function tutupPreviewNotepad() {
+    document.getElementById('modalPreviewNotepad').style.display = 'none';
+}
+
+function previewGabungan() {
+    var hasil = gabungkanBlok();
+    document.getElementById('previewGabunganContent').innerHTML = hasil;
+    document.getElementById('modalGabungan').style.display = 'flex';
+}
+
+function tutupModalGabungan() {
+    document.getElementById('modalGabungan').style.display = 'none';
+}
+
+// ---------- DOWNLOAD INDEX.HTML ----------
+function downloadIndexHTML() {
+    var hasil = gabungkanBlok();
+    var blob = new Blob([hasil], { type: 'text/html;charset=utf-8' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'index.html';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    tampilkanToast('Download index.html berhasil!', 'success');
+}
+
+// ---------- NAVIGASI ----------
+// Tambahkan di navigasiKeHalaman: else if (namaHalaman === 'notepad') renderNotepad();
+// Tambahkan di sidebar: { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' }
+// ===== AKHIR BLOK 8.34 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
