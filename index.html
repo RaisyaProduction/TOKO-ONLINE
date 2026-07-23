@@ -631,7 +631,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
             ],
             // === TOKO (FREE DEFAULT) ===
 'toko': [
-    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
+    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
     { 
         judul: 'Menu Toko', 
         items: (function() {
@@ -668,7 +668,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 // === PEDAGANG PASAR (DISAMAKAN DENGAN TOKO FREE) ===
 'pedagang': [
-    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
+    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
     { 
         judul: 'Menu Pedagang', 
         items: (function() {
@@ -702,7 +702,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 // === COD SELLER (DISAMAKAN DENGAN TOKO FREE) ===
 'codseller': [
-    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
+    { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },{ halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
     { 
         judul: 'Menu COD Seller', 
         items: (function() {
@@ -7140,6 +7140,150 @@ function tampilkanDashboard(user) {
     renderDashboard();
 }
 // ===== AKHIR BLOK 8.23 =====
+// ===== BLOK 8.24 - MENU STATUS AKUN & UPGRADE PRO =====
+
+// --- 1. Render Halaman Status Akun ---
+function renderStatusAkun() {
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
+    tagihanSaya.sort(function(a,b) { return new Date(b.id) - new Date(a.id); });
+
+    var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
+    if (userData && userData.status === 'SUSPEN') {
+        html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-header">Info Akun</div>';
+    html += '<div class="grid-2"><div><strong>ID Akun:</strong> ' + user.id + '</div>';
+    html += '<div><strong>Role:</strong> ' + user.role + '</div>';
+    html += '<div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div>';
+    html += '<div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div></div>';
+    
+    // --- TOMBOL UPGRADE KE PRO ---
+    if (!userData.isPro) {
+        html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
+        html += '  <button class="button button-primary" onclick="upgradeKePro()"><i class="fas fa-crown"></i> Upgrade ke Akun Pro (Rp 50.000)</button>';
+        html += '  <p style="font-size:12px; color:#888; margin-top:5px;">Keuntungan: Batas upload 50 produk, chat prioritas, dan layanan ekstra.</p>';
+        html += '</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
+    if (tagihanSaya.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
+        for (var i = 0; i < tagihanSaya.length; i++) {
+            var t = tagihanSaya[i];
+            var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+            html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    // --- TOMBOL BAYAR (HANYA UNTUK STATUS SUSPEN) ---
+    if (userData && userData.status === 'SUSPEN') {
+        html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
+        html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
+        var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
+        html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
+        html += '<strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
+        html += '<strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
+        html += '<strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
+        html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
+        html += '</div>';
+    }
+
+    areaKonten.innerHTML = html;
+}
+
+// --- 2. Fungsi Upgrade ke PRO ---
+function upgradeKePro() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
+    if (userData.isPro) { tampilkanToast('Anda sudah menjadi Akun Pro!', 'info'); return; }
+
+    if (!confirm('Anda akan melakukan upgrade ke Akun Pro dengan biaya Rp 50.000. Lanjutkan?')) return;
+
+    userData.isPro = true;
+    userData.status = 'AKTIF';
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].isPro = true;
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+    userLogin.isPro = true;
+    userLogin.status = 'AKTIF';
+    localStorage.setItem('2r_user', JSON.stringify(userLogin));
+
+    var sekarang = new Date();
+    var bulanIni = sekarang.getMonth() + 1;
+    var tahunIni = sekarang.getFullYear();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var sudahAda = false;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
+            sudahAda = true;
+            break;
+        }
+    }
+    if (!sudahAda) {
+        var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
+        dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: hargaPro, status: 'BELUM_BAYAR' });
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+    }
+
+    tampilkanToast('Selamat! Anda kini menjadi Akun PRO. Tagihan bulan ini akan ditagihkan.', 'success');
+    renderStatusAkun();
+}
+
+// --- 3. Fungsi Konfirmasi Pembayaran ---
+function konfirmasiPembayaran() {
+    if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
+            dataTagihan[i].status = 'LUNAS';
+            break;
+        }
+    }
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+    simpanDataAkun(dataAkun);
+    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+    userLogin.status = 'AKTIF';
+    localStorage.setItem('2r_user', JSON.stringify(userLogin));
+    tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
+    location.reload();
+}
+// ===== AKHIR BLOK 8.24 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
