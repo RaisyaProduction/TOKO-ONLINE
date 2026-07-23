@@ -3136,15 +3136,21 @@ document.getElementById('tombolLupaPassword').addEventListener('click', async fu
     tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
 });
 
-    // ===== BLOK 8.2.5 - LOGOUT =====
-    document.getElementById('buttonLogout').addEventListener('click', function() {
+    // ===== BLOK 8.2.5 - LOGOUT (AMAN) =====
+var logoutBtn = document.getElementById('buttonLogout');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', function() {
         if (confirm('Keluar dari aplikasi?')) {
             localStorage.removeItem('2r_user');
             localStorage.removeItem('2r_user_role');
+            // Jika sedang mode kasir, hapus juga
+            localStorage.removeItem('2r_mode_kasir');
+            localStorage.removeItem('2r_user_original_role');
             location.reload();
         }
     });
-    // ===== AKHIR BLOK 8.2.5 =====
+}
+// ===== AKHIR BLOK 8.2.5 =====
 
             // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE (FIX TOMBOL HP) =====
     var tombolMenu = document.getElementById('menuToggle');
