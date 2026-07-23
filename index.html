@@ -187,13 +187,19 @@
 <!-- ===== BLOK 2.2 - HTML_DASHBOARD_UTAMA ===== -->
 <div id="pageDashboard" class="page-dashboard">
     
-    <!-- ===== BLOK 2.2.1 - NAVBAR ===== -->
+<!-- ===== BLOK 2.2.1 - NAVBAR (LENGKAP DENGAN JAM) ===== -->
 <nav class="navbar">
     <div class="navbar-brand">
         <button id="menuToggle"><i class="fas fa-bars"></i></button>
         <i class="fas fa-store-alt"></i> Toko Online 2R
     </div>
     <div class="navbar-user">
+        <!-- Jam & Tanggal -->
+        <div class="navbar-time" style="display:flex; flex-direction:column; align-items:flex-end; margin-right:15px; font-size:12px; color:#555;">
+            <span id="displayJam" style="font-weight:600; font-size:14px;">00:00:00</span>
+            <span id="displayTanggal" style="font-size:11px;">Senin, 01 Januari 2026</span>
+        </div>
+
         <!-- Avatar Foto Profil -->
         <img id="userAvatar" src="" style="display:none; width:32px; height:32px; border-radius:50%; object-fit:cover; margin-right:8px; vertical-align:middle; border:2px solid var(--primary);">
         <span id="userAvatarPlaceholder" style="display:inline-block; width:32px; height:32px; border-radius:50%; background:#eee; text-align:center; line-height:32px; color:#aaa; margin-right:8px; vertical-align:middle;">
@@ -11406,27 +11412,33 @@ function renderLihatTokoTerdekat() {
 // AKHIR BLOK 8.59
 // ============================================================
 // ============================================================
-// BLOK 8.60 - JAM & TANGGAL REAL-TIME (SEMUA ROLE)
+// BLOK 8.60 - JAM & TANGGAL REAL-TIME (AMAN)
 // ============================================================
 
 function updateJamTanggal() {
+    var jamEl = document.getElementById('displayJam');
+    var tanggalEl = document.getElementById('displayTanggal');
+
+    // Jika elemen tidak ditemukan, hentikan fungsi (tidak error)
+    if (!jamEl || !tanggalEl) return;
+
     var now = new Date();
     var jam = now.getHours().toString().padStart(2, '0');
     var menit = now.getMinutes().toString().padStart(2, '0');
     var detik = now.getSeconds().toString().padStart(2, '0');
-    document.getElementById('displayJam').textContent = jam + ':' + menit + ':' + detik;
+    jamEl.textContent = jam + ':' + menit + ':' + detik;
 
     var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][now.getDay()];
     var tanggal = now.getDate().toString().padStart(2, '0');
     var bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][now.getMonth()];
     var tahun = now.getFullYear();
-    document.getElementById('displayTanggal').textContent = hari + ', ' + tanggal + ' ' + bulan + ' ' + tahun;
+    tanggalEl.textContent = hari + ', ' + tanggal + ' ' + bulan + ' ' + tahun;
 }
 
 // Jalankan setiap 1 detik
 setInterval(updateJamTanggal, 1000);
 
-// Panggil sekali saat halaman dimuat (tunggu DOM siap)
+// Panggil sekali saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
     updateJamTanggal();
 });
