@@ -744,7 +744,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 <!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
 <script>            
 // ============================================================
-// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP - FINAL)
+// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP)
 // ============================================================
 function buatSidebarHTML(role) {
     // --- Hitung notifikasi belum dibaca ---
@@ -795,8 +795,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
-                    { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' },
-                    { halaman: 'laporanTagihanOjek', icon: 'fa-file-invoice-dollar', label: 'Tagihan Ojek' }
+                    { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' }
                 ]
             }
         ],
@@ -837,7 +836,7 @@ function buatSidebarHTML(role) {
             }
         ],
 
-        // ===== TOKO =====
+                // ===== TOKO =====
         'toko': [
             {
                 judul: 'Menu Utama',
@@ -865,9 +864,7 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
-                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
-                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
                     ];
                     // --- Paket Transaksi 1 ---
                     if (paket.includes('paket1')) {
@@ -880,7 +877,8 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
+                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                             );
                         }
                     }
@@ -919,9 +917,7 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
-                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
-                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -933,7 +929,8 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
+                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                             );
                         }
                     }
@@ -972,9 +969,7 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
-                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
-                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -986,7 +981,8 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
+                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                             );
                         }
                     }
@@ -997,8 +993,7 @@ function buatSidebarHTML(role) {
             }
         ],
 
-        // ===== OJEK =====
-        'ojek': [
+                'ojek': [
             {
                 judul: 'Menu Utama',
                 items: [
@@ -1020,6 +1015,15 @@ function buatSidebarHTML(role) {
                     { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' },
                     { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order Ojek' },
                     { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                ]
+            }
+        ],
+            {
+                judul: 'Menu Ojek',
+                items: [
+                    { halaman: 'orderMasuk', icon: 'fa-motorcycle', label: 'Order Masuk' },
+                    { halaman: 'riwayatOrder', icon: 'fa-history', label: 'Riwayat Order' },
+                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' }
                 ]
             }
         ],
@@ -1144,9 +1148,34 @@ function buatSidebarHTML(role) {
 // ============================================================
 // AKHIR BLOK 6.1.1
 // ============================================================
-// ============================================================
-// BLOK 6.2.1 - NAVIGASI KE HALAMAN (LENGKAP - FINAL)
-// ============================================================
+    // ===== BLOK 6.1.2 - SETUP NAVIGASI SIDEBAR =====
+    function setupNavigasiSidebar() {
+    var items = document.querySelectorAll('.sidebar-menu-item');
+    items.forEach(function(item) {
+        item.onclick = function() {
+            var halaman = this.getAttribute('data-page');
+            if (!halaman) return;
+            items.forEach(function(m) { m.classList.remove('active'); });
+            this.classList.add('active');
+            navigasiKeHalaman(halaman);
+            
+            // Tutup sidebar otomatis di HP
+            if (window.innerWidth <= 767) {
+                var sidebar = document.querySelector('.sidebar');
+                var overlay = document.getElementById('sidebarOverlay');
+                if (sidebar) sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+            }
+        };
+    });
+}
+    // ===== AKHIR BLOK 6.1.2 =====
+</script>
+<!-- ===== AKHIR BLOK 6.1 ===== -->
+
+<!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
+<script>
+    // ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
@@ -1190,27 +1219,32 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'resetCleanup') renderResetCleanup();
     else if (namaHalaman === 'notepad') renderNotepad();
+    else if (namaHalaman === 'statusAkun') renderStatusAkunGabungan();
+    else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
+    else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
+    else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
+    else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
+    else if (namaHalaman === 'ajukanPengaktifan') renderAjukanPengaktifan();
+    
+    
+    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
     else if (namaHalaman === 'logStok') renderLogStok();
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
-    else if (namaHalaman === 'statusAkun') renderStatusAkunGabungan(); // Ganti ke gabungan
+    else if (namaHalaman === 'statusAkun') renderStatusAkun();
     else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
     else if (namaHalaman === 'loginKasir') renderLoginKasir();
     else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
     else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
     else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
-    else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
-    else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
-    else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
-    else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
+    // ------------------------------------------------
+    
     else renderPlaceholder(namaHalaman);
 }
-// ============================================================
-// AKHIR BLOK 6.2.1
-// ============================================================
+// ===== AKHIR BLOK 6.2.1 =====
 
     // ===== BLOK 6.2.2 - RENDER PLACEHOLDER =====
     function renderPlaceholder(judul) {
@@ -3899,9 +3933,7 @@ function renderPapanInformasi() {
 
 <!-- ===== BLOK 8.6 - JS_INIT_UTAMA (DOMContentLoaded) ===== -->
 <script>
-// ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (LENGKAP - FINAL)
-// ============================================================
+    // ===== BLOK 8.6.1 - TAMPILKAN DASHBOARD =====
 function tampilkanDashboard(user) {
     // Jika data user tidak valid, logout paksa dan reload
     if (!user || !user.nama) {
@@ -3911,35 +3943,14 @@ function tampilkanDashboard(user) {
         return;
     }
 
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            userData = dataAkun[i];
-            break;
-        }
-    }
-
-    // --- PENANGANAN AKUN SUSPEN ---
-    if (userData && userData.status === 'SUSPEN') {
-        document.getElementById('pageAuthentication').style.display = 'none';
-        document.getElementById('pageDashboard').style.display = 'block';
-        document.getElementById('userNama').textContent = user.nama;
-        document.getElementById('roleBadge').textContent = user.role + ' (SUSPEN)';
-        
-        // Sidebar khusus SUSPEN (hanya 1 menu)
-        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
-        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Ajukan Pengaktifan</span></div>';
-        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
-        document.getElementById('mainContent').innerHTML = '';
-        renderAjukanPengaktifan();
-        return;
-    }
-
-    // --- SISTEM NORMAL ---
+    // Sembunyikan halaman login, tampilkan dashboard
     document.getElementById('pageAuthentication').style.display = 'none';
     document.getElementById('pageDashboard').style.display = 'block';
+
+    // Tampilkan nama user di navbar
     document.getElementById('userNama').textContent = user.nama;
+
+    // Tampilkan badge Role di navbar
     var daftarRole = {
         superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek',
         pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service',
@@ -3947,29 +3958,30 @@ function tampilkanDashboard(user) {
     };
     document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
 
+    // Bangun sidebar dan setup navigasi
     document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
     setupNavigasiSidebar();
 
+    // === FITUR FOTO PROFIL (PERBAIKAN) ===
+    // Cek apakah user memiliki foto profil tersimpan
     var avatar = document.getElementById('userAvatar');
     var placeholder = document.getElementById('userAvatarPlaceholder');
     if (user.fotoProfil) {
+        // Jika ada foto, tampilkan foto dan sembunyikan placeholder
         avatar.src = user.fotoProfil;
         avatar.style.display = 'block';
         placeholder.style.display = 'none';
     } else {
+        // Jika tidak ada foto, sembunyikan tag img dan tampilkan placeholder ikon
         avatar.style.display = 'none';
         placeholder.style.display = 'block';
     }
-
-    // Jalankan inisialisasi tagihan (otomatis buat tagihan tgl 5 & suspensi tgl 10)
-    inisialisasiSistemTagihan();
+    // ===================================
 
     // Render halaman dashboard sesuai role
     renderDashboard();
 }
-// ============================================================
-// AKHIR BLOK 8.6.1
-// ============================================================
+// ===== AKHIR BLOK 8.6.1 =====
 
     // ===== BLOK 8.6.2 - DOMContentLoaded =====
     document.addEventListener('DOMContentLoaded', async function() {
@@ -6412,230 +6424,15 @@ function eksekusiDelete() {
 }
 // ===== AKHIR BLOK 8.16.11 =====
 // ===== AKHIR BLOK 8.16 =====
-// ============================================================
-// BLOK 8.17 - SETTING HARGA APLIKASI (LENGKAP)
-// ============================================================
+// ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
+// Fitur ini hanya bisa diakses oleh SuperAdmin
+// Data disimpan di localStorage key: 2r_harga_produk_publik, 2r_harga_akun_pro, 2r_penagihan_item
 
-function renderSettingHargaAplikasi() {
-    var role = localStorage.getItem('2r_user_role');
-    if (role !== 'superadmin') {
-        tampilkanToast('Hanya SuperAdmin yang dapat mengakses halaman ini!', 'error');
-        return;
-    }
-    var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
+// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
+// Tambahkan ini di fungsi navigasiKeHalaman:
+// else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
 
-    // Ambil data yang tersimpan
-    var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
-    var hargaAkunPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
-    var itemPenagihan = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
-    var hargaOjekPerKm = parseFloat(localStorage.getItem('2r_harga_ojek_per_km')) || 2000;
-    var feeOrderOjek = parseFloat(localStorage.getItem('2r_fee_order_ojek')) || 1000;
-    var hargaProOjek = parseFloat(localStorage.getItem('2r_harga_ojek_pro')) || 25000;
-
-    var html = '';
-    html += '<div class="page-header"><h2>Setting Harga Aplikasi</h2><p>Kelola harga upload produk publik, Akun Pro, item penagihan, dan pengaturan Ojek.</p></div>';
-
-    // --- BAGIAN 1: HARGA UPLOAD PRODUK PUBLIK ---
-    html += '<div class="card">';
-    html += '  <div class="card-header">Harga Upload Produk Publik <button class="button button-primary button-small" onclick="tambahBarisHargaUpload()"><i class="fas fa-plus"></i> Tambah Paket</button></div>';
-    html += '  <div class="table-container">';
-    html += '    <table class="table" id="tabelHargaUpload">';
-    html += '      <thead><tr><th>Jumlah Produk</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>';
-    html += '      <tbody>';
-    var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-    if (keys.length === 0) {
-        html += '      <tr><td colspan="3" style="text-align:center; color:#888;">Belum ada paket harga.</td></tr>';
-    } else {
-        for (var i = 0; i < keys.length; i++) {
-            var jml = keys[i];
-            var hrg = hargaUpload[jml];
-            html += '      <tr id="rowUpload_' + i + '">';
-            html += '        <td><input type="number" class="form-input" id="editUploadJml_' + i + '" value="' + jml + '" style="width:80px;"></td>';
-            html += '        <td><input type="number" class="form-input" id="editUploadHrg_' + i + '" value="' + hrg + '" style="width:120px;"></td>';
-            html += '        <td><button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(' + i + ')"><i class="fas fa-save"></i> Simpan</button>';
-            html += '        <button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td>';
-            html += '      </tr>';
-        }
-    }
-    html += '      </tbody></table></div></div>';
-
-    // --- BAGIAN 2: HARGA AKUN PRO TOKO ---
-    html += '<div class="card">';
-    html += '  <div class="card-header">Harga Akun Pro (Toko/Pedagang/COD)</div>';
-    html += '  <div class="grid-2">';
-    html += '    <div><label class="form-label">Harga Berlangganan Akun Pro (Rp)</label><input type="number" id="hargaAkunProInput" class="form-input" value="' + hargaAkunPro + '"></div>';
-    html += '    <div style="display:flex; align-items:flex-end;"><button class="button button-primary" onclick="simpanHargaAkunPro()"><i class="fas fa-save"></i> Simpan</button></div>';
-    html += '  </div>';
-    html += '</div>';
-
-    // --- BAGIAN 3: PENGATURAN OJEK ---
-    html += '<div class="card" style="border-top:4px solid #FF6B00;">';
-    html += '  <div class="card-header" style="color:#FF6B00; font-weight:700;">Pengaturan Ojek</div>';
-    html += '  <div class="grid-2">';
-    html += '    <div><label class="form-label">Harga per Km (Rp)</label><input type="number" id="hargaOjekPerKmInput" class="form-input" value="' + hargaOjekPerKm + '" placeholder="Contoh: 2000"></div>';
-    html += '    <div><label class="form-label">Fee per Order (Rp)</label><input type="number" id="feeOrderOjekInput" class="form-input" value="' + feeOrderOjek + '" placeholder="Contoh: 1000"></div>';
-    html += '    <div><label class="form-label">Harga Paket Pro Ojek (Rp/bulan)</label><input type="number" id="hargaProOjekInput" class="form-input" value="' + hargaProOjek + '" placeholder="Contoh: 25000"></div>';
-    html += '  </div>';
-    html += '  <p style="font-size:12px; color:#888; margin-top:5px;">* Fee per order akan ditambahkan ke tagihan bulanan ojek.</p>';
-    html += '  <button class="button button-primary" onclick="simpanPengaturanOjek()"><i class="fas fa-save"></i> Simpan Semua</button>';
-    html += '</div>';
-
-    // --- BAGIAN 4: ITEM PENAGIHAN OTOMATIS ---
-    html += '<div class="card">';
-    html += '  <div class="card-header">Item Penagihan Otomatis <button class="button button-primary button-small" onclick="tambahItemPenagihan()"><i class="fas fa-plus"></i> Tambah Item</button></div>';
-    html += '  <div class="table-container">';
-    html += '    <table class="table" id="tabelItemPenagihan">';
-    html += '      <thead><tr><th>Nama Item</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>';
-    html += '      <tbody>';
-    if (itemPenagihan.length === 0) {
-        html += '      <tr><td colspan="3" style="text-align:center; color:#888;">Belum ada item penagihan.</td></tr>';
-    } else {
-        for (var i = 0; i < itemPenagihan.length; i++) {
-            var item = itemPenagihan[i];
-            html += '      <tr id="rowItem_' + i + '">';
-            html += '        <td><input type="text" class="form-input" id="editItemNama_' + i + '" value="' + escapeHtml(item.nama) + '" style="width:200px;"></td>';
-            html += '        <td><input type="number" class="form-input" id="editItemHrg_' + i + '" value="' + item.harga + '" style="width:120px;"></td>';
-            html += '        <td><button class="button button-success button-extra-small" onclick="simpanItemPenagihan(' + i + ')"><i class="fas fa-save"></i> Simpan</button>';
-            html += '        <button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td>';
-            html += '      </tr>';
-        }
-    }
-    html += '      </tbody></table></div></div>';
-
-    areaKonten.innerHTML = html;
-}
-
-// ===== FUNGSI-FUNGSI PENDUKUNG =====
-
-// Upload Produk Publik
-function tambahBarisHargaUpload() {
-    var table = document.getElementById('tabelHargaUpload').getElementsByTagName('tbody')[0];
-    var row = table.insertRow();
-    var idx = table.rows.length - 1;
-    row.id = 'rowUpload_' + idx;
-    row.innerHTML = `
-        <td><input type="number" class="form-input" id="editUploadJml_${idx}" value="10" style="width:80px;"></td>
-        <td><input type="number" class="form-input" id="editUploadHrg_${idx}" value="1000" style="width:120px;"></td>
-        <td>
-            <button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(${idx})"><i class="fas fa-save"></i> Simpan</button>
-            <button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(${idx})"><i class="fas fa-trash"></i> Hapus</button>
-        </td>
-    `;
-}
-
-function simpanBarisHargaUpload(index) {
-    var jmlInput = document.getElementById('editUploadJml_' + index);
-    var hrgInput = document.getElementById('editUploadHrg_' + index);
-    if (!jmlInput || !hrgInput) return;
-
-    var jumlah = parseInt(jmlInput.value);
-    var harga = parseInt(hrgInput.value);
-    if (isNaN(jumlah) || jumlah <= 0) { tampilkanToast('Jumlah produk harus lebih dari 0!', 'warning'); return; }
-    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
-
-    var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}');
-    data[jumlah] = harga;
-    localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data));
-    tampilkanToast('Harga paket ' + jumlah + ' produk berhasil disimpan!', 'success');
-    renderSettingHargaAplikasi();
-}
-
-function hapusBarisHargaUpload(index) {
-    if (!confirm('Yakin ingin menghapus paket harga ini?')) return;
-    var jmlInput = document.getElementById('editUploadJml_' + index);
-    if (!jmlInput) return;
-    var jumlah = parseInt(jmlInput.value);
-    var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}');
-    delete data[jumlah];
-    localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data));
-    tampilkanToast('Paket harga dihapus!', 'success');
-    renderSettingHargaAplikasi();
-}
-
-// Harga Akun Pro Toko
-function simpanHargaAkunPro() {
-    var input = document.getElementById('hargaAkunProInput');
-    var harga = parseFloat(input.value);
-    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
-    localStorage.setItem('2r_harga_akun_pro', String(harga));
-    tampilkanToast('Harga Akun Pro berhasil disimpan!', 'success');
-}
-
-// Pengaturan Ojek
-function simpanPengaturanOjek() {
-    var perKm = parseFloat(document.getElementById('hargaOjekPerKmInput').value) || 0;
-    var feeOrder = parseFloat(document.getElementById('feeOrderOjekInput').value) || 0;
-    var proPrice = parseFloat(document.getElementById('hargaProOjekInput').value) || 0;
-    localStorage.setItem('2r_harga_ojek_per_km', String(perKm));
-    localStorage.setItem('2r_fee_order_ojek', String(feeOrder));
-    localStorage.setItem('2r_harga_ojek_pro', String(proPrice));
-    tampilkanToast('Pengaturan ojek disimpan!', 'success');
-}
-
-// Item Penagihan
-function tambahItemPenagihan() {
-    var table = document.getElementById('tabelItemPenagihan').getElementsByTagName('tbody')[0];
-    var row = table.insertRow();
-    var idx = table.rows.length - 1;
-    row.id = 'rowItem_' + idx;
-    row.innerHTML = `
-        <td><input type="text" class="form-input" id="editItemNama_${idx}" value="Item Baru" style="width:200px;"></td>
-        <td><input type="number" class="form-input" id="editItemHrg_${idx}" value="10000" style="width:120px;"></td>
-        <td>
-            <button class="button button-success button-extra-small" onclick="simpanItemPenagihan(${idx})"><i class="fas fa-save"></i> Simpan</button>
-            <button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(${idx})"><i class="fas fa-trash"></i> Hapus</button>
-        </td>
-    `;
-}
-
-function simpanItemPenagihan(index) {
-    var namaInput = document.getElementById('editItemNama_' + index);
-    var hrgInput = document.getElementById('editItemHrg_' + index);
-    if (!namaInput || !hrgInput) return;
-
-    var nama = namaInput.value.trim();
-    var harga = parseInt(hrgInput.value);
-    if (!nama) { tampilkanToast('Nama item wajib diisi!', 'warning'); return; }
-    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
-
-    var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
-    if (data[index]) {
-        data[index] = { nama: nama, harga: harga };
-    } else {
-        data.push({ nama: nama, harga: harga });
-    }
-    localStorage.setItem('2r_penagihan_item', JSON.stringify(data));
-    tampilkanToast('Item penagihan berhasil disimpan!', 'success');
-    renderSettingHargaAplikasi();
-}
-
-function hapusItemPenagihan(index) {
-    if (!confirm('Yakin ingin menghapus item penagihan ini?')) return;
-    var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
-    data.splice(index, 1);
-    localStorage.setItem('2r_penagihan_item', JSON.stringify(data));
-    tampilkanToast('Item penagihan dihapus!', 'success');
-    renderSettingHargaAplikasi();
-}
-
-// Helper untuk mengambil nilai (dipanggil di sistem lain)
-function getHargaProToko() {
-    return parseFloat(localStorage.getItem('2r_harga_akun_pro')) || 50000;
-}
-function getHargaProOjek() {
-    return parseFloat(localStorage.getItem('2r_harga_ojek_pro')) || 25000;
-}
-function getFeeOrderOjek() {
-    return parseFloat(localStorage.getItem('2r_fee_order_ojek')) || 1000;
-}
-function getHargaPerKmOjek() {
-    return parseFloat(localStorage.getItem('2r_harga_ojek_per_km')) || 2000;
-}
-
-// ============================================================
-// AKHIR BLOK 8.17
-// ============================================================
+// ===== 8.17.1 - RENDER HALAMAN SETTING HARGA =====
 function renderSettingHargaAplikasi() {
     var role = localStorage.getItem('2r_user_role');
     if (role !== 'superadmin') {
@@ -7497,14 +7294,11 @@ function renderRekapPenjualan() {
     areaKonten.innerHTML = html;
 }
 // ===== AKHIR BLOK 8.22 =====
-// ============================================================
-// BLOK 8.23 - INISIALISASI SISTEM TAGIHAN (TOKO + OJEK)
-// ============================================================
+// ===== BLOK 8.23 - LOGIKA STATUS AKUN, TAGIHAN, & SUSPEN (FINAL) =====
 
+// --- 1. Inisialisasi Data Tagihan & Status (Saat Login) ---
 function inisialisasiSistemTagihan() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    if (!user.id) return;
-
     var dataAkun = getDataAkun();
     var userData = null;
     for (var i = 0; i < dataAkun.length; i++) {
@@ -7515,180 +7309,148 @@ function inisialisasiSistemTagihan() {
     }
     if (!userData) return;
 
-    // Pastikan flag Pro dan OjekPro ada
-    if (userData.isPro === undefined) userData.isPro = false;
-    if (userData.isOjekPro === undefined) userData.isOjekPro = false;
-
+    // 1. Cek dan Update Status PRO jika belum ada (default: false)
+    if (!userData.isPro) userData.isPro = false;
+    
+    // 2. Cek Status SUSPEN
     var sekarang = new Date();
     var hariIni = sekarang.getDate();
     var bulanIni = sekarang.getMonth() + 1;
     var tahunIni = sekarang.getFullYear();
 
+    // Ambil data tagihan akun ini
     var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-
-    // ---- CEK TAGIHAN TOKO ----
-    if (userData.role === 'toko' || userData.role === 'pedagang' || userData.role === 'codseller') {
-        var tagihanBulanIni = null;
-        for (var i = 0; i < dataTagihan.length; i++) {
-            if (dataTagihan[i].akunId === user.id && 
-                dataTagihan[i].bulan === bulanIni && 
-                dataTagihan[i].tahun === tahunIni) {
-                tagihanBulanIni = dataTagihan[i];
-                break;
-            }
-        }
-
-        // Tanggal 5: buat tagihan
-        if (hariIni >= 5 && !tagihanBulanIni) {
-            var totalTagihan = 0;
-            if (userData.isPro) {
-                totalTagihan += getHargaProToko();
-            }
-            // Hitung produk publik
-            var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-            var produkSaya = produkPublik.filter(function(p) { return p.ownerId === user.id; });
-            var jmlProduk = produkSaya.length;
-            var batasDasar = userData.isPro ? 50 : 5;
-            if (jmlProduk > batasDasar) {
-                var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
-                var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-                var ketemuPaket = false;
-                for (var k = 0; k < keys.length; k++) {
-                    var jmlKey = parseInt(keys[k]);
-                    if (jmlProduk <= jmlKey) {
-                        totalTagihan += hargaUpload[keys[k]];
-                        ketemuPaket = true;
-                        break;
-                    }
-                }
-                if (!ketemuPaket) {
-                    totalTagihan += hargaUpload[keys[keys.length - 1]];
-                }
-            }
-            if (totalTagihan > 0) {
-                dataTagihan.push({
-                    id: 'TAG-' + Date.now(),
-                    akunId: user.id,
-                    bulan: bulanIni,
-                    tahun: tahunIni,
-                    jumlahTagihan: totalTagihan,
-                    status: 'BELUM_BAYAR'
-                });
-                localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-                tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihan.toLocaleString('id-ID'), 'info');
-                tagihanBulanIni = dataTagihan[dataTagihan.length - 1];
-            }
-        }
-
-        // Tanggal 10: SUSPEN
-        if (hariIni >= 10 && tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
-            if (userData.status !== 'SUSPEN') {
-                userData.status = 'SUSPEN';
-                for (var i = 0; i < dataAkun.length; i++) {
-                    if (dataAkun[i].id === user.id) {
-                        dataAkun[i].status = 'SUSPEN';
-                        break;
-                    }
-                }
-                localStorage.setItem('2r_user', JSON.stringify(userData));
-                simpanDataAkun(dataAkun);
-                tampilkanToast('Akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
-                location.reload();
-            }
-        } else {
-            if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
-                userData.status = 'AKTIF';
-                for (var i = 0; i < dataAkun.length; i++) {
-                    if (dataAkun[i].id === user.id) {
-                        dataAkun[i].status = 'AKTIF';
-                        break;
-                    }
-                }
-                localStorage.setItem('2r_user', JSON.stringify(userData));
-                simpanDataAkun(dataAkun);
-                tampilkanToast('Selamat! Status akun Anda telah kembali AKTIF.', 'success');
-                location.reload();
-            }
+    var tagihanBulanIni = null;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && 
+            dataTagihan[i].bulan === bulanIni && 
+            dataTagihan[i].tahun === tahunIni) {
+            tagihanBulanIni = dataTagihan[i];
+            break;
         }
     }
 
-    // ---- CEK TAGIHAN OJEK ----
-    if (userData.role === 'ojek' && userData.isOjekPro) {
-        var tagihanOjek = null;
-        for (var i = 0; i < dataTagihan.length; i++) {
-            if (dataTagihan[i].akunId === user.id && 
-                dataTagihan[i].bulan === bulanIni && 
-                dataTagihan[i].tahun === tahunIni) {
-                tagihanOjek = dataTagihan[i];
-                break;
+    // --- LOGIKA TANGGAL 5: BUAT TAGIHAN ---
+    if (hariIni >= 5 && !tagihanBulanIni) {
+        var totalTagihan = 0;
+        if (userData.isPro) {
+            var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
+            totalTagihan += hargaPro;
+        }
+        var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+        var produkSaya = produkPublik.filter(function(p) { return p.ownerId === user.id; });
+        var jmlProduk = produkSaya.length;
+        var batasDasar = userData.isPro ? 50 : 5;
+        if (jmlProduk > batasDasar) {
+            var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+            var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+            var ketemuPaket = false;
+            for (var k = 0; k < keys.length; k++) {
+                var jmlKey = parseInt(keys[k]);
+                if (jmlProduk <= jmlKey) {
+                    totalTagihan += hargaUpload[keys[k]];
+                    ketemuPaket = true;
+                    break;
+                }
+            }
+            if (!ketemuPaket) {
+                totalTagihan += hargaUpload[keys[keys.length - 1]];
             }
         }
-
-        // Tanggal 5: buat tagihan (Pro + Fee Order)
-        if (hariIni >= 5 && !tagihanOjek) {
-            var hargaProOjek = getHargaProOjek();
-            var feePerOrder = getFeeOrderOjek();
-            
-            // Hitung total fee order bulan lalu (bulan sekarang - 1)
-            var dataOrder = getOrderOjek();
-            var orderBulanLalu = dataOrder.filter(function(o) { 
-                return o.ojekId === user.id && 
-                       o.status === 'SEDANG_DIANTAR' && 
-                       new Date(o.createdAt).getMonth() === (bulanIni - 1);
+        if (totalTagihan > 0) {
+            dataTagihan.push({
+                id: 'TAG-' + Date.now(),
+                akunId: user.id,
+                bulan: bulanIni,
+                tahun: tahunIni,
+                jumlahTagihan: totalTagihan,
+                status: 'BELUM_BAYAR'
             });
-            var totalFee = orderBulanLalu.length * feePerOrder;
-            var totalTagihanOjek = hargaProOjek + totalFee;
-
-            if (totalTagihanOjek > 0) {
-                dataTagihan.push({
-                    id: 'TAG-OJK-' + Date.now(),
-                    akunId: user.id,
-                    bulan: bulanIni,
-                    tahun: tahunIni,
-                    jumlahTagihan: totalTagihanOjek,
-                    status: 'BELUM_BAYAR'
-                });
-                localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-                tampilkanToast('Tagihan Ojek bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihanOjek.toLocaleString('id-ID'), 'info');
-            }
+            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+            tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihan.toLocaleString('id-ID'), 'info');
+            tagihanBulanIni = dataTagihan[dataTagihan.length - 1];
         }
+    }
 
-        // Tanggal 10: SUSPEN Ojek
-        if (hariIni >= 10 && tagihanOjek && tagihanOjek.status === 'BELUM_BAYAR') {
-            if (userData.status !== 'SUSPEN') {
-                userData.status = 'SUSPEN';
-                for (var i = 0; i < dataAkun.length; i++) {
-                    if (dataAkun[i].id === user.id) {
-                        dataAkun[i].status = 'SUSPEN';
-                        break;
-                    }
+    // --- LOGIKA TANGGAL 10: SUSPEN AKUN ---
+    if (hariIni >= 10 && tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
+        if (userData.status !== 'SUSPEN') {
+            userData.status = 'SUSPEN';
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === user.id) {
+                    dataAkun[i].status = 'SUSPEN';
+                    break;
                 }
-                localStorage.setItem('2r_user', JSON.stringify(userData));
-                simpanDataAkun(dataAkun);
-                tampilkanToast('Akun Ojek Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
-                location.reload();
             }
-        } else {
-            if (userData.status === 'SUSPEN' && tagihanOjek && tagihanOjek.status === 'LUNAS') {
-                userData.status = 'AKTIF';
-                for (var i = 0; i < dataAkun.length; i++) {
-                    if (dataAkun[i].id === user.id) {
-                        dataAkun[i].status = 'AKTIF';
-                        break;
-                    }
+            localStorage.setItem('2r_user', JSON.stringify(userData));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Status akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
+            location.reload();
+        }
+    } else {
+        if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
+            userData.status = 'AKTIF';
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === user.id) {
+                    dataAkun[i].status = 'AKTIF';
+                    break;
                 }
-                localStorage.setItem('2r_user', JSON.stringify(userData));
-                simpanDataAkun(dataAkun);
-                tampilkanToast('Selamat! Akun Ojek Anda telah kembali AKTIF.', 'success');
-                location.reload();
             }
+            localStorage.setItem('2r_user', JSON.stringify(userData));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Selamat! Status akun Anda telah kembali AKTIF.', 'success');
+            location.reload();
         }
     }
 }
 
-// ============================================================
-// AKHIR BLOK 8.23
-// ============================================================
+// --- 2. Modifikasi Fungsi Render Dashboard (Tambahkan Pengecekan SUSPEN) ---
+function tampilkanDashboard(user) {
+    if (!user || !user.nama) {
+        localStorage.removeItem('2r_user');
+        localStorage.removeItem('2r_user_role');
+        location.reload();
+        return;
+    }
+
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    
+    if (userData && userData.status === 'SUSPEN') {
+        document.getElementById('pageAuthentication').style.display = 'none';
+        document.getElementById('pageDashboard').style.display = 'block';
+        document.getElementById('userNama').textContent = user.nama;
+        document.getElementById('roleBadge').textContent = user.role;
+        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
+        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
+        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
+        document.getElementById('mainContent').innerHTML = '';
+        renderStatusAkun();
+        return;
+    }
+
+    document.getElementById('pageAuthentication').style.display = 'none';
+    document.getElementById('pageDashboard').style.display = 'block';
+    document.getElementById('userNama').textContent = user.nama;
+    var daftarRole = { superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek', pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service', staf_owner_toko: 'Staf Owner Toko', staf_owner_ojek: 'Staf Owner Ojek', sponsor: 'Sponsor' };
+    document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
+
+    document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
+    setupNavigasiSidebar();
+
+    var avatar = document.getElementById('userAvatar');
+    var placeholder = document.getElementById('userAvatarPlaceholder');
+    if (user.fotoProfil) { avatar.src = user.fotoProfil; avatar.style.display = 'block'; placeholder.style.display = 'none'; } 
+    else { avatar.style.display = 'none'; placeholder.style.display = 'block'; }
+
+    inisialisasiSistemTagihan();
+
+    renderDashboard();
+}
+// ===== AKHIR BLOK 8.23 =====
 // ===== BLOK 8.24 - MENU STATUS AKUN & UPGRADE PRO =====
 
 // --- 1. Render Halaman Status Akun ---
@@ -9876,7 +9638,7 @@ function renderLaporanTagihanOjek() {
     });
 
     // Komisi per order (Rp 1000)
-    var komisiPerOrder = 1000;
+    var komisiPerOrder = getFeeOrderOjek();
     var totalKomisi = 0;
     var perOjek = {};
 
@@ -9918,7 +9680,7 @@ function renderLaporanTagihanOjek() {
 function detailTagihanOjek(ojekId) {
     var dataOrder = getOrderOjek();
     var orderOjek = dataOrder.filter(function(o) { return o.ojekId === ojekId && (o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI'); });
-    var komisiPerOrder = 1000;
+    var komisiPerOrder = getFeeOrderOjek();
 
     var html = '<div class="modal-overlay" id="modalDetailTagihan" style="display:flex; z-index:9999;">';
     html += '<div class="modal" style="max-width:700px; max-height:80vh; overflow-y:auto;">';
@@ -9945,23 +9707,10 @@ function tutupModalDetailTagihan() {
     if (modal) modal.remove();
 }
 
-// ---------- NAVIGASI ----------
-// Tambahkan di sidebar:
-// Untuk Toko/Pedagang/COD: { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
-// Untuk Ojek: { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' }
-// Untuk Ojek: { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order' }
-// Untuk SuperAdmin: { halaman: 'laporanTagihanOjek', icon: 'fa-file-invoice-dollar', label: 'Tagihan Ojek' }
-
-// Tambahkan di navigasiKeHalaman:
-// else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
-// else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
-// else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
-// else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
-
 // ============================================================
 // AKHIR BLOK 8.50
 // ============================================================
- // ============================================================
+// ============================================================
 // BLOK 8.51 - SISTEM PENAGIHAN & SUSPEN TERPADU (TOKO + OJEK)
 // ============================================================
 
@@ -10371,7 +10120,7 @@ function renderAjukanPengaktifan() {
 
 // ============================================================
 // AKHIR BLOK 8.51
-// ============================================================   
+// ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
