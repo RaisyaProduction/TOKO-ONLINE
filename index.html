@@ -9151,7 +9151,7 @@ function renderDashboardToko() {
 // ===== AKHIR BLOK 8.44 =====
 
 // ============================================================
-// BLOK 8.45 - TRANSFER MENU (SuperAdmin)
+// BLOK 8.45 - TRANSFER MENU TRANSAKSI (Versi dengan Simpan & Status)
 // ============================================================
 
 function renderTransferTransaksi() {
@@ -9170,45 +9170,87 @@ function renderTransferTransaksi() {
         }
     }
 
-    var html = '<div class="page-header"><h2>Transfer Menu – Transaksi</h2><p>Pilih jenis transaksi untuk akun target.</p></div>';
+    var html = '<div class="page-header"><h2>Transfer Menu – Transaksi</h2><p>Pilih jenis transaksi untuk akun target, lalu klik Simpan. Status akun juga bisa diubah di sini.</p></div>';
     html += '<div class="card"><div class="card-header">Daftar Akun Target</div>';
+
     if (daftarTarget.length === 0) {
         html += '<div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada akun target</h3></div>';
     } else {
-        html += '<div class="table-container"><table class="table"><thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th>Transaksi 1</th><th>Transaksi 2</th><th>Transaksi 3</th></tr></thead><tbody>';
+        html += '<div class="table-container">';
+        html += '<table class="table">';
+        html += '<thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th>Transaksi 1</th><th>Transaksi 2</th><th>Transaksi 3</th><th>Status Akun</th><th>Aksi Status</th></tr></thead>';
+        html += '<tbody>';
+
         for (var i = 0; i < daftarTarget.length; i++) {
             var a = daftarTarget[i];
             var f = a.fitur || {};
             var cek1 = f.transaksi1 ? 'checked' : '';
             var cek2 = f.transaksi2 ? 'checked' : '';
             var cek3 = f.transaksi3 ? 'checked' : '';
-            html += '<tr><td>' + (i+1) + '</td><td>' + a.id + '</td><td>' + escapeHtml(a.nama || a.username) + '</td><td>' + a.role + '</td>';
-            html += '<td style="text-align:center;"><input type="checkbox" onchange="setTransaksi(\'' + a.id + '\', 1, this.checked)"></td>';
-            html += '<td style="text-align:center;"><input type="checkbox" onchange="setTransaksi(\'' + a.id + '\', 2, this.checked)"></td>';
-            html += '<td style="text-align:center;"><input type="checkbox" onchange="setTransaksi(\'' + a.id + '\', 3, this.checked)"></td>';
+            var badgeStatus = a.status === 'AKTIF' ? 'badge-success' : 'badge-danger';
+            var teksStatus = a.status === 'AKTIF' ? 'AKTIF' : 'SUSPEN';
+
+            html += '<tr>';
+            html += '<td>' + (i + 1) + '</td>';
+            html += '<td>' + a.id + '</td>';
+            html += '<td>' + escapeHtml(a.nama || a.username) + '</td>';
+            html += '<td>' + a.role + '</td>';
+            html += '<td style="text-align:center;"><input type="checkbox" class="chk-trx" data-id="' + a.id + '" data-tipe="1" ' + cek1 + '></td>';
+            html += '<td style="text-align:center;"><input type="checkbox" class="chk-trx" data-id="' + a.id + '" data-tipe="2" ' + cek2 + '></td>';
+            html += '<td style="text-align:center;"><input type="checkbox" class="chk-trx" data-id="' + a.id + '" data-tipe="3" ' + cek3 + '></td>';
+            html += '<td><span class="badge ' + badgeStatus + '">' + teksStatus + '</span></td>';
+            html += '<td>';
+            if (a.status === 'AKTIF') {
+                html += '<button class="button button-warning button-extra-small" onclick="forceSuspenAkun(\'' + a.id + '\')"><i class="fas fa-pause"></i> Suspen</button>';
+            } else {
+                html += '<button class="button button-success button-extra-small" onclick="forceAktifAkun(\'' + a.id + '\')"><i class="fas fa-play"></i> Aktifkan</button>';
+            }
+            html += '</td>';
             html += '</tr>';
         }
         html += '</tbody></table></div>';
+        html += '<div style="margin-top:15px; text-align:right;">';
+        html += '<button class="button button-primary" onclick="simpanPerubahanTransaksi()"><i class="fas fa-save"></i> Simpan Perubahan</button>';
+        html += '</div>';
     }
     html += '</div>';
     areaKonten.innerHTML = html;
 }
 
-function setTransaksi(idAkun, tipe, aktif) {
+// ===== Fungsi Simpan Perubahan Transaksi (bukan onchange langsung) =====
+function simpanPerubahanTransaksi() {
+    var checkboxes = document.querySelectorAll('.chk-trx');
+    var changes = {};
+    // Kumpulkan perubahan dari checkbox
+    checkboxes.forEach(function(cb) {
+        var id = cb.getAttribute('data-id');
+        var tipe = parseInt(cb.getAttribute('data-tipe'));
+        if (!changes[id]) changes[id] = {};
+        changes[id]['transaksi' + tipe] = cb.checked;
+    });
+
     var dataAkun = getDataAkun();
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === idAkun) {
-            if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
-            var key = 'transaksi' + tipe;
-            dataAkun[i].fitur[key] = aktif;
-            break;
+    for (var id in changes) {
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === id) {
+                if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+                for (var key in changes[id]) {
+                    dataAkun[i].fitur[key] = changes[id][key];
+                }
+                break;
+            }
         }
     }
     simpanDataAkun(dataAkun);
-    tampilkanToast('Transaksi ' + tipe + ' ' + (aktif ? 'diaktifkan' : 'dinonaktifkan') + ' untuk ' + idAkun, 'success');
+    tampilkanToast('Perubahan transaksi berhasil disimpan!', 'success');
+    renderTransferTransaksi(); // Refresh tabel
 }
 
-// ===== AKHIR BLOK 8.45 =====
+// ===== Hapus fungsi setTransaksi() lama (sudah tidak dipakai) =====
+// (Karena sekarang pakai simpanPerubahanTransaksi, Anda bisa hapus fungsi setTransaksi)
+// ============================================================
+// AKHIR BLOK 8.45
+// ============================================================
 
 // ============================================================
 // BLOK 8.46 - HALAMAN TRANSAKSI TERPADU
