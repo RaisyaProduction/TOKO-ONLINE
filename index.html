@@ -68,58 +68,76 @@
             <!-- ===== AKHIR BLOK 2.1.3 ===== -->
 
             <!-- ===== BLOK 2.1.4 - FORM REGISTER ===== -->
-            <form class="authentication-form hidden-form" id="registerForm">
-                <div class="form-group">
-                    <label>Pilih Role</label>
-                    <div class="input-group">
-                        <i class="fas fa-user-tag"></i>
-                        <select id="registerRole">
-                            <option value="customer">Customer</option>
-                            <option value="toko">Toko</option>
-                            <option value="ojek">Ojek</option>
-                            <option value="pedagang">Pedagang Pasar</option>
-                            <option value="codseller">COD Seller</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>ID Akun (Otomatis)</label>
-                    <div class="input-group">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="registerIdPreview" class="form-input" value="Akan dibuat otomatis" disabled style="background-color:#f0f0f0; color:#666666;">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="registerUsername" placeholder="Buat username" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="registerPassword" placeholder="Buat password" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Nama Lengkap</label>
-                    <div class="input-group">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="registerNama" placeholder="Nama lengkap Anda" required>
-                    </div>
-                </div>
-                <button type="submit" class="button-submit">
-                    <i class="fas fa-user-plus"></i> Daftar
-                </button>
-                <div class="authentication-footer">
-                    Sudah punya akun? 
-                    <a onclick="toggleForm('login')">Login di sini</a>
-                </div>
-            </form>
-            <!-- ===== AKHIR BLOK 2.1.4 ===== -->
-            <!-- ===== BLOK 2.1.5 - FORM PENGAJUAN BUKA AKUN ===== -->
+<form class="authentication-form hidden-form" id="registerForm">
+    <div class="form-group">
+        <label>Pilih Role</label>
+        <div class="input-group">
+            <i class="fas fa-user-tag"></i>
+            <select id="registerRole">
+                <option value="customer">Customer</option>
+                <option value="toko">Toko</option>
+                <option value="ojek">Ojek</option>
+                <option value="pedagang">Pedagang Pasar</option>
+                <option value="codseller">COD Seller</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>ID Akun (Otomatis)</label>
+        <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="registerIdPreview" class="form-input" value="Akan dibuat otomatis" disabled style="background-color:#f0f0f0; color:#666666;">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Username</label>
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="registerUsername" placeholder="Buat username" required>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Password</label>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="registerPassword" placeholder="Buat password" required>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Nama Lengkap</label>
+        <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="registerNama" placeholder="Nama lengkap Anda" required>
+        </div>
+    </div>
+
+    <!-- ===== TAMBAHAN LOKASI ===== -->
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Alamat / Lokasi</label>
+            <div class="input-group">
+                <i class="fas fa-map-pin"></i>
+                <input type="text" id="registerLokasi" class="form-input" placeholder="Ketik alamat atau klik tombol Ambil Lokasi">
+            </div>
+        </div>
+        <div class="form-group" style="display:flex; align-items:flex-end;">
+            <button type="button" class="button button-primary button-small" onclick="ambilLokasiRegister()" style="width:100%;"><i class="fas fa-location-dot"></i> Ambil Lokasi Otomatis</button>
+        </div>
+    </div>
+    <input type="hidden" id="registerLat" value="">
+    <input type="hidden" id="registerLng" value="">
+    <!-- ============================= -->
+
+    <button type="submit" class="button-submit">
+        <i class="fas fa-user-plus"></i> Daftar
+    </button>
+    <div class="authentication-footer">
+        Sudah punya akun? 
+        <a onclick="toggleForm('login')">Login di sini</a>
+    </div>
+</form>
+<!-- ===== AKHIR BLOK 2.1.4 ===== -->
+<!-- ===== BLOK 2.1.5 - FORM PENGAJUAN BUKA AKUN ===== -->
 <form class="authentication-form hidden-form" id="pengajuanBukaAkunForm">
     <div class="form-group">
         <label>Nama Lengkap</label>
@@ -139,6 +157,24 @@
         <label>Alasan Pembuatan Akun</label>
         <div class="input-group"><i class="fas fa-comment"></i><input type="text" id="pengajuanAlasan" placeholder="Misal: Ingin berjualan online" required></div>
     </div>
+
+    <!-- ===== TAMBAHAN LOKASI ===== -->
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Alamat / Lokasi</label>
+            <div class="input-group">
+                <i class="fas fa-map-pin"></i>
+                <input type="text" id="pengajuanLokasi" class="form-input" placeholder="Ketik alamat">
+            </div>
+        </div>
+        <div class="form-group" style="display:flex; align-items:flex-end;">
+            <button type="button" class="button button-primary button-small" onclick="ambilLokasiPengajuan()" style="width:100%;"><i class="fas fa-location-dot"></i> Ambil Lokasi Otomatis</button>
+        </div>
+    </div>
+    <input type="hidden" id="pengajuanLat" value="">
+    <input type="hidden" id="pengajuanLng" value="">
+    <!-- ============================= -->
+
     <button type="submit" class="button-submit"><i class="fas fa-paper-plane"></i> Ajukan ke Admin</button>
     <div class="authentication-footer">Sudah punya akun? <a onclick="toggleForm('login')">Login di sini</a></div>
 </form>
@@ -1382,71 +1418,82 @@ function navigasiKeHalaman(namaHalaman) {
 
 <!-- ===== BLOK 7.2 - JS_RENDER_PROFIL_SUPERADMIN ===== -->
 <script>
-    // ===== BLOK 7.2.1 - RENDER PROFIL SUPERADMIN =====
-    function renderProfilSuperAdmin(user) {
-        var areaKonten = document.getElementById('mainContent');
-        if (!areaKonten) return;
-        if (!user) user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var html = '';
-        html += '<div class="page-header"><h2>Profil SuperAdmin</h2><p>Kelola data aplikasi, keamanan akun, data pribadi, dan dokumen perusahaan.</p></div>';
+    // ============================================================
+// BLOK 7.2.1 - RENDER PROFIL SUPERADMIN (DENGAN TABEL LOKASI)
+// ============================================================
+function renderProfilSuperAdmin(user) {
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+    if (!user) user = JSON.parse(localStorage.getItem('2r_user') || '{}');
 
-        // Data Aplikasi
-        var dataAplikasi = JSON.parse(localStorage.getItem('2r_data_aplikasi') || '{}');
-        html += '<div class="card"><div class="card-header"><span><i class="fas fa-building" style="color:#FF6B00;"></i> Data Aplikasi</span><button class="button button-primary button-small" onclick="simpanDataAplikasi()"><i class="fas fa-save"></i> Simpan</button></div>';
-        html += '<div class="grid-2">';
-        html += '<div><label class="form-label">Nama Aplikasi</label><input type="text" id="appNama" class="form-input" value="' + escapeHtml(dataAplikasi.nama || '') + '"></div>';
-        html += '<div><label class="form-label">Penerbit</label><input type="text" id="appPenerbit" class="form-input" value="' + escapeHtml(dataAplikasi.penerbit || '') + '"></div>';
-        html += '<div><label class="form-label">Pemilik</label><input type="text" id="appPemilik" class="form-input" value="' + escapeHtml(dataAplikasi.pemilik || '') + '"></div>';
-        html += '<div><label class="form-label">Pengelola</label><input type="text" id="appPengelola" class="form-input" value="' + escapeHtml(dataAplikasi.pengelola || '') + '"></div>';
-        html += '</div></div>';
+    // Data Aplikasi (bagian atas tetap sama)
+    var dataAplikasi = JSON.parse(localStorage.getItem('2r_data_aplikasi') || '{}');
+    var html = '';
+    html += '<div class="page-header"><h2>Profil SuperAdmin & Data Akun</h2><p>Kelola data aplikasi dan lihat profil semua akun (termasuk koordinat).</p></div>';
 
-        // Keamanan
-        html += '<div class="card"><div class="card-header"><span><i class="fas fa-shield-alt" style="color:#FF6B00;"></i> Keamanan Akun</span><button class="button button-primary button-small" onclick="ubahPasswordSA()"><i class="fas fa-key"></i> Simpan</button></div>';
-        html += '<div class="grid-2">';
-        html += '<div><label class="form-label">Username</label><input type="text" id="saUsername" class="form-input" value="' + escapeHtml(user.username || '') + '"></div>';
-        html += '<div><label class="form-label">Password Lama</label><input type="password" id="saPasswordLama" class="form-input" placeholder="Wajib diisi untuk verifikasi"></div>'; // <-- TAMBAHKAN
-        html += '<div><label class="form-label">Password Baru</label><input type="password" id="saPassword" class="form-input" placeholder="Kosongkan jika tidak diubah"></div>';
-        html += '<div><label class="form-label">Konfirmasi Password</label><input type="password" id="saPasswordKonfirmasi" class="form-input" placeholder="Konfirmasi password"></div>';
-        html += '</div></div>';
+    // --- Data Aplikasi ---
+    html += '<div class="card"><div class="card-header"><span><i class="fas fa-building" style="color:#FF6B00;"></i> Data Aplikasi</span><button class="button button-primary button-small" onclick="simpanDataAplikasi()"><i class="fas fa-save"></i> Simpan</button></div>';
+    html += '<div class="grid-2">';
+    html += '<div><label class="form-label">Nama Aplikasi</label><input type="text" id="appNama" class="form-input" value="' + escapeHtml(dataAplikasi.nama || '') + '"></div>';
+    html += '<div><label class="form-label">Penerbit</label><input type="text" id="appPenerbit" class="form-input" value="' + escapeHtml(dataAplikasi.penerbit || '') + '"></div>';
+    html += '<div><label class="form-label">Pemilik</label><input type="text" id="appPemilik" class="form-input" value="' + escapeHtml(dataAplikasi.pemilik || '') + '"></div>';
+    html += '<div><label class="form-label">Pengelola</label><input type="text" id="appPengelola" class="form-input" value="' + escapeHtml(dataAplikasi.pengelola || '') + '"></div>';
+    html += '</div></div>';
 
-        // Pribadi & Rekening
-        html += '<div class="card"><div class="card-header"><span><i class="fas fa-user-circle" style="color:#FF6B00;"></i> Data Pribadi & Rekening</span><button class="button button-primary button-small" onclick="simpanDataPribadiSA()"><i class="fas fa-save"></i> Simpan</button></div>';
-        html += '<div class="grid-2">';
-        html += '<div><label class="form-label">Nama Lengkap</label><input type="text" id="saNama" class="form-input" value="' + escapeHtml(user.nama || '') + '"></div>';
-        html += '<div><label class="form-label">Alamat</label><input type="text" id="saAlamat" class="form-input" value="' + escapeHtml(user.alamat || '') + '"></div>';
-        html += '<div><label class="form-label">Email</label><input type="email" id="saEmail" class="form-input" value="' + escapeHtml(user.email || '') + '"></div>';
-        html += '<div><label class="form-label">Nomor HP</label><input type="tel" id="saHp" class="form-input" value="' + escapeHtml(user.nomorHp || '') + '"></div>';
-        html += '</div>';
-        html += '<div class="grid-2" style="margin-top:10px;">';
-        html += '<div><label class="form-label">Nama Bank</label><input type="text" id="saBank" class="form-input" value="' + escapeHtml(user.namaBank || '') + '"></div>';
-        html += '<div><label class="form-label">Nomor Rekening</label><input type="text" id="saRekening" class="form-input" value="' + escapeHtml(user.nomorRekening || '') + '"></div>';
-        html += '<div><label class="form-label">Nama Pemilik Rekening</label><input type="text" id="saPemilikRek" class="form-input" value="' + escapeHtml(user.pemilikRekening || '') + '"></div>';
-        html += '</div></div>';
+    // --- Keamanan Akun ---
+    html += '<div class="card"><div class="card-header"><span><i class="fas fa-shield-alt" style="color:#FF6B00;"></i> Keamanan Akun</span><button class="button button-primary button-small" onclick="ubahPasswordSA()"><i class="fas fa-key"></i> Simpan</button></div>';
+    html += '<div class="grid-2">';
+    html += '<div><label class="form-label">Username</label><input type="text" id="saUsername" class="form-input" value="' + escapeHtml(user.username || '') + '"></div>';
+    html += '<div><label class="form-label">Password Lama</label><input type="password" id="saPasswordLama" class="form-input" placeholder="Wajib diisi untuk verifikasi"></div>';
+    html += '<div><label class="form-label">Password Baru</label><input type="password" id="saPassword" class="form-input" placeholder="Kosongkan jika tidak diubah"></div>';
+    html += '<div><label class="form-label">Konfirmasi Password</label><input type="password" id="saPasswordKonfirmasi" class="form-input" placeholder="Konfirmasi password"></div>';
+    html += '</div></div>';
 
-        // Dokumen
-        html += '<div class="card"><div class="card-header"><span><i class="fas fa-folder-open" style="color:#FF6B00;"></i> Dokumen Perusahaan</span>';
-        html += '<button class="button button-primary button-small" id="btnUploadDokumen"><i class="fas fa-upload"></i> Unggah</button>';
-        html += '<input type="file" id="inputDokumen" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none"></div>';
-        html += '<div id="daftarDokumen"><div class="empty-state"><i class="fas fa-cloud-upload-alt"></i><h3>Belum ada dokumen</h3></div></div></div>';
+    // --- Tabel Semua Akun (Dengan Lokasi) ---
+    var dataAkun = getDataAkun();
+    html += '<div class="card"><div class="card-header"><span><i class="fas fa-users" style="color:#FF6B00;"></i> Daftar Semua Akun</span><span style="font-weight:normal; font-size:13px; color:#888;">Total: ' + dataAkun.length + ' akun</span></div>';
+    html += '<div class="table-container"><table class="table"><thead><tr><th>No</th><th>ID</th><th>Role</th><th>Username</th><th>Nama</th><th>Alamat Lokasi</th><th>Koordinat (Lat, Lng)</th><th>Status</th></tr></thead><tbody>';
 
-        // Keterangan
-        html += '<div class="card"><div class="card-header"><span><i class="fas fa-sticky-note" style="color:#FF6B00;"></i> Keterangan</span></div>';
-        html += '<textarea id="textKeterangan" rows="4" class="form-input" placeholder="Isi keterangan...">' + escapeHtml(localStorage.getItem('2r_keterangan_sa') || '') + '</textarea>';
-        html += '<button class="button button-primary margin-top-10" onclick="simpanKeteranganSA()"><i class="fas fa-save"></i> Simpan</button>';
-        html += '</div>';
-
-        areaKonten.innerHTML = html;
-        setTimeout(function() {
-            var tombolUpload = document.getElementById('btnUploadDokumen');
-            var inputUpload = document.getElementById('inputDokumen');
-            if (tombolUpload && inputUpload) {
-                tombolUpload.onclick = function() { inputUpload.click(); };
-                inputUpload.onchange = function(e) { uploadDokumenSA(e.target.files); };
-            }
-            loadDokumenSA();
-        }, 300);
+    if (dataAkun.length === 0) {
+        html += '<tr><td colspan="8" style="text-align:center; color:#888;">Belum ada akun.</td></tr>';
+    } else {
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            var badge = a.status === 'AKTIF' ? 'badge-success' : (a.status === 'SUSPEN' ? 'badge-danger' : 'badge-warning');
+            var koordinat = (a.latitude && a.longitude) ? a.latitude + ', ' + a.longitude : '-';
+            var alamat = a.alamatLokasi || '-';
+            html += '<tr><td>' + (i+1) + '</td><td>' + a.id + '</td><td>' + a.role + '</td><td>' + escapeHtml(a.username) + '</td><td>' + escapeHtml(a.nama) + '</td><td>' + escapeHtml(alamat) + '</td><td>' + koordinat + '</td><td><span class="badge ' + badge + '">' + a.status + '</span></td></tr>';
+        }
     }
-    // ===== AKHIR BLOK 7.2.1 =====
+    html += '</tbody></table></div></div>';
+
+    // --- Dokumen dan Keterangan (seperti sebelumnya) ---
+    html += '<div class="card"><div class="card-header"><span><i class="fas fa-folder-open" style="color:#FF6B00;"></i> Dokumen Perusahaan</span>';
+    html += '<button class="button button-primary button-small" id="btnUploadDokumen"><i class="fas fa-upload"></i> Unggah</button>';
+    html += '<input type="file" id="inputDokumen" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none"></div>';
+    html += '<div id="daftarDokumen"><div class="empty-state"><i class="fas fa-cloud-upload-alt"></i><h3>Belum ada dokumen</h3></div></div></div>';
+
+    html += '<div class="card"><div class="card-header"><span><i class="fas fa-sticky-note" style="color:#FF6B00;"></i> Keterangan</span></div>';
+    html += '<textarea id="textKeterangan" rows="4" class="form-input" placeholder="Isi keterangan...">' + escapeHtml(localStorage.getItem('2r_keterangan_sa') || '') + '</textarea>';
+    html += '<button class="button button-primary margin-top-10" onclick="simpanKeteranganSA()"><i class="fas fa-save"></i> Simpan</button>';
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+
+    // Event listener upload dokumen (seperti sebelumnya)
+    setTimeout(function() {
+        var tombolUpload = document.getElementById('btnUploadDokumen');
+        var inputUpload = document.getElementById('inputDokumen');
+        if (tombolUpload && inputUpload) {
+            tombolUpload.onclick = function() { inputUpload.click(); };
+            inputUpload.onchange = function(e) { uploadDokumenSA(e.target.files); };
+        }
+        loadDokumenSA();
+    }, 300);
+}
+// ============================================================
+// AKHIR BLOK 7.2.1
+// ============================================================
 
     // ===== BLOK 7.2.2 - SIMPAN DATA APLIKASI =====
     function simpanDataAplikasi() {
@@ -2281,58 +2328,99 @@ function hapusKTPUmum() {
 
 <!-- ===== BLOK 7.5 - JS_RENDER_DAFTAR_AKUN & PERSETUJUAN ===== -->
 <script>
-    // ===== BLOK 7.5.1 - RENDER DAFTAR AKUN =====
-    function renderDaftarAkun() {
-        var areaKonten = document.getElementById('mainContent');
-        var html = '<div class="page-header"><h2>Daftar Akun Baru</h2><p>Form pendaftaran akun oleh SuperAdmin.</p></div>';
-        html += '<div class="card"><div class="card-header">Form Pendaftaran</div>';
-        html += '<div class="form-group"><label>Role</label><select id="daftarRole" class="form-input" onchange="updatePreviewId()">';
-        html += '<option value="customer">Customer</option><option value="toko">Toko (Verifikasi)</option><option value="ojek">Ojek (Verifikasi)</option>';
-        html += '<option value="pedagang">Pedagang Pasar</option><option value="codseller">COD Seller</option><option value="staf_admin">Staf Admin</option><option value="staf_owner_ojek">Staf Owner Ojek</option>';
-        html += '<option value="staf_owner_toko">Staf Owner Toko</option><option value="customer_service">Customer Service</option><option value="sponsor">Sponsor</option></select></div>';
-        html += '<div class="form-group"><label>ID Akun (Otomatis)</label><div style="background:#f0f0f0;border:2px solid #ddd;border-radius:8px;padding:12px;"><span id="daftarIdPreview" style="font-weight:600;">' + generateId('customer') + '</span></div></div>';
-        html += '<div class="form-group"><label>Username</label><input type="text" id="daftarUsername" class="form-input" placeholder="Username" required></div>';
-        html += '<div class="form-group"><label>Password</label><input type="password" id="daftarPassword" class="form-input" placeholder="Password" required></div>';
-        html += '<div class="form-group"><label>Nama Lengkap</label><input type="text" id="daftarNama" class="form-input" placeholder="Nama Lengkap" required></div>';
-        html += '<button class="button button-primary" style="width:100%;" onclick="prosesDaftarAkun()"><i class="fas fa-user-plus"></i> Buat Akun Baru</button></div>';
-        areaKonten.innerHTML = html;
+// ============================================================
+// BLOK 7.5.1 - RENDER DAFTAR AKUN & PROSES DAFTAR (DENGAN LOKASI)
+// ============================================================
+
+function renderDaftarAkun() {
+    var areaKonten = document.getElementById('mainContent');
+    var html = '<div class="page-header"><h2>Daftar Akun Baru</h2><p>Form pendaftaran akun oleh SuperAdmin.</p></div>';
+    html += '<div class="card"><div class="card-header">Form Pendaftaran</div>';
+    html += '<div class="form-group"><label>Role</label><select id="daftarRole" class="form-input" onchange="updatePreviewId()">';
+    html += '<option value="customer">Customer</option><option value="toko">Toko (Verifikasi)</option><option value="ojek">Ojek (Verifikasi)</option>';
+    html += '<option value="pedagang">Pedagang Pasar</option><option value="codseller">COD Seller</option><option value="staf_admin">Staf Admin</option><option value="staf_owner_ojek">Staf Owner Ojek</option>';
+    html += '<option value="staf_owner_toko">Staf Owner Toko</option><option value="customer_service">Customer Service</option><option value="sponsor">Sponsor</option></select></div>';
+    html += '<div class="form-group"><label>ID Akun (Otomatis)</label><div style="background:#f0f0f0;border:2px solid #ddd;border-radius:8px;padding:12px;"><span id="daftarIdPreview" style="font-weight:600;">' + generateId('customer') + '</span></div></div>';
+    html += '<div class="form-group"><label>Username</label><input type="text" id="daftarUsername" class="form-input" placeholder="Username" required></div>';
+    html += '<div class="form-group"><label>Password</label><input type="password" id="daftarPassword" class="form-input" placeholder="Password" required></div>';
+    html += '<div class="form-group"><label>Nama Lengkap</label><input type="text" id="daftarNama" class="form-input" placeholder="Nama Lengkap" required></div>';
+
+    // TAMBAHAN LOKASI (untuk SuperAdmin)
+    html += '<div class="grid-2">';
+    html += '  <div class="form-group"><label>Alamat / Lokasi</label><input type="text" id="daftarLokasi" class="form-input" placeholder="Ketik alamat"></div>';
+    html += '  <div class="form-group"><label>Latitude</label><input type="text" id="daftarLat" class="form-input" placeholder="Latitude (kosongkan jika tidak tahu)"></div>';
+    html += '  <div class="form-group"><label>Longitude</label><input type="text" id="daftarLng" class="form-input" placeholder="Longitude (kosongkan jika tidak tahu)"></div>';
+    html += '</div>';
+
+    html += '<button class="button button-primary" style="width:100%;" onclick="prosesDaftarAkun()"><i class="fas fa-user-plus"></i> Buat Akun Baru</button></div>';
+    areaKonten.innerHTML = html;
+}
+
+function updatePreviewId() {
+    var role = document.getElementById('daftarRole').value;
+    document.getElementById('daftarIdPreview').textContent = generateId(role);
+}
+
+async function prosesDaftarAkun() {
+    var role = document.getElementById('daftarRole').value;
+    var username = document.getElementById('daftarUsername').value.trim();
+    var password = document.getElementById('daftarPassword').value.trim();
+    var nama = document.getElementById('daftarNama').value.trim();
+
+    // Ambil lokasi dari form (jika diisi)
+    var lat = document.getElementById('daftarLat').value.trim();
+    var lng = document.getElementById('daftarLng').value.trim();
+    var alamat = document.getElementById('daftarLokasi').value.trim();
+
+    if (!role || !username || !password || !nama) { tampilkanToast('Data belum lengkap!', 'warning'); return; }
+    if (username.length < 4) { tampilkanToast('Username minimal 4 karakter!', 'warning'); return; }
+    if (password.length < 6) { tampilkanToast('Password minimal 6 karakter!', 'warning'); return; }
+
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === username) { tampilkanToast('Username sudah digunakan!', 'error'); return; }
     }
 
-    function updatePreviewId() {
-        var role = document.getElementById('daftarRole').value;
-        document.getElementById('daftarIdPreview').textContent = generateId(role);
-    }
+    var status = (role === 'toko' || role === 'ojek') ? 'NONAKTIF (Menunggu Verifikasi)' : 'AKTIF';
+    var passwordHash = await hashPassword(password);
+    var akunBaru = {
+        id: generateId(role),
+        role: role,
+        username: username,
+        password: passwordHash,
+        nama: nama,
+        email: '',
+        nomorHp: '',
+        alamat: '',
+        namaBank: '',
+        nomorRekening: '',
+        pemilikRekening: '',
+        ktp: '',
+        status: status,
+        fitur: { paketTransaksi: ['paket1'] },
+        // --- TAMBAHAN LOKASI ---
+        latitude: lat || '',
+        longitude: lng || '',
+        alamatLokasi: alamat || '',
+        // ---------------------
+        waktuRegistrasi: new Date().toISOString()
+    };
+    dataAkun.push(akunBaru);
+    simpanDataAkun(dataAkun);
 
-    async function prosesDaftarAkun() {
-        var role = document.getElementById('daftarRole').value;
-        var username = document.getElementById('daftarUsername').value.trim();
-        var password = document.getElementById('daftarPassword').value.trim();
-        var nama = document.getElementById('daftarNama').value.trim();
-        if (!role || !username || !password || !nama) { tampilkanToast('Data belum lengkap!', 'warning'); return; }
-        if (username.length < 4) { tampilkanToast('Username minimal 4 karakter!', 'warning'); return; }
-        if (password.length < 6) { tampilkanToast('Password minimal 6 karakter!', 'warning'); return; }
-        var dataAkun = getDataAkun();
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].username === username) { tampilkanToast('Username sudah digunakan!', 'error'); return; }
-        }
-        var status = (role === 'toko' || role === 'ojek') ? 'NONAKTIF (Menunggu Verifikasi)' : 'AKTIF';
-        var passwordHash = await hashPassword(password);
-                var akunBaru = {
-            id: generateId(role), role: role, username: username, password: passwordHash, nama: nama,
-            email: '', nomorHp: '', alamat: '', namaBank: '', nomorRekening: '', pemilikRekening: '', ktp: '',
-            status: status, 
-            fitur: { paketTransaksi: ['paket1'] }, // <--- TAMBAHKAN DI SINI
-            waktuRegistrasi: new Date().toISOString()
-        };
-        dataAkun.push(akunBaru);
-        simpanDataAkun(dataAkun);
-        document.getElementById('daftarUsername').value = '';
-        document.getElementById('daftarPassword').value = '';
-        document.getElementById('daftarNama').value = '';
-        updatePreviewId();
-        tampilkanToast('Akun ' + role + ' berhasil dibuat! ID: ' + akunBaru.id, 'success');
-    }
-    // ===== AKHIR BLOK 7.5.1 =====
+    document.getElementById('daftarUsername').value = '';
+    document.getElementById('daftarPassword').value = '';
+    document.getElementById('daftarNama').value = '';
+    document.getElementById('daftarLokasi').value = '';
+    document.getElementById('daftarLat').value = '';
+    document.getElementById('daftarLng').value = '';
+    updatePreviewId();
+
+    tampilkanToast('Akun ' + role + ' berhasil dibuat! ID: ' + akunBaru.id, 'success');
+}
+// ============================================================
+// AKHIR BLOK 7.5.1
+// ============================================================
 
     // ===== BLOK 7.5.2 - RENDER PERSETUJUAN AKUN =====
     function renderPersetujuanAkun() {
@@ -7946,7 +8034,9 @@ function hapusTagihanManual(idTagihan) {
 }
 // ===== AKHIR BLOK 8.25.2 =====
 // ===== AKHIR BLOK 8.25 =====
-    // ===== BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN =====
+// ============================================================
+// BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN (DENGAN LOKASI)
+// ============================================================
 
 // --- 1. Perbaiki toggleForm agar bisa membuka form pengajuan ---
 function toggleForm(tipe) {
@@ -7978,6 +8068,12 @@ document.getElementById('pengajuanBukaAkunForm')?.addEventListener('submit', fun
     var kontak = document.getElementById('pengajuanKontak').value.trim();
     var role = document.getElementById('pengajuanRole').value;
     var alasan = document.getElementById('pengajuanAlasan').value.trim();
+
+    // Ambil lokasi dari form pengajuan
+    var lat = document.getElementById('pengajuanLat').value.trim();
+    var lng = document.getElementById('pengajuanLng').value.trim();
+    var alamat = document.getElementById('pengajuanLokasi').value.trim();
+
     if (!nama || !kontak || !role || !alasan) { tampilkanToast('Semua data wajib diisi!', 'warning'); return; }
 
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
@@ -7987,6 +8083,11 @@ document.getElementById('pengajuanBukaAkunForm')?.addEventListener('submit', fun
         kontak: kontak,
         role: role,
         alasan: alasan,
+        // --- TAMBAHAN LOKASI ---
+        latitude: lat || '',
+        longitude: lng || '',
+        alamatLokasi: alamat || '',
+        // ---------------------
         status: 'MENUNGGU',
         waktu: new Date().toISOString()
     });
@@ -8013,10 +8114,11 @@ function renderPengajuanBukaAkun() {
     if (pengajuanMenunggu.length === 0) {
         html += '<div class="card"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan menunggu</h3></div></div>';
     } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Nama</th><th>Kontak</th><th>Role</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Nama</th><th>Kontak</th><th>Role</th><th>Alasan</th><th>Alamat Lokasi</th><th>Aksi</th></tr></thead><tbody>';
         for (var i = 0; i < pengajuanMenunggu.length; i++) {
             var p = pengajuanMenunggu[i];
-            html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.kontak) + '</td><td>' + p.role + '</td><td>' + escapeHtml(p.alasan) + '</td><td>';
+            var alamatTampil = p.alamatLokasi || p.latitude && p.longitude ? p.latitude + ', ' + p.longitude : '-';
+            html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.kontak) + '</td><td>' + p.role + '</td><td>' + escapeHtml(p.alasan) + '</td><td>' + escapeHtml(alamatTampil) + '</td><td>';
             html += '<button class="button button-success button-extra-small" onclick="setujuiPengajuanBukaAkun(\'' + p.id + '\')">Setujui & Buat Akun</button>';
             html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanBukaAkun(\'' + p.id + '\')">Tolak</button>';
             html += '</td></tr>';
@@ -8054,10 +8156,10 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
     }
 
     // --- BUAT PASSWORD HASH ---
-    var passwordHash = await hashPassword('123456'); // Password default tetap 123456
+    var passwordHash = await hashPassword('123456');
 
-    // --- BUAT AKUN BARU ---
-        var akunBaru = {
+    // --- BUAT AKUN BARU (DENGAN LOKASI DARI PENGAJUAN) ---
+    var akunBaru = {
         id: generateId(p.role),
         role: p.role,
         username: username,
@@ -8065,7 +8167,12 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
         nama: p.nama,
         email: p.kontak,
         nomorHp: p.kontak,
-        fitur: { paketTransaksi: ['paket1'] }, // <--- TAMBAHKAN DI SINI
+        fitur: { paketTransaksi: ['paket1'] },
+        // --- TAMBAHAN LOKASI ---
+        latitude: p.latitude || '',
+        longitude: p.longitude || '',
+        alamatLokasi: p.alamatLokasi || '',
+        // ---------------------
         status: 'NONAKTIF (Menunggu Verifikasi)',
         waktuRegistrasi: new Date().toISOString()
     };
@@ -8076,7 +8183,6 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
     dataPengajuan[index].status = 'DISETUJUI';
     localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
 
-    // --- TAMPILKAN NOTIFIKASI YANG BENAR ---
     tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Password: 123456. Silakan hubungi calon user.', 'success');
     renderPengajuanBukaAkun();
 }
@@ -8094,7 +8200,9 @@ function tolakPengajuanBukaAkun(idPengajuan) {
     tampilkanToast('Pengajuan ditolak.', 'success');
     renderPengajuanBukaAkun();
 }
-// ===== AKHIR BLOK 8.26 =====
+// ============================================================
+// AKHIR BLOK 8.26
+// ============================================================
     // ============================================================
 // BLOK 8.33 - RESET & PEMBERSIHAN (SuperAdmin)
 // ============================================================
@@ -10751,6 +10859,70 @@ function kirimKomentarStaf(id, index) {
 
 // ============================================================
 // AKHIR BLOK 8.55
+// ============================================================
+// ============================================================
+// BLOK 8.56 - AMBIL LOKASI OTOMATIS
+// ============================================================
+
+// --- Untuk Register ---
+function ambilLokasiRegister() {
+    if (!navigator.geolocation) {
+        tampilkanToast('Browser Anda tidak mendukung geolokasi.', 'error');
+        return;
+    }
+    tampilkanToast('Sedang mengambil lokasi...', 'info');
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        document.getElementById('registerLat').value = lat;
+        document.getElementById('registerLng').value = lng;
+        // Coba reverse geocoding (opsional, bisa pakai API gratis)
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var alamat = data.display_name || 'Lokasi tidak diketahui';
+                document.getElementById('registerLokasi').value = alamat;
+                tampilkanToast('Lokasi berhasil diambil!', 'success');
+            })
+            .catch(function() {
+                document.getElementById('registerLokasi').value = 'Lat: ' + lat + ', Lng: ' + lng;
+                tampilkanToast('Lokasi berhasil diambil (tanpa alamat).', 'success');
+            });
+    }, function(err) {
+        tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
+    });
+}
+
+// --- Untuk Pengajuan Buka Akun ---
+function ambilLokasiPengajuan() {
+    if (!navigator.geolocation) {
+        tampilkanToast('Browser Anda tidak mendukung geolokasi.', 'error');
+        return;
+    }
+    tampilkanToast('Sedang mengambil lokasi...', 'info');
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        document.getElementById('pengajuanLat').value = lat;
+        document.getElementById('pengajuanLng').value = lng;
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var alamat = data.display_name || 'Lokasi tidak diketahui';
+                document.getElementById('pengajuanLokasi').value = alamat;
+                tampilkanToast('Lokasi berhasil diambil!', 'success');
+            })
+            .catch(function() {
+                document.getElementById('pengajuanLokasi').value = 'Lat: ' + lat + ', Lng: ' + lng;
+                tampilkanToast('Lokasi berhasil diambil (tanpa alamat).', 'success');
+            });
+    }, function(err) {
+        tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
+    });
+}
+
+// ============================================================
+// AKHIR BLOK 8.56
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
