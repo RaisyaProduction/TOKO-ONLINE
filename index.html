@@ -828,11 +828,7 @@ function buatSidebarHTML(role) {
                         }
                     }
                     // --- PAKET 2: SISTEM KASIR & PEMERIKSAAN STOK ---
-                    if (paket.includes('paket2')) {
-                        base.push(
-                            { halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' }
-                            // Tambahan menu kasir lain bisa ditambahkan di sini
-                        );
+                    if (paket.includes('paket2')) {base.push({ halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' },{ halaman: 'laporanPemeriksaan', icon: 'fa-clipboard-list', label: 'Laporan Pemeriksaan Stok' });
                     }
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
@@ -866,7 +862,8 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) base.push({ halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' });
+                    if (paket.includes('paket2')) {base.push({ halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' },{ halaman: 'laporanPemeriksaan', icon: 'fa-clipboard-list', label: 'Laporan Pemeriksaan Stok' });
+                    }
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
