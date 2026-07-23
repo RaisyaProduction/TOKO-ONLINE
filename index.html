@@ -7572,10 +7572,27 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
     if (index === -1) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
 
     var p = dataPengajuan[index];
-    // Buat akun baru (status NONAKTIF, menunggu verifikasi)
+
+    // --- BUAT USERNAME TANPA ANGKA ACAK (HANYA DARI NAMA) ---
+    var usernameDasar = p.nama.toLowerCase().replace(/\s/g, '');
+    var username = usernameDasar;
     var dataAkun = getDataAkun();
-    var username = p.nama.toLowerCase().replace(/\s/g, '') + Math.floor(Math.random() * 100);
-    var passwordHash = await hashPassword('123456'); // Password default
+    var nomorUrut = 1;
+    // Jika username sudah ada, tambahkan angka urut
+    while (true) {
+        var sudahAda = false;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].username === username) { sudahAda = true; break; }
+        }
+        if (!sudahAda) break;
+        username = usernameDasar + nomorUrut;
+        nomorUrut++;
+    }
+
+    // --- BUAT PASSWORD HASH ---
+    var passwordHash = await hashPassword('123456'); // Password default tetap 123456
+
+    // --- BUAT AKUN BARU ---
     var akunBaru = {
         id: generateId(p.role),
         role: p.role,
@@ -7590,11 +7607,12 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
     dataAkun.push(akunBaru);
     simpanDataAkun(dataAkun);
 
-    // Update status pengajuan
+    // --- UPDATE STATUS PENGAJUAN ---
     dataPengajuan[index].status = 'DISETUJUI';
     localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
 
-    tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Pass: 123456. Silakan hubungi calon user.', 'success');
+    // --- TAMPILKAN NOTIFIKASI YANG BENAR ---
+    tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Password: 123456. Silakan hubungi calon user.', 'success');
     renderPengajuanBukaAkun();
 }
 
