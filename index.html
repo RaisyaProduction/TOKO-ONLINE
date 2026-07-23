@@ -8737,7 +8737,7 @@ function hapusKasirConfirm(id) {
 // ===== AKHIR BLOK 8.38 =====
 
 // ============================================================
-// BLOK 8.39 - LOGOUT KASIR & DASHBOARD KASIR
+// BLOK 8.39 - LOGOUT KASIR & DASHBOARD KASIR (TANPA MENU SIDEBAR LOGOUT)
 // ============================================================
 
 // --- LOGOUT KASIR (Kembali ke mode pemilik toko) ---
@@ -8767,11 +8767,12 @@ function tampilkanDashboardKasir(kasir) {
     document.getElementById('userNama').textContent = kasir.nama;
     document.getElementById('roleBadge').textContent = 'Kasir';
 
-    // Sidebar khusus kasir (hanya 2 menu utama)
+    // Sidebar khusus kasir (hanya Transaksi & Cek Stok) - Logout dihapus
     var sidebarHtml = '<div class="sidebar-menu-title">Menu Kasir</div>';
     sidebarHtml += '<div class="sidebar-menu-item" data-page="transaksiKasir"><i class="fas fa-cash-register"></i><span>Transaksi</span></div>';
     sidebarHtml += '<div class="sidebar-menu-item" data-page="pemeriksaanStok"><i class="fas fa-clipboard-check"></i><span>Cek Stok</span></div>';
-    sidebarHtml += '<div class="sidebar-menu-item" onclick="logoutKasir()"><i class="fas fa-sign-out-alt"></i><span>Logout Kasir</span></div>';
+    // Baris Logout Kasir di bawah ini sudah saya hapus:
+    // sidebarHtml += '<div class="sidebar-menu-item" onclick="logoutKasir()"><i class="fas fa-sign-out-alt"></i><span>Logout Kasir</span></div>';
     document.getElementById('sidebarContainer').innerHTML = sidebarHtml;
 
     // Setup navigasi sidebar agar tombol berfungsi
