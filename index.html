@@ -143,6 +143,35 @@
     <div class="authentication-footer">Sudah punya akun? <a onclick="toggleForm('login')">Login di sini</a></div>
 </form>
 <!-- ===== AKHIR BLOK 2.1.5 ===== -->
+<!-- ===== BLOK 2.1.6 - FORM LOGIN KASIR ===== -->
+<form class="authentication-form hidden-form" id="loginKasirForm">
+    <div class="authentication-logo" style="margin-bottom:15px;">
+        <i class="fas fa-user-cog" style="font-size:35px; color:#FF6B00;"></i>
+        <h3 style="margin:5px 0;">Login Kasir</h3>
+        <p style="font-size:13px; color:#888;">Masuk menggunakan akun kasir toko</p>
+    </div>
+    <div class="form-group">
+        <label>Username Kasir</label>
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="loginKasirUsername" placeholder="Masukkan username kasir" required>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Password Kasir</label>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="loginKasirPassword" placeholder="Masukkan password kasir" required>
+        </div>
+    </div>
+    <button type="submit" class="button-submit">
+        <i class="fas fa-sign-in-alt"></i> Login Kasir
+    </button>
+    <div class="authentication-footer" style="margin-top:15px;">
+        <a onclick="toggleForm('login')" style="cursor:pointer; color:#FF6B00; font-weight:600;">Kembali ke Login Utama</a>
+    </div>
+</form>
+<!-- ===== AKHIR BLOK 2.1.6 ===== -->
         </div>
     </div>
 </div>
@@ -971,7 +1000,6 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
                         { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
-                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
@@ -1227,7 +1255,6 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
     else if (namaHalaman === 'statusAkun') renderStatusAkunGabungan(); // Ganti ke gabungan
     else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
-    else if (namaHalaman === 'loginKasir') renderLoginKasir();
     else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
     else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
     else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
@@ -3023,18 +3050,22 @@ function toggleForm(tipe) {
     var login = document.getElementById('loginForm');
     var register = document.getElementById('registerForm');
     var pengajuan = document.getElementById('pengajuanBukaAkunForm');
+    var loginKasir = document.getElementById('loginKasirForm');
     
+    // Sembunyikan semua form
+    login.classList.add('hidden-form');
+    register.classList.add('hidden-form');
+    if (pengajuan) pengajuan.classList.add('hidden-form');
+    if (loginKasir) loginKasir.classList.add('hidden-form');
+
+    // Tampilkan form yang dipilih
     if (tipe === 'register') {
-        login.classList.add('hidden-form');
         register.classList.remove('hidden-form');
-        if (pengajuan) pengajuan.classList.add('hidden-form');
     } else if (tipe === 'pengajuanBukaAkun') {
-        login.classList.add('hidden-form');
-        register.classList.add('hidden-form');
         if (pengajuan) pengajuan.classList.remove('hidden-form');
-    } else { // login
-        register.classList.add('hidden-form');
-        if (pengajuan) pengajuan.classList.add('hidden-form');
+    } else if (tipe === 'loginKasir') {
+        if (loginKasir) loginKasir.classList.remove('hidden-form');
+    } else { // default ke login
         login.classList.remove('hidden-form');
     }
 }
@@ -3980,15 +4011,46 @@ function tampilkanDashboard(user) {
 // ===== AKHIR BLOK 8.6.1 =====
 
     // ===== BLOK 8.6.2 - DOMContentLoaded =====
-    document.addEventListener('DOMContentLoaded', async function() {
-        await inisialisasiSuperAdmin();
-        var dataUser = localStorage.getItem('2r_user');
-        if (dataUser) {
-            var user = JSON.parse(dataUser);
-            tampilkanDashboard(user);
+document.addEventListener('DOMContentLoaded', async function() {
+    await inisialisasiSuperAdmin();
+    var dataUser = localStorage.getItem('2r_user');
+    if (dataUser) {
+        var user = JSON.parse(dataUser);
+        tampilkanDashboard(user);
+    }
+
+    // --- EVENT LISTENER LOGIN KASIR (BARU) ---
+    document.getElementById('loginKasirForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var username = document.getElementById('loginKasirUsername').value.trim();
+        var password = document.getElementById('loginKasirPassword').value.trim();
+
+        if (!username || !password) {
+            tampilkanToast('Data wajib diisi!', 'warning');
+            return;
         }
+
+        var kasir = await validasiLoginKasir(username, password);
+        if (!kasir) {
+            tampilkanToast('Username atau password kasir salah!', 'error');
+            return;
+        }
+        if (kasir.status !== 'Aktif') {
+            tampilkanToast('Kasir tidak aktif!', 'error');
+            return;
+        }
+
+        // Simpan mode kasir
+        localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
+        // Simpan role asli (agar saat logout bisa kembali ke login utama)
+        localStorage.setItem('2r_user_original_role', 'toko');
+        localStorage.setItem('2r_user_role', 'kasir');
+
+        tampilkanToast('Login sebagai kasir berhasil!', 'success');
+        tampilkanDashboardKasir(kasir);
     });
-    // ===== AKHIR BLOK 8.6.2 =====
+});
+// ===== AKHIR BLOK 8.6.2 =====
 </script>
 <!-- ===== AKHIR BLOK 8.6 ===== -->
 
