@@ -7424,7 +7424,7 @@ function konfirmasiPembayaran() {
     location.reload();
 }
 // ===== AKHIR BLOK 8.24 =====
-    // ===== BLOK 8.25 - JS_DATA_PENAGIHAN (SuperAdmin & Staf Admin) =====
+    // ===== BLOK 8.25 - JS_DATA_PENAGIHAN (LENGKAP) =====
 function renderDataPenagihan() {
     var role = localStorage.getItem('2r_user_role');
     if (role !== 'superadmin' && role !== 'staf_admin') {
@@ -7465,7 +7465,7 @@ function renderDataPenagihan() {
     if (dataGabungan.length === 0) {
         html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada data akun</h3></div></div>';
     } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID Akun</th><th>Nama</th><th>Role</th><th>Akun Pro</th><th>Status Akun</th><th>Tagihan Terakhir</th><th>Status Tagihan</th></tr></thead><tbody>';
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID Akun</th><th>Nama</th><th>Role</th><th>Akun Pro</th><th>Status Akun</th><th>Tagihan Terakhir</th><th>Status Tagihan</th><th>Aksi</th></tr></thead><tbody>';
         for (var i = 0; i < dataGabungan.length; i++) {
             var d = dataGabungan[i];
             var badgeAkun = d.statusAkun === 'SUSPEN' ? 'badge-danger' : 'badge-success';
@@ -7485,12 +7485,53 @@ function renderDataPenagihan() {
             html += '<td><span class="badge ' + badgePro + '">' + (d.isPro ? 'PRO' : 'Biasa') + '</span></td>';
             html += '<td><span class="badge ' + badgeAkun + '">' + d.statusAkun + '</span></td>';
             html += '<td>' + tagihanText + '</td>';
-            html += '<td><span class="badge ' + badgeTagihan + '">' + (d.tagihanTerakhir ? d.tagihanTerakhir.status : '-') + '</span></td></tr>';
+            html += '<td><span class="badge ' + badgeTagihan + '">' + (d.tagihanTerakhir ? d.tagihanTerakhir.status : '-') + '</span></td>';
+            
+            // --- TAMBAHAN: TOMBOL FORCE SUSPEN / AKTIF ---
+            html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+            if (d.statusAkun !== 'SUSPEN') {
+                html += '<button class="button button-warning button-extra-small" onclick="forceSuspenAkun(\'' + d.id + '\')"><i class="fas fa-pause"></i> Suspen</button>';
+            } else {
+                html += '<button class="button button-success button-extra-small" onclick="forceAktifAkun(\'' + d.id + '\')"><i class="fas fa-play"></i> Aktifkan</button>';
+            }
+            html += '</td>';
+            // -------------------------------------------------
+            html += '</tr>';
         }
         html += '</tbody></table></div></div>';
     }
     areaKonten.innerHTML = html;
 }
+
+// ===== BLOK 8.25.1 - FORCE SUSPEN / AKTIF =====
+function forceSuspenAkun(idAkun) {
+    if (!confirm('Yakin ingin memaksa SUSPEN akun ini secara manual?')) return;
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === idAkun) {
+            dataAkun[i].status = 'SUSPEN';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Akun berhasil di-SUSPEN secara manual!', 'success');
+    renderDataPenagihan();
+}
+
+function forceAktifAkun(idAkun) {
+    if (!confirm('Yakin ingin memaksa AKTIFkan akun ini secara manual?')) return;
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === idAkun) {
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Akun berhasil di-AKTIFkan secara manual!', 'success');
+    renderDataPenagihan();
+}
+// ===== AKHIR BLOK 8.25.1 =====
 // ===== AKHIR BLOK 8.25 =====
     // ===== BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN =====
 
