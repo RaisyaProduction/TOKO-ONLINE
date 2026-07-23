@@ -354,7 +354,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
     .navbar-user span { font-size:13px; }
     .button-logout { padding:6px 12px; font-size:12px; }
     #menuToggle { display:block; }
-    .sidebar { width:80%; top:60px; bottom:0; z-index:999; position:fixed; left:0; }
+    .sidebar { width:80%; top:60px; bottom:0; z-index:999; position:fixed; left:-100%; transition:left 0.3s; }
     .sidebar.open { left:0; }
     .sidebar-overlay { top:60px; z-index:998; }
     .content { margin-left:0; padding:15px; margin-top:60px; }
@@ -773,17 +773,25 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
     // ===== BLOK 6.1.2 - SETUP NAVIGASI SIDEBAR =====
     function setupNavigasiSidebar() {
-        var items = document.querySelectorAll('.sidebar-menu-item');
-        items.forEach(function(item) {
-            item.onclick = function() {
-                var halaman = this.getAttribute('data-page');
-                if (!halaman) return;
-                items.forEach(function(m) { m.classList.remove('active'); });
-                this.classList.add('active');
-                navigasiKeHalaman(halaman);
-            };
-        });
-    }
+    var items = document.querySelectorAll('.sidebar-menu-item');
+    items.forEach(function(item) {
+        item.onclick = function() {
+            var halaman = this.getAttribute('data-page');
+            if (!halaman) return;
+            items.forEach(function(m) { m.classList.remove('active'); });
+            this.classList.add('active');
+            navigasiKeHalaman(halaman);
+            
+            // Tutup sidebar otomatis di HP
+            if (window.innerWidth <= 767) {
+                var sidebar = document.querySelector('.sidebar');
+                var overlay = document.getElementById('sidebarOverlay');
+                if (sidebar) sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+            }
+        };
+    });
+}
     // ===== AKHIR BLOK 6.1.2 =====
 </script>
 <!-- ===== AKHIR BLOK 6.1 ===== -->
