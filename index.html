@@ -619,6 +619,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
         { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
         { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
         { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+        { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
         { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
         { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' }
     ] }
@@ -735,7 +736,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 ],
             // === STAF ADMIN, CS, STAF OWNER, SPONSOR ===
             'staf_admin': [
-                { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' }, { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
+                { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' }, { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },{ halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
             ],
             'customer_service': [
                 { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'tiketBantuan', icon: 'fa-ticket-alt', label: 'Tiket Bantuan' }, { halaman: 'liveChat', icon: 'fa-comments', label: 'Live Chat' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] }
@@ -829,6 +830,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hapusAkun') renderHapusAkun();
     else if (namaHalaman === 'backupRestore') renderBackupRestore();
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
+    else if (namaHalaman === 'dataPenagihan') renderDataPenagihan();
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -7285,6 +7287,74 @@ function konfirmasiPembayaran() {
     location.reload();
 }
 // ===== AKHIR BLOK 8.24 =====
+    // ===== BLOK 8.25 - JS_DATA_PENAGIHAN (SuperAdmin & Staf Admin) =====
+function renderDataPenagihan() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataAkun = getDataAkun();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+
+    // Gabungkan data akun dengan tagihan terakhirnya
+    var dataGabungan = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'superadmin' || a.role === 'customer') continue; // Skip admin & customer
+
+        // Cari tagihan terakhir akun ini
+        var tagihanTerakhir = null;
+        for (var j = dataTagihan.length - 1; j >= 0; j--) {
+            if (dataTagihan[j].akunId === a.id) {
+                tagihanTerakhir = dataTagihan[j];
+                break;
+            }
+        }
+        dataGabungan.push({
+            id: a.id,
+            nama: a.nama || a.username,
+            role: a.role,
+            statusAkun: a.status || 'AKTIF',
+            isPro: a.isPro || false,
+            tagihanTerakhir: tagihanTerakhir
+        });
+    }
+
+    var html = '<div class="page-header"><h2>Data Penagihan Akun</h2><p>Daftar tagihan dan status akun Toko, Pedagang, dan COD Seller.</p></div>';
+    if (dataGabungan.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada data akun</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID Akun</th><th>Nama</th><th>Role</th><th>Akun Pro</th><th>Status Akun</th><th>Tagihan Terakhir</th><th>Status Tagihan</th></tr></thead><tbody>';
+        for (var i = 0; i < dataGabungan.length; i++) {
+            var d = dataGabungan[i];
+            var badgeAkun = d.statusAkun === 'SUSPEN' ? 'badge-danger' : 'badge-success';
+            var badgePro = d.isPro ? 'badge-success' : 'badge-warning';
+            var tagihanText = '-';
+            var badgeTagihan = 'badge-secondary';
+            
+            if (d.tagihanTerakhir) {
+                var t = d.tagihanTerakhir;
+                tagihanText = 'Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + ' (' + t.bulan + '/' + t.tahun + ')';
+                badgeTagihan = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+            }
+
+            html += '<tr><td>' + escapeHtml(d.id) + '</td>';
+            html += '<td>' + escapeHtml(d.nama) + '</td>';
+            html += '<td>' + d.role + '</td>';
+            html += '<td><span class="badge ' + badgePro + '">' + (d.isPro ? 'PRO' : 'Biasa') + '</span></td>';
+            html += '<td><span class="badge ' + badgeAkun + '">' + d.statusAkun + '</span></td>';
+            html += '<td>' + tagihanText + '</td>';
+            html += '<td><span class="badge ' + badgeTagihan + '">' + (d.tagihanTerakhir ? d.tagihanTerakhir.status : '-') + '</span></td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 8.25 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
