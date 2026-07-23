@@ -743,7 +743,72 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 <!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
 <script>            
-// ===== BLOK 6.1.1 - MEMBANGUN SIDEBAR BERDASARKAN ROLE PENGGUNA (VERSI DINAMIS & AMAN) =====
+// ===== BLOK 6.1.1 - MEMBANGUN SIDEBAR BERDASARKAN ROLE (VERSI FINAL & AMAN) =====
+
+// --- 1. DEFINISI FUNGSI DINAMIS UNTUK TOKO/PEDAGANG/COD SELLER ---
+function sidebarDinamisUntukRole(role, user) {
+    var dataTransfer = JSON.parse(localStorage.getItem('2r_transfer_paket') || '[]');
+    var dataPaket = JSON.parse(localStorage.getItem('2r_paket_transaksi') || '[]');
+    var fiturSaya = [];
+    for (var i = 0; i < dataTransfer.length; i++) {
+        if (dataTransfer[i].target_user_id === user.id && dataTransfer[i].status === 'AKTIF') {
+            var paketId = dataTransfer[i].paket_id;
+            for (var j = 0; j < dataPaket.length; j++) {
+                if (dataPaket[j].id === paketId) {
+                    fiturSaya = fiturSaya.concat(dataPaket[j].fitur);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Menu Dasar untuk Toko/Pedagang/COD Seller
+    var menu = [
+        {
+            judul: 'Menu Utama',
+            items: [
+                { halaman: 'dashboard', ikon: 'fa-th-large', label: 'Dasbor' },
+                { halaman: 'profile', ikon: 'fa-user-circle', label: 'Profil' },
+                { halaman: 'chat', ikon: 'fa-comments', label: 'Chat' },
+                { halaman: 'helloFriends', ikon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                { halaman: 'menuIklan', ikon: 'fa-ad', label: 'Menu Iklan' },
+                { halaman: 'papanInformasi', ikon: 'fa-bullhorn', label: 'Papan Informasi' },
+                { halaman: 'bantuanFAQ', ikon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+            ]
+        }
+    ];
+
+    // Menu Tambahan berdasarkan fitur
+    var menuTransaksi = [];
+    if (fiturSaya.indexOf('penjualan_offline') !== -1) {
+        menuTransaksi.push({ halaman: 'transaksiPenjualan', ikon: 'fa-cash-register', label: 'Transaksi Penjualan' });
+        menuTransaksi.push({ halaman: 'rekapPenjualan', ikon: 'fa-chart-bar', label: 'Rekap Penjualan' });
+        menuTransaksi.push({ halaman: 'rekapPengeluaran', ikon: 'fa-file-invoice', label: 'Rekap Pengeluaran' });
+        menuTransaksi.push({ halaman: 'modalCash', ikon: 'fa-coins', label: 'Modal Cash & Belanja' });
+    }
+    if (fiturSaya.indexOf('transaksi_online_1') !== -1) {
+        menuTransaksi.push({ halaman: 'transaksiOnline1', ikon: 'fa-credit-card', label: 'Transaksi Online 1 (Bayar ke Toko)' });
+    }
+    if (fiturSaya.indexOf('transaksi_online_2') !== -1) {
+        menuTransaksi.push({ halaman: 'transaksiOnline2', ikon: 'fa-mobile-alt', label: 'Transaksi Online 2 (Sistem Saldo)' });
+    }
+    if (menuTransaksi.length > 0) {
+        menu.push({ judul: 'Menu Transaksi', items: menuTransaksi });
+    }
+
+    // Menu Kelola Produk (tetap ada, tidak peduli paket)
+    var menuLokal = [];
+    if (role === 'toko' || role === 'pedagang' || role === 'codseller') {
+        menuLokal.push({ halaman: 'kelolaProduk', ikon: 'fa-box', label: 'Kelola Produk' });
+        menuLokal.push({ halaman: 'uploadProdukPublik', ikon: 'fa-upload', label: 'Upload Produk Publik' });
+        menuLokal.push({ halaman: 'manajemenStokGudang', ikon: 'fa-warehouse', label: 'Manajemen Stok Gudang' });
+        menuLokal.push({ halaman: 'settingToko', ikon: 'fa-store', label: 'Setting Toko' });
+        menu.push({ judul: 'Menu Kelola', items: menuLokal });
+    }
+    return menu;
+}
+
+// --- 2. FUNGSI UTAMA BUAT SIDEBAR ---
 function buatSidebarHTML(role) {
     // Ambil data pengguna yang sedang login
     var dataPengguna = JSON.parse(localStorage.getItem('2r_user') || '{}');
