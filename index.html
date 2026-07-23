@@ -207,6 +207,63 @@
     </div>
 </div>
 <!-- ===== AKHIR BLOK 2.3 ===== -->
+    <!-- ===== BLOK 2.3.1 - MODAL FORM TAGIHAN ===== -->
+<div class="modal-overlay" id="modalFormTagihan">
+    <div class="modal" style="max-width:500px;">
+        <div class="modal-header">
+            <h3 id="modalTagihanTitle">Tambah Tagihan</h3>
+            <button class="modal-close" onclick="tutupModalTagihan()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Akun</label>
+                <select id="tagihanAkunId" class="form-input">
+                    <option value="">-- Pilih Akun --</option>
+                </select>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Bulan</label>
+                    <select id="tagihanBulan" class="form-input">
+                        <option value="1">Januari</option>
+                        <option value="2">Februari</option>
+                        <option value="3">Maret</option>
+                        <option value="4">April</option>
+                        <option value="5">Mei</option>
+                        <option value="6">Juni</option>
+                        <option value="7">Juli</option>
+                        <option value="8">Agustus</option>
+                        <option value="9">September</option>
+                        <option value="10">Oktober</option>
+                        <option value="11">November</option>
+                        <option value="12">Desember</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tahun</label>
+                    <input type="number" id="tagihanTahun" class="form-input" value="2026" min="2020" max="2030">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Jumlah Tagihan (Rp)</label>
+                <input type="number" id="tagihanJumlah" class="form-input" placeholder="50000">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="tagihanStatus" class="form-input">
+                    <option value="BELUM_BAYAR">BELUM_BAYAR</option>
+                    <option value="LUNAS">LUNAS</option>
+                </select>
+            </div>
+            <input type="hidden" id="tagihanEditId" value="">
+        </div>
+        <div class="modal-footer">
+            <button class="button button-secondary" onclick="tutupModalTagihan()">Batal</button>
+            <button class="button button-primary" onclick="simpanTagihanManual()">Simpan</button>
+        </div>
+    </div>
+</div>
+<!-- ===== AKHIR BLOK 2.3.1 ===== -->
 <!-- ===== AKHIR BAGIAN 2 ===== -->
 <!-- ===== BAGIAN 3 - CSS GLOBAL & RESET ===== -->
 <style>
@@ -7442,7 +7499,9 @@ function konfirmasiPembayaran() {
     location.reload();
 }
 // ===== AKHIR BLOK 8.24 =====
-    // ===== BLOK 8.25 - JS_DATA_PENAGIHAN (VERSI FINAL - TAMPILAN SAJA) =====
+    // ===== BLOK 8.25 - JS_DATA_PENAGIHAN (VERSI FINAL HYBRID) =====
+
+// --- 1. RENDER HALAMAN DATA PENAGIHAN ---
 function renderDataPenagihan() {
     var role = localStorage.getItem('2r_user_role');
     if (role !== 'superadmin' && role !== 'staf_admin') {
@@ -7455,13 +7514,21 @@ function renderDataPenagihan() {
     var dataAkun = getDataAkun();
     var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
 
-    // Gabungkan data akun dengan tagihan terakhirnya
+    // HEADER HALAMAN
+    var html = '<div class="page-header"><h2>Data Penagihan Akun</h2><p>Daftar tagihan dan status akun Toko, Pedagang, dan COD Seller.</p></div>';
+    
+    // --- TOMBOL TAMBAH MANUAL (HANYA UNTUK SUPERADMIN) ---
+    html += '<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">';
+    html += '  <button class="button button-primary" onclick="bukaModalTambahTagihan()"><i class="fas fa-plus"></i> Tambah Tagihan Manual</button>';
+    html += '  <span style="font-size:12px; color:#888; align-self:center;">* Sistem otomatis berjalan tanggal 5 & 10. Tombol ini untuk intervensi darurat.</span>';
+    html += '</div>';
+
+    // GABUNGKAN DATA AKUN DENGAN TAGIHAN TERAKHIR
     var dataGabungan = [];
     for (var i = 0; i < dataAkun.length; i++) {
         var a = dataAkun[i];
-        if (a.role === 'superadmin' || a.role === 'customer') continue; // Skip admin & customer
+        if (a.role === 'superadmin' || a.role === 'customer') continue;
 
-        // Cari tagihan terakhir akun ini
         var tagihanTerakhir = null;
         for (var j = dataTagihan.length - 1; j >= 0; j--) {
             if (dataTagihan[j].akunId === a.id) {
@@ -7479,8 +7546,7 @@ function renderDataPenagihan() {
         });
     }
 
-    var html = '<div class="page-header"><h2>Data Penagihan Akun</h2><p>Daftar tagihan dan status akun Toko, Pedagang, dan COD Seller.</p></div>';
-
+    // --- TABEL DATA PENAGIHAN ---
     if (dataGabungan.length === 0) {
         html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada data akun</h3></div></div>';
     } else {
@@ -7508,15 +7574,25 @@ function renderDataPenagihan() {
             html += '<td>' + tagihanText + '</td>';
             html += '<td><span class="badge ' + badgeTagihan + '">' + (d.tagihanTerakhir ? d.tagihanTerakhir.status : '-') + '</span></td>';
             
-            // --- TAMBAHAN: TOMBOL FORCE SUSPEN / AKTIF (INTERVENSI DARURAT) ---
+            // --- KOLOM AKSI: EDIT/HAPUS TAGIHAN + FORCE SUSPEN/AKTIF ---
             html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+            
+            // Tombol CRUD Tagihan (hanya jika ada tagihan)
+            if (tagihanId) {
+                html += '<button class="button button-primary button-extra-small" onclick="bukaModalEditTagihan(\'' + tagihanId + '\')"><i class="fas fa-edit"></i> Edit</button>';
+                html += '<button class="button button-danger button-extra-small" onclick="hapusTagihanManual(\'' + tagihanId + '\')"><i class="fas fa-trash"></i> Hapus</button>';
+            } else {
+                html += '<span style="color:#999; font-size:12px;">Tidak ada</span>';
+            }
+            
+            // Tombol Force Status (selalu ada)
+            html += ' &nbsp;|&nbsp; ';
             if (d.statusAkun !== 'SUSPEN') {
                 html += '<button class="button button-warning button-extra-small" onclick="forceSuspenAkun(\'' + d.id + '\')"><i class="fas fa-pause"></i> Suspen</button>';
             } else {
                 html += '<button class="button button-success button-extra-small" onclick="forceAktifAkun(\'' + d.id + '\')"><i class="fas fa-play"></i> Aktifkan</button>';
             }
             html += '</td>';
-            // -------------------------------------------------
             html += '</tr>';
         }
         html += '</tbody></table></div></div>';
@@ -7524,7 +7600,7 @@ function renderDataPenagihan() {
     areaKonten.innerHTML = html;
 }
 
-// ===== BLOK 8.25.1 - FORCE SUSPEN / AKTIF (UNTUK ADMIN) =====
+// ===== BLOK 8.25.1 - FORCE SUSPEN / AKTIF =====
 function forceSuspenAkun(idAkun) {
     if (!confirm('Yakin ingin memaksa SUSPEN akun ini secara manual?')) return;
     var dataAkun = getDataAkun();
@@ -7552,6 +7628,129 @@ function forceAktifAkun(idAkun) {
     tampilkanToast('Akun berhasil di-AKTIFkan secara manual!', 'success');
     renderDataPenagihan();
 }
+
+// ===== BLOK 8.25.2 - CRUD TAGIHAN MANUAL (CADANGAN DARURAT) =====
+
+// --- 1. BUKA MODAL TAMBAH TAGIHAN ---
+function bukaModalTambahTagihan() {
+    document.getElementById('tagihanEditId').value = '';
+    document.getElementById('tagihanJumlah').value = '';
+    document.getElementById('tagihanStatus').value = 'BELUM_BAYAR';
+    document.getElementById('modalTagihanTitle').textContent = 'Tambah Tagihan Manual (Darurat)';
+    
+    var dataAkun = getDataAkun();
+    var select = document.getElementById('tagihanAkunId');
+    select.innerHTML = '<option value="">-- Pilih Akun --</option>';
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+            select.innerHTML += '<option value="' + a.id + '">' + a.id + ' - ' + a.nama + ' (' + a.role + ')</option>';
+        }
+    }
+    document.getElementById('tagihanAkunId').disabled = false;
+    bukaModal('modalFormTagihan');
+}
+
+// --- 2. BUKA MODAL EDIT TAGIHAN ---
+function bukaModalEditTagihan(idTagihan) {
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihan = null;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].id === idTagihan) {
+            tagihan = dataTagihan[i];
+            break;
+        }
+    }
+    if (!tagihan) { tampilkanToast('Tagihan tidak ditemukan!', 'error'); return; }
+    
+    document.getElementById('tagihanEditId').value = tagihan.id;
+    document.getElementById('tagihanAkunId').value = tagihan.akunId;
+    document.getElementById('tagihanBulan').value = tagihan.bulan;
+    document.getElementById('tagihanTahun').value = tagihan.tahun;
+    document.getElementById('tagihanJumlah').value = tagihan.jumlahTagihan;
+    document.getElementById('tagihanStatus').value = tagihan.status;
+    document.getElementById('modalTagihanTitle').textContent = 'Edit Tagihan (Darurat)';
+    document.getElementById('tagihanAkunId').disabled = true;
+    bukaModal('modalFormTagihan');
+}
+
+// --- 3. TUTUP MODAL ---
+function tutupModalTagihan() {
+    tutupModal('modalFormTagihan');
+    document.getElementById('tagihanAkunId').disabled = false;
+}
+
+// --- 4. SIMPAN TAGIHAN (TAMBAH / EDIT) ---
+function simpanTagihanManual() {
+    var editId = document.getElementById('tagihanEditId').value;
+    var akunId = document.getElementById('tagihanAkunId').value;
+    var bulan = parseInt(document.getElementById('tagihanBulan').value);
+    var tahun = parseInt(document.getElementById('tagihanTahun').value);
+    var jumlah = parseFloat(document.getElementById('tagihanJumlah').value) || 0;
+    var status = document.getElementById('tagihanStatus').value;
+    
+    if (!akunId) { tampilkanToast('Pilih akun terlebih dahulu!', 'warning'); return; }
+    if (!bulan || !tahun || jumlah <= 0) { tampilkanToast('Data belum lengkap atau jumlah tidak valid!', 'warning'); return; }
+    
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    
+    if (editId) {
+        // --- EDIT ---
+        var found = false;
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].id === editId) {
+                dataTagihan[i].bulan = bulan;
+                dataTagihan[i].tahun = tahun;
+                dataTagihan[i].jumlahTagihan = jumlah;
+                dataTagihan[i].status = status;
+                found = true;
+                break;
+            }
+        }
+        if (!found) { tampilkanToast('Tagihan tidak ditemukan!', 'error'); return; }
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        tampilkanToast('Tagihan berhasil diperbarui!', 'success');
+    } else {
+        // --- TAMBAH BARU ---
+        // Cegah duplikasi tagihan (akun + bulan + tahun)
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === akunId && dataTagihan[i].bulan === bulan && dataTagihan[i].tahun === tahun) {
+                tampilkanToast('Tagihan untuk akun ini pada bulan dan tahun tersebut sudah ada!', 'warning');
+                return;
+            }
+        }
+        var tagihanBaru = {
+            id: 'TAG-' + Date.now(),
+            akunId: akunId,
+            bulan: bulan,
+            tahun: tahun,
+            jumlahTagihan: jumlah,
+            status: status
+        };
+        dataTagihan.push(tagihanBaru);
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        tampilkanToast('Tagihan berhasil ditambahkan secara manual!', 'success');
+    }
+    
+    tutupModalTagihan();
+    renderDataPenagihan();
+}
+
+// --- 5. HAPUS TAGIHAN ---
+function hapusTagihanManual(idTagihan) {
+    if (!confirm('Yakin ingin menghapus tagihan ini? Data tidak dapat dikembalikan.')) return;
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var dataBaru = [];
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].id !== idTagihan) {
+            dataBaru.push(dataTagihan[i]);
+        }
+    }
+    localStorage.setItem('2r_tagihan', JSON.stringify(dataBaru));
+    tampilkanToast('Tagihan dihapus!', 'success');
+    renderDataPenagihan();
+}
+// ===== AKHIR BLOK 8.25.2 =====
 // ===== AKHIR BLOK 8.25 =====
     // ===== BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN =====
 
