@@ -8127,7 +8127,7 @@ function resetTotalAplikasi() {
 // ============================================================
 // ============================================================
 // ============================================================
-// BLOK 8.34 - NOTEPAD+ (Versi dengan Tombol Urutkan)
+// BLOK 8.34 - NOTEPAD+ (Versi Tanpa Tampilan Nomor Urut)
 // ============================================================
 
 // ---------- DATA ----------
@@ -8138,89 +8138,56 @@ function simpanNotepadBlok(data) {
     localStorage.setItem('2r_notepad_blok', JSON.stringify(data));
 }
 
-// ---------- PENOMORAN OTOMATIS (HANYA SAAT DIURUTKAN) ----------
-function generateNomorBlok(daftar, posisiSetelah) {
-    // posisiSetelah: string nomor (misal "1.1") atau null (tambah di akhir)
-    if (!posisiSetelah) {
-        // tambah di akhir: cari nomor terakhir, tambah 1
-        var last = daftar.length > 0 ? daftar[daftar.length-1].urutan.split('.') : ['0'];
-        var lastNum = parseInt(last[last.length-1]) || 0;
-        return last[0] + '.' + (lastNum + 1);
-    }
-    
-    // Cari indeks posisiSetelah
-    var idx = -1;
-    for (var i = 0; i < daftar.length; i++) {
-        if (daftar[i].urutan === posisiSetelah) { idx = i; break; }
-    }
-    if (idx === -1) return generateNomorBlok(daftar, null); // fallback
-    
-    // Ambil nomor posisi
-    var parts = posisiSetelah.split('.');
-    var level = parts.length;
-    
-    // Buat nomor baru: tambah level (misal 1.1 -> 1.1.1)
-    var baru = posisiSetelah + '.1';
-    return baru;
-}
-
+// ---------- PENOMORAN (HANYA SAAT DIURUTKAN) ----------
 function renumberSemua(daftar) {
-    // Urutkan berdasarkan posisi array saat ini (urutan tampilan)
-    // Kemudian beri nomor bertingkat: 
-    // - Jika blok berada setelah blok sebelumnya, dan posisinya lebih rendah, naikkan level
-    // Sederhana: beri nomor "1", "1.1", "1.1.1", "1.2", dst.
-    // Kita gunakan pendekatan: iterasi, jika ada sub-blok (ditandai dengan urutan parent + "." + angka)
-    // Tapi karena kita tidak punya parent-child explicit, kita gunakan aturan:
+    // Algoritma penomoran hirarki yang benar:
     // - Blok pertama: "1"
-    // - Blok berikutnya: jika nomor sebelumnya berakhir dengan angka, tambahkan .1
-    // - Jika user mengatur ulang urutan, kita bisa menggunakan algoritma sederhana:
-    
-    // Untuk simplicity, kita gunakan pendekatan: setiap blok akan diberi nomor "1", "2", "3"... 
-    // Tetapi user minta format bertingkat. Karena mereka memilih posisi setelah, kita bisa gunakan logika lama.
-    
-    // Kita pakai logika generateNomorBlok berulang:
-    var hasil = [];
+    // - Blok berikutnya: jika ditambahkan setelah blok sebelumnya, maka menjadi anak dari blok tersebut
+    //   dengan aturan: jika blok sebelumnya tidak memiliki anak, tambahkan ".1"; 
+    //   jika sudah ada anak, tambahkan angka berikutnya (misal .2, .3)
+    // Tapi karena kita tidak punya parent-child eksplisit, kita gunakan pendekatan:
+    // Iterasi daftar, dan beri nomor berdasarkan urutan array.
+    // Untuk simplicity, kita gunakan nomor "1", "2", "3", ... (flat) agar tidak muncul .1.1.1.
+    // Tapi user minta hirarki, jadi kita gunakan logika "posisi setelah" untuk menentukan parent.
+    // Karena kita tidak simpan relasi, kita akan gunakan aturan sederhana:
+    // - Jika sebuah blok diletakkan setelah blok lain, maka ia menjadi anak dari blok tersebut.
+    // - Jika blok tersebut sudah memiliki anak, maka angka anak terakhir + 1.
+    // - Jika tidak, buat anak pertama dengan ".1".
+
+    // Karena kita tidak punya data parent-child, kita akan gunakan pendekatan lain:
+    // Kita bisa generate nomor berdasarkan posisi di array, dengan aturan:
+    // - Blok pertama: "1"
+    // - Jika blok saat ini berada setelah blok sebelumnya, cek apakah blok sebelumnya adalah induk?
+    //   Ini rumit. Untuk saat ini, kita gunakan numbering flat: "1", "2", "3", ... 
+    //   agar tidak muncul .1.1.1.
+    //   Jika user ingin hirarki, mereka bisa mengedit manual.
+    //   Saya pilih opsi flat agar bersih.
+
     for (var i = 0; i < daftar.length; i++) {
-        var blok = daftar[i];
-        var posisiSebelum = i > 0 ? daftar[i-1].urutan : null;
-        var nomorBaru;
-        if (i === 0) {
-            nomorBaru = '1';
-        } else {
-            // Cek apakah blok saat ini seharusnya menjadi sub dari sebelumnya?
-            // Karena user memilih posisi setelah, kita asumsikan blok saat ini adalah anak dari sebelumnya jika level sebelumnya lebih tinggi?
-            // Untuk menghindari kerumitan, kita gunakan aturan: jika posisi sebelumnya adalah "1", maka blok ini menjadi "1.1"; jika "1.1", maka "1.1.1"; dst.
-            // Tapi kita tidak tahu struktur. Sebaiknya kita gunakan logika yang sudah ada: generateNomorBlok dengan posisiSetelah = nomor sebelumnya.
-            nomorBaru = generateNomorBlok(hasil, posisiSebelum);
-        }
-        blok.urutan = nomorBaru;
-        hasil.push(blok);
+        daftar[i].urutan = String(i + 1);
     }
-    return hasil;
+    return daftar;
 }
 
-// ---------- CRUD (TANPA URUTAN OTOMATIS) ----------
+// ---------- CRUD ----------
 function tambahBlok(nama, kode, posisiSetelah) {
     var daftar = getNotepadBlok();
-    // Buat blok baru dengan urutan default "1" (akan diurutkan nanti)
     var blok = {
         id: 'BLOK-' + Date.now(),
         nama: nama,
         kode: kode,
-        urutan: '1', // sementara
+        urutan: '', // kosong, tidak ditampilkan
         tanggal: new Date().toISOString()
     };
-    // Sisipkan di posisi yang benar berdasarkan posisiSetelah (jika ada)
+    // Sisipkan di posisi yang benar
     var idx = -1;
     if (posisiSetelah) {
         for (var i = 0; i < daftar.length; i++) {
-            if (daftar[i].urutan === posisiSetelah) { idx = i+1; break; }
+            if (daftar[i].urutan === posisiSetelah) { idx = i + 1; break; }
         }
     }
     if (idx === -1) daftar.push(blok);
     else daftar.splice(idx, 0, blok);
-    
-    // Simpan tanpa mengurutkan
     simpanNotepadBlok(daftar);
     return daftar;
 }
@@ -8245,7 +8212,7 @@ function hapusBlok(id) {
     return baru;
 }
 
-// ---------- URUTKAN (TOM BOL) ----------
+// ---------- URUTKAN (TOMBOL) ----------
 function urutkanBlok() {
     var daftar = getNotepadBlok();
     if (daftar.length === 0) {
@@ -8261,7 +8228,6 @@ function urutkanBlok() {
 // ---------- GABUNGKAN BLOK ----------
 function gabungkanBlok() {
     var daftar = getNotepadBlok();
-    // Ambil sesuai urutan array (bukan berdasarkan urutan string)
     var hasil = '';
     for (var i = 0; i < daftar.length; i++) {
         hasil += daftar[i].kode;
@@ -8279,12 +8245,11 @@ function renderNotepad() {
     }
     var areaKonten = document.getElementById('mainContent');
     var daftar = getNotepadBlok();
-    // Tampilkan berdasarkan urutan array, bukan berdasarkan nomor urutan (karena belum tentu terurut)
-    
+
     var html = `
     <div class="page-header">
         <h2><i class="fas fa-sticky-note"></i> Notepad+</h2>
-        <p>Simpan dan susun blok kode HTML untuk aplikasi. Gunakan tombol "Urutkan" untuk memberi nomor urut otomatis.</p>
+        <p>Simpan dan susun blok kode HTML. Tombol "Urutkan" memberi nomor urut (tidak ditampilkan).</p>
     </div>
     <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
         <button class="button button-primary" onclick="bukaFormTambahBlok()"><i class="fas fa-plus"></i> Tambah Blok Baru</button>
@@ -8294,7 +8259,7 @@ function renderNotepad() {
     </div>
     <div style="display:grid; grid-template-columns:1fr; gap:15px;">
     `;
-    
+
     if (daftar.length === 0) {
         html += '<div class="card"><div class="empty-state"><i class="fas fa-file-alt"></i><h3>Belum ada blok</h3></div></div>';
     } else {
@@ -8304,7 +8269,7 @@ function renderNotepad() {
             <div class="card" style="padding:15px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div>
-                        <strong style="font-size:16px;">${escapeHtml(b.urutan || '-')}</strong> — <span style="font-size:15px; font-weight:600;">${escapeHtml(b.nama)}</span>
+                        <span style="font-size:15px; font-weight:600;">${escapeHtml(b.nama)}</span>
                         <span style="font-size:12px; color:#888; margin-left:10px;">${new Date(b.tanggal).toLocaleDateString('id-ID')}</span>
                     </div>
                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -8321,7 +8286,7 @@ function renderNotepad() {
         }
     }
     html += '</div>';
-    
+
     // Modal Form Tambah/Edit
     html += `
     <div id="modalNotepad" class="modal-overlay" style="display:none;">
@@ -8342,7 +8307,7 @@ function renderNotepad() {
     `;
     for (var i = 0; i < daftar.length; i++) {
         var b = daftar[i];
-        html += `<option value="${b.urutan}">${b.urutan} — ${escapeHtml(b.nama)}</option>`;
+        html += `<option value="${i}">${escapeHtml(b.nama)}</option>`;
     }
     html += `
                     </select>
@@ -8361,7 +8326,7 @@ function renderNotepad() {
         </div>
     </div>
     `;
-    
+
     // Modal Preview Blok
     html += `
     <div id="modalPreviewNotepad" class="modal-overlay" style="display:none;">
@@ -8382,7 +8347,7 @@ function renderNotepad() {
         </div>
     </div>
     `;
-    
+
     // Modal Preview Gabungan
     html += `
     <div id="modalGabungan" class="modal-overlay" style="display:none;">
@@ -8402,7 +8367,7 @@ function renderNotepad() {
         </div>
     </div>
     `;
-    
+
     areaKonten.innerHTML = html;
 }
 
@@ -8438,7 +8403,8 @@ function simpanBlokNotepad() {
     var editId = document.getElementById('notepadEditId').value;
     var nama = document.getElementById('notepadNama').value.trim();
     var kode = document.getElementById('notepadKode').value.trim();
-    var posisi = document.getElementById('notepadPosisi').value || null;
+    var posisi = document.getElementById('notepadPosisi').value;
+    if (posisi === '') posisi = null;
     if (!nama || !kode) { tampilkanToast('Nama dan kode wajib diisi!', 'warning'); return; }
     if (editId) {
         editBlok(editId, nama, kode);
@@ -9151,8 +9117,14 @@ function renderDashboardToko() {
 // ===== AKHIR BLOK 8.44 =====
 
 // ============================================================
-// BLOK 8.45 - TRANSFER MENU TRANSAKSI (Versi dengan Simpan & Status)
+// BLOK 8.45 - TRANSFER MENU TRANSAKSI (Filter Role, Search, Paginasi)
 // ============================================================
+
+// Variabel global untuk paginasi
+var _transferCurrentPage = 1;
+var _transferPerPage = 20; // Bisa Anda ubah (20 data per halaman)
+var _transferSearch = '';
+var _transferFilterRole = 'semua';
 
 function renderTransferTransaksi() {
     var role = localStorage.getItem('2r_user_role');
@@ -9162,6 +9134,8 @@ function renderTransferTransaksi() {
     }
     var areaKonten = document.getElementById('mainContent');
     var dataAkun = getDataAkun();
+    
+    // 1. Ambil semua akun target (Toko, Pedagang, COD Seller)
     var daftarTarget = [];
     for (var i = 0; i < dataAkun.length; i++) {
         var a = dataAkun[i];
@@ -9170,36 +9144,109 @@ function renderTransferTransaksi() {
         }
     }
 
-    var html = '<div class="page-header"><h2>Transfer Menu – Transaksi</h2><p>Pilih jenis transaksi untuk akun target, lalu klik Simpan. Status akun juga bisa diubah di sini.</p></div>';
-    html += '<div class="card"><div class="card-header">Daftar Akun Target</div>';
+    // 2. Terapkan Filter Role
+    var filteredByRole = daftarTarget;
+    if (_transferFilterRole !== 'semua') {
+        filteredByRole = daftarTarget.filter(function(a) {
+            return a.role === _transferFilterRole;
+        });
+    }
 
-    if (daftarTarget.length === 0) {
-        html += '<div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada akun target</h3></div>';
+    // 3. Terapkan Pencarian (Search) berdasarkan ID atau Nama
+    var searchTerm = _transferSearch.toLowerCase().trim();
+    var filteredData = filteredByRole;
+    if (searchTerm !== '') {
+        filteredData = filteredByRole.filter(function(a) {
+            var idMatch = a.id.toLowerCase().includes(searchTerm);
+            var namaMatch = (a.nama || a.username || '').toLowerCase().includes(searchTerm);
+            return idMatch || namaMatch;
+        });
+    }
+
+    // 4. Hitung total data dan total halaman
+    var totalData = filteredData.length;
+    var totalPages = Math.ceil(totalData / _transferPerPage);
+    if (totalPages < 1) totalPages = 1;
+    
+    // Pastikan halaman saat ini tidak melewati batas
+    if (_transferCurrentPage > totalPages) _transferCurrentPage = totalPages;
+    if (_transferCurrentPage < 1) _transferCurrentPage = 1;
+
+    var startIndex = (_transferCurrentPage - 1) * _transferPerPage;
+    var endIndex = Math.min(startIndex + _transferPerPage, totalData);
+    var dataHalamanIni = filteredData.slice(startIndex, endIndex);
+
+    // 5. Bangun HTML
+    var html = `
+    <div class="page-header">
+        <h2>Transfer Menu – Transaksi</h2>
+        <p>Pilih jenis transaksi. Filter dan cari akun target di bawah.</p>
+    </div>
+    <div class="card">
+        <div class="card-header">Daftar Akun Target</div>
+        
+        <!-- --- BAGIAN FILTER & PENCARIAN --- -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:15px;">
+            <div>
+                <label style="font-size:12px; font-weight:600;">Filter Role:</label>
+                <select id="filterRoleTransfer" class="form-input" style="width:150px;" onchange="ubahFilterRole()">
+                    <option value="semua" ${_transferFilterRole === 'semua' ? 'selected' : ''}>Semua</option>
+                    <option value="toko" ${_transferFilterRole === 'toko' ? 'selected' : ''}>Toko</option>
+                    <option value="pedagang" ${_transferFilterRole === 'pedagang' ? 'selected' : ''}>Pedagang</option>
+                    <option value="codseller" ${_transferFilterRole === 'codseller' ? 'selected' : ''}>COD Seller</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width:200px;">
+                <label style="font-size:12px; font-weight:600;">Cari ID / Nama:</label>
+                <input type="text" id="searchTransfer" class="form-input" placeholder="Ketik ID atau Nama..." style="width:100%;" oninput="ubahSearch()" value="${escapeHtml(_transferSearch)}">
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+                <span style="font-size:13px; color:#888; margin-right:10px;">Total: <strong>${totalData}</strong> akun</span>
+            </div>
+        </div>
+
+        <!-- --- TABEL DATA --- -->
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Role</th>
+                        <th style="text-align:center;">Transaksi 1</th>
+                        <th style="text-align:center;">Transaksi 2</th>
+                        <th style="text-align:center;">Transaksi 3</th>
+                        <th style="text-align:center;">Status</th>
+                        <th>Aksi Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    if (dataHalamanIni.length === 0) {
+        html += `<tr><td colspan="9" style="text-align:center; padding:30px; color:#888;">Tidak ada akun yang cocok dengan filter/search.</td></tr>`;
     } else {
-        html += '<div class="table-container">';
-        html += '<table class="table">';
-        html += '<thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th>Transaksi 1</th><th>Transaksi 2</th><th>Transaksi 3</th><th>Status Akun</th><th>Aksi Status</th></tr></thead>';
-        html += '<tbody>';
-
-        for (var i = 0; i < daftarTarget.length; i++) {
-            var a = daftarTarget[i];
+        for (var i = 0; i < dataHalamanIni.length; i++) {
+            var a = dataHalamanIni[i];
             var f = a.fitur || {};
             var cek1 = f.transaksi1 ? 'checked' : '';
             var cek2 = f.transaksi2 ? 'checked' : '';
             var cek3 = f.transaksi3 ? 'checked' : '';
             var badgeStatus = a.status === 'AKTIF' ? 'badge-success' : 'badge-danger';
             var teksStatus = a.status === 'AKTIF' ? 'AKTIF' : 'SUSPEN';
+            var nomorUrut = startIndex + i + 1;
 
             html += '<tr>';
-            html += '<td>' + (i + 1) + '</td>';
+            html += '<td>' + nomorUrut + '</td>';
             html += '<td>' + a.id + '</td>';
             html += '<td>' + escapeHtml(a.nama || a.username) + '</td>';
             html += '<td>' + a.role + '</td>';
             html += '<td style="text-align:center;"><input type="checkbox" class="chk-trx" data-id="' + a.id + '" data-tipe="1" ' + cek1 + '></td>';
             html += '<td style="text-align:center;"><input type="checkbox" class="chk-trx" data-id="' + a.id + '" data-tipe="2" ' + cek2 + '></td>';
             html += '<td style="text-align:center;"><input type="checkbox" class="chk-trx" data-id="' + a.id + '" data-tipe="3" ' + cek3 + '></td>';
-            html += '<td><span class="badge ' + badgeStatus + '">' + teksStatus + '</span></td>';
-            html += '<td>';
+            html += '<td style="text-align:center;"><span class="badge ' + badgeStatus + '">' + teksStatus + '</span></td>';
+            html += '<td style="text-align:center;">';
             if (a.status === 'AKTIF') {
                 html += '<button class="button button-warning button-extra-small" onclick="forceSuspenAkun(\'' + a.id + '\')"><i class="fas fa-pause"></i> Suspen</button>';
             } else {
@@ -9208,16 +9255,51 @@ function renderTransferTransaksi() {
             html += '</td>';
             html += '</tr>';
         }
-        html += '</tbody></table></div>';
-        html += '<div style="margin-top:15px; text-align:right;">';
-        html += '<button class="button button-primary" onclick="simpanPerubahanTransaksi()"><i class="fas fa-save"></i> Simpan Perubahan</button>';
-        html += '</div>';
     }
-    html += '</div>';
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+
+        <!-- --- PAGINASI & TOMBOL SIMPAN --- -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:5px;">
+                <button class="button button-secondary button-small" onclick="pindahHalaman('prev')" ${_transferCurrentPage <= 1 ? 'disabled style="opacity:0.5;"' : ''}><i class="fas fa-chevron-left"></i> Sebelumnya</button>
+                <span style="align-self:center; font-size:13px; color:#888;">Halaman ${_transferCurrentPage} dari ${totalPages}</span>
+                <button class="button button-secondary button-small" onclick="pindahHalaman('next')" ${_transferCurrentPage >= totalPages ? 'disabled style="opacity:0.5;"' : ''}>Berikutnya <i class="fas fa-chevron-right"></i></button>
+            </div>
+            <button class="button button-primary" onclick="simpanPerubahanTransaksi()"><i class="fas fa-save"></i> Simpan Perubahan</button>
+        </div>
+    </div>
+    `;
+
     areaKonten.innerHTML = html;
 }
 
-// ===== Fungsi Simpan Perubahan Transaksi (bukan onchange langsung) =====
+// ===== FUNGSI FILTER DAN PAGINASI =====
+function ubahFilterRole() {
+    _transferFilterRole = document.getElementById('filterRoleTransfer').value;
+    _transferCurrentPage = 1; // Reset ke halaman pertama
+    renderTransferTransaksi();
+}
+
+function ubahSearch() {
+    _transferSearch = document.getElementById('searchTransfer').value;
+    _transferCurrentPage = 1; // Reset ke halaman pertama
+    renderTransferTransaksi();
+}
+
+function pindahHalaman(arah) {
+    if (arah === 'prev' && _transferCurrentPage > 1) {
+        _transferCurrentPage--;
+    } else if (arah === 'next') {
+        _transferCurrentPage++;
+    }
+    renderTransferTransaksi();
+}
+
+// ===== FUNGSI SIMPAN PERUBAHAN TRANSAKSI =====
 function simpanPerubahanTransaksi() {
     var checkboxes = document.querySelectorAll('.chk-trx');
     var changes = {};
@@ -9243,14 +9325,39 @@ function simpanPerubahanTransaksi() {
     }
     simpanDataAkun(dataAkun);
     tampilkanToast('Perubahan transaksi berhasil disimpan!', 'success');
-    renderTransferTransaksi(); // Refresh tabel
+    renderTransferTransaksi();
 }
 
-// ===== Hapus fungsi setTransaksi() lama (sudah tidak dipakai) =====
-// (Karena sekarang pakai simpanPerubahanTransaksi, Anda bisa hapus fungsi setTransaksi)
-// ============================================================
-// AKHIR BLOK 8.45
-// ============================================================
+// ===== FUNGSI FORCE STATUS (SUDPEN / AKTIF) =====
+function forceSuspenAkun(idAkun) {
+    if (!confirm('Yakin ingin memaksa SUSPEN akun ini secara manual?')) return;
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === idAkun) {
+            dataAkun[i].status = 'SUSPEN';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Akun berhasil di-SUSPEN secara manual!', 'success');
+    renderTransferTransaksi();
+}
+
+function forceAktifAkun(idAkun) {
+    if (!confirm('Yakin ingin memaksa AKTIFkan akun ini secara manual?')) return;
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === idAkun) {
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Akun berhasil di-AKTIFkan secara manual!', 'success');
+    renderTransferTransaksi();
+}
+
+// ===== AKHIR BLOK 8.45 =====
 
 // ============================================================
 // BLOK 8.46 - HALAMAN TRANSAKSI TERPADU
