@@ -744,7 +744,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 <!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
 <script>            
 // ============================================================
-// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP)
+// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP - FINAL)
 // ============================================================
 function buatSidebarHTML(role) {
     // --- Hitung notifikasi belum dibaca ---
@@ -795,7 +795,8 @@ function buatSidebarHTML(role) {
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
-                    { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' }
+                    { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' },
+                    { halaman: 'laporanTagihanOjek', icon: 'fa-file-invoice-dollar', label: 'Tagihan Ojek' }
                 ]
             }
         ],
@@ -836,7 +837,7 @@ function buatSidebarHTML(role) {
             }
         ],
 
-                // ===== TOKO =====
+        // ===== TOKO =====
         'toko': [
             {
                 judul: 'Menu Utama',
@@ -864,7 +865,9 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
+                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
                     ];
                     // --- Paket Transaksi 1 ---
                     if (paket.includes('paket1')) {
@@ -877,8 +880,7 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                             );
                         }
                     }
@@ -917,7 +919,9 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
+                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -929,8 +933,7 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                             );
                         }
                     }
@@ -969,7 +972,9 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
+                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -981,8 +986,7 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                             );
                         }
                     }
@@ -1012,7 +1016,10 @@ function buatSidebarHTML(role) {
                 items: [
                     { halaman: 'orderMasuk', icon: 'fa-motorcycle', label: 'Order Masuk' },
                     { halaman: 'riwayatOrder', icon: 'fa-history', label: 'Riwayat Order' },
-                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' }
+                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' },
+                    { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' },
+                    { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order Ojek' },
+                    { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                 ]
             }
         ],
@@ -1137,34 +1144,9 @@ function buatSidebarHTML(role) {
 // ============================================================
 // AKHIR BLOK 6.1.1
 // ============================================================
-    // ===== BLOK 6.1.2 - SETUP NAVIGASI SIDEBAR =====
-    function setupNavigasiSidebar() {
-    var items = document.querySelectorAll('.sidebar-menu-item');
-    items.forEach(function(item) {
-        item.onclick = function() {
-            var halaman = this.getAttribute('data-page');
-            if (!halaman) return;
-            items.forEach(function(m) { m.classList.remove('active'); });
-            this.classList.add('active');
-            navigasiKeHalaman(halaman);
-            
-            // Tutup sidebar otomatis di HP
-            if (window.innerWidth <= 767) {
-                var sidebar = document.querySelector('.sidebar');
-                var overlay = document.getElementById('sidebarOverlay');
-                if (sidebar) sidebar.classList.remove('open');
-                if (overlay) overlay.classList.remove('active');
-            }
-        };
-    });
-}
-    // ===== AKHIR BLOK 6.1.2 =====
-</script>
-<!-- ===== AKHIR BLOK 6.1 ===== -->
-
-<!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
-<script>
-    // ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
+// ============================================================
+// BLOK 6.2.1 - NAVIGASI KE HALAMAN (LENGKAP - FINAL)
+// ============================================================
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
@@ -1208,26 +1190,27 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'resetCleanup') renderResetCleanup();
     else if (namaHalaman === 'notepad') renderNotepad();
-    
-    
-    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
     else if (namaHalaman === 'logStok') renderLogStok();
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
-    else if (namaHalaman === 'statusAkun') renderStatusAkun();
+    else if (namaHalaman === 'statusAkun') renderStatusAkunGabungan(); // Ganti ke gabungan
     else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
     else if (namaHalaman === 'loginKasir') renderLoginKasir();
     else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
     else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
     else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
-    // ------------------------------------------------
-    
+    else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
+    else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
+    else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
+    else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
     else renderPlaceholder(namaHalaman);
 }
-// ===== AKHIR BLOK 6.2.1 =====
+// ============================================================
+// AKHIR BLOK 6.2.1
+// ============================================================
 
     // ===== BLOK 6.2.2 - RENDER PLACEHOLDER =====
     function renderPlaceholder(judul) {
@@ -3916,7 +3899,9 @@ function renderPapanInformasi() {
 
 <!-- ===== BLOK 8.6 - JS_INIT_UTAMA (DOMContentLoaded) ===== -->
 <script>
-    // ===== BLOK 8.6.1 - TAMPILKAN DASHBOARD =====
+// ============================================================
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (LENGKAP - FINAL)
+// ============================================================
 function tampilkanDashboard(user) {
     // Jika data user tidak valid, logout paksa dan reload
     if (!user || !user.nama) {
@@ -3926,14 +3911,35 @@ function tampilkanDashboard(user) {
         return;
     }
 
-    // Sembunyikan halaman login, tampilkan dashboard
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            userData = dataAkun[i];
+            break;
+        }
+    }
+
+    // --- PENANGANAN AKUN SUSPEN ---
+    if (userData && userData.status === 'SUSPEN') {
+        document.getElementById('pageAuthentication').style.display = 'none';
+        document.getElementById('pageDashboard').style.display = 'block';
+        document.getElementById('userNama').textContent = user.nama;
+        document.getElementById('roleBadge').textContent = user.role + ' (SUSPEN)';
+        
+        // Sidebar khusus SUSPEN (hanya 1 menu)
+        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
+        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Ajukan Pengaktifan</span></div>';
+        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
+        document.getElementById('mainContent').innerHTML = '';
+        renderAjukanPengaktifan();
+        return;
+    }
+
+    // --- SISTEM NORMAL ---
     document.getElementById('pageAuthentication').style.display = 'none';
     document.getElementById('pageDashboard').style.display = 'block';
-
-    // Tampilkan nama user di navbar
     document.getElementById('userNama').textContent = user.nama;
-
-    // Tampilkan badge Role di navbar
     var daftarRole = {
         superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek',
         pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service',
@@ -3941,30 +3947,29 @@ function tampilkanDashboard(user) {
     };
     document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
 
-    // Bangun sidebar dan setup navigasi
     document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
     setupNavigasiSidebar();
 
-    // === FITUR FOTO PROFIL (PERBAIKAN) ===
-    // Cek apakah user memiliki foto profil tersimpan
     var avatar = document.getElementById('userAvatar');
     var placeholder = document.getElementById('userAvatarPlaceholder');
     if (user.fotoProfil) {
-        // Jika ada foto, tampilkan foto dan sembunyikan placeholder
         avatar.src = user.fotoProfil;
         avatar.style.display = 'block';
         placeholder.style.display = 'none';
     } else {
-        // Jika tidak ada foto, sembunyikan tag img dan tampilkan placeholder ikon
         avatar.style.display = 'none';
         placeholder.style.display = 'block';
     }
-    // ===================================
+
+    // Jalankan inisialisasi tagihan (otomatis buat tagihan tgl 5 & suspensi tgl 10)
+    inisialisasiSistemTagihan();
 
     // Render halaman dashboard sesuai role
     renderDashboard();
 }
-// ===== AKHIR BLOK 8.6.1 =====
+// ============================================================
+// AKHIR BLOK 8.6.1
+// ============================================================
 
     // ===== BLOK 8.6.2 - DOMContentLoaded =====
     document.addEventListener('DOMContentLoaded', async function() {
