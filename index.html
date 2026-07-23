@@ -4053,9 +4053,10 @@ function renderPapanInformasi() {
 <!-- ===== BLOK 8.6 - JS_INIT_UTAMA (DOMContentLoaded) ===== -->
 <script>
 // ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (LENGKAP - FINAL)
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (LENGKAP - FINAL DENGAN LOKASI)
 // ============================================================
 function tampilkanDashboard(user) {
+    // Jika data user tidak valid, logout paksa dan reload
     if (!user || !user.nama) {
         localStorage.removeItem('2r_user');
         localStorage.removeItem('2r_user_role');
@@ -4066,7 +4067,10 @@ function tampilkanDashboard(user) {
     var dataAkun = getDataAkun();
     var userData = null;
     for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+        if (dataAkun[i].id === user.id) {
+            userData = dataAkun[i];
+            break;
+        }
     }
 
     // --- PENANGANAN AKUN SUSPEN ---
@@ -4075,7 +4079,7 @@ function tampilkanDashboard(user) {
         document.getElementById('pageDashboard').style.display = 'block';
         document.getElementById('userNama').textContent = user.nama;
         document.getElementById('roleBadge').textContent = user.role + ' (SUSPEN)';
-        
+
         var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
         menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Ajukan Pengaktifan</span></div>';
         document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
@@ -4088,7 +4092,7 @@ function tampilkanDashboard(user) {
     document.getElementById('pageAuthentication').style.display = 'none';
     document.getElementById('pageDashboard').style.display = 'block';
     document.getElementById('userNama').textContent = user.nama;
-    
+
     var daftarRole = {
         superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek',
         pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service',
@@ -4113,9 +4117,25 @@ function tampilkanDashboard(user) {
         }
     }
 
+    // ============================================================
+    // --- FITUR DETEKSI LOKASI OTOMATIS SAAT LOGIN ---
+    // ============================================================
+    // Hanya jalankan jika user BUKAN superadmin dan fungsi deteksiLokasi sudah ada
+    if (user.role !== 'superadmin' && typeof deteksiDanSimpanLokasi === 'function') {
+        // Panggil fungsi deteksi lokasi (tidak mengganggu jalannya dashboard jika gagal)
+        deteksiDanSimpanLokasi(user.id, function(err, result) {
+            if (err) {
+                // Lokasi gagal, tapi dashboard tetap jalan (tidak ada toast error)
+                // console.log('Lokasi tidak diperbarui:', err);
+            }
+        });
+    }
+    // ============================================================
+
     // Jalankan inisialisasi tagihan (otomatis buat tagihan tgl 5 & suspensi tgl 10)
     inisialisasiSistemTagihan();
 
+    // Render halaman dashboard sesuai role
     renderDashboard();
 }
 // ============================================================
@@ -11384,6 +11404,107 @@ function renderLihatTokoTerdekat() {
 }
 // ============================================================
 // AKHIR BLOK 8.59
+// ============================================================
+// ============================================================
+// BLOK 8.60 - JAM & TANGGAL REAL-TIME
+// ============================================================
+
+function updateJamTanggal() {
+    var now = new Date();
+    var jam = now.getHours().toString().padStart(2, '0');
+    var menit = now.getMinutes().toString().padStart(2, '0');
+    var detik = now.getSeconds().toString().padStart(2, '0');
+    document.getElementById('displayJam').textContent = jam + ':' + menit + ':' + detik;
+
+    var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][now.getDay()];
+    var tanggal = now.getDate().toString().padStart(2, '0');
+    var bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][now.getMonth()];
+    var tahun = now.getFullYear();
+    document.getElementById('displayTanggal').textContent = hari + ', ' + tanggal + ' ' + bulan + ' ' + tahun;
+}
+
+// Jalankan setiap 1 detik
+setInterval(updateJamTanggal, 1000);
+
+// Panggil sekali saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    updateJamTanggal();
+});
+
+// ============================================================
+// AKHIR BLOK 8.60
+// ============================================================
+    // ============================================================
+// BLOK 8.61 - DETEKSI ALAMAT OTOMATIS & UPDATE LOKASI
+// ============================================================
+
+function deteksiDanSimpanLokasi(userId, callback) {
+    if (!navigator.geolocation) {
+        if (callback) callback('Browser tidak mendukung geolokasi.');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+
+            // Coba reverse geocoding ke alamat
+            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    var alamat = data.display_name || 'Lokasi tidak diketahui';
+
+                    // Simpan ke data akun
+                    var dataAkun = getDataAkun();
+                    for (var i = 0; i < dataAkun.length; i++) {
+                        if (dataAkun[i].id === userId) {
+                            dataAkun[i].latitude = lat;
+                            dataAkun[i].longitude = lng;
+                            dataAkun[i].alamatLokasi = alamat;
+                            dataAkun[i].lastUpdateLokasi = new Date().toISOString();
+                            break;
+                        }
+                    }
+                    simpanDataAkun(dataAkun);
+
+                    // Jika user yang sedang login, update juga di session
+                    var userLogin = JSON.parse(localStorage.getItem('2r_user') || '{}');
+                    if (userLogin.id === userId) {
+                        userLogin.latitude = lat;
+                        userLogin.longitude = lng;
+                        userLogin.alamatLokasi = alamat;
+                        localStorage.setItem('2r_user', JSON.stringify(userLogin));
+                    }
+
+                    tampilkanToast('Lokasi terbaru Anda telah diperbarui!', 'success');
+                    if (callback) callback(null, { lat: lat, lng: lng, alamat: alamat });
+                })
+                .catch(function() {
+                    // Jika reverse geocoding gagal, tetap simpan koordinat
+                    var dataAkun = getDataAkun();
+                    for (var i = 0; i < dataAkun.length; i++) {
+                        if (dataAkun[i].id === userId) {
+                            dataAkun[i].latitude = lat;
+                            dataAkun[i].longitude = lng;
+                            dataAkun[i].alamatLokasi = 'Lat: ' + lat + ', Lng: ' + lng;
+                            dataAkun[i].lastUpdateLokasi = new Date().toISOString();
+                            break;
+                        }
+                    }
+                    simpanDataAkun(dataAkun);
+                    tampilkanToast('Lokasi diperbarui (tanpa alamat).', 'info');
+                    if (callback) callback(null, { lat: lat, lng: lng, alamat: null });
+                });
+        },
+        function(err) {
+            tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
+            if (callback) callback('Gagal: ' + err.message);
+        }
+    );
+}
+// ============================================================
+// AKHIR BLOK 8.61
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
