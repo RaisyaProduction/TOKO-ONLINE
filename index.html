@@ -346,31 +346,103 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
     .grid-2 { grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); }
 }
 
-/* ===== BLOK 4.5 - CSS_RESPONSIVE_HP ===== */
+/* ===== BLOK 4.5 - CSS_RESPONSIVE_HP (LENGKAP) ===== */
 @media (max-width:767px) {
-    .navbar { padding:10px 15px; position:fixed; top:0; left:0; right:0; z-index:1001; }
-    .navbar-brand { font-size:16px; gap:8px; }
-    .navbar-user .role-badge { font-size:10px; padding:2px 8px; }
-    .navbar-user span { font-size:13px; }
-    .button-logout { padding:6px 12px; font-size:12px; }
-    #menuToggle { display:block; }
-    
-    /* PERBAIKAN CSS SIDEBAR HP */
-    .sidebar { width:80%; top:60px; bottom:0; z-index:999; position:fixed; left:-100%; transition:left 0.3s ease-in-out; }
-    .sidebar.open { left:0; }
-    .sidebar-overlay { top:60px; z-index:998; display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); }
-    .sidebar-overlay.active { display:block; }
-    
-    .content { margin-left:0; padding:15px; margin-top:60px; }
-    .widget-grid { grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; }
-    .widget-card .widget-number { font-size:22px; }
-    .grid-2 { grid-template-columns:1fr; }
-    .table { font-size:12px; }
-    .modal { width:95%; padding:15px; }
-    .authentication-wrapper { padding:10px; }
-    .authentication-box { padding:20px; }
-}
+    .navbar {
+        padding: 10px 15px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1001;
+    }
+    .navbar-brand {
+        font-size: 16px;
+        gap: 8px;
+    }
+    .navbar-user .role-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+    .navbar-user span {
+        font-size: 13px;
+    }
+    .button-logout {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
 
+    /* --- TOMBOL HAMBURGER (GARIS TIGA) --- */
+    #menuToggle {
+        display: block !important;
+        cursor: pointer;
+        font-size: 24px;
+        color: var(--primary);
+        background: none;
+        border: none;
+        padding: 0;
+        margin-right: 10px;
+    }
+
+    /* --- SIDEBAR ANIMASI MASUK/KELUAR --- */
+    .sidebar {
+        width: 80%;
+        top: 64px;
+        bottom: 0;
+        z-index: 999;
+        position: fixed;
+        left: -100%; /* Sembunyikan di luar layar kiri */
+        transition: left 0.3s ease-in-out;
+    }
+    .sidebar.open {
+        left: 0; /* Muncul saat di-klik */
+    }
+
+    /* --- OVERLAY (LATAR BELAKANG GELAP) --- */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+    }
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* --- KONTEN UTAMA --- */
+    .content {
+        margin-left: 0;
+        padding: 15px;
+        margin-top: 64px;
+    }
+
+    /* --- GRID & TABEL HP --- */
+    .widget-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+    }
+    .widget-card .widget-number {
+        font-size: 22px;
+    }
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    .table {
+        font-size: 12px;
+    }
+    .modal {
+        width: 95%;
+        padding: 15px;
+    }
+    .authentication-wrapper {
+        padding: 10px;
+    }
+    .authentication-box {
+        padding: 20px;
+    }
+}
+/* ===== AKHIR BLOK 4.5 ===== */
 /* ===== BLOK 4.6 - CSS_HAMBURGER_OVERLAY ===== */
 #menuToggle { display:none; background:none; border:none; font-size:22px; cursor:pointer; color:var(--primary); padding:0; margin-right:10px; transition:transform 0.3s; }
 #menuToggle:active { transform:scale(0.9); }
@@ -2694,31 +2766,27 @@ function renderTransferLainnya() {
     });
     // ===== AKHIR BLOK 8.2.5 =====
 
-        // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE (PERBAIKAN) =====
+            // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE (FIX TOMBOL HP) =====
     var tombolMenu = document.getElementById('menuToggle');
     var sidebar = document.querySelector('.sidebar');
     var overlay = document.getElementById('sidebarOverlay');
-    
+
     if (tombolMenu && sidebar && overlay) {
-        // Klik tombol hamburger: buka/tutup sidebar
+        // Event untuk tombol hamburger
         tombolMenu.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('active');
-            } else {
-                sidebar.classList.add('open');
-                overlay.classList.add('active');
-            }
+            e.preventDefault();
+            e.stopPropagation(); // Mencegah konflik event lain
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
         });
 
-        // Klik area gelap di luar sidebar: tutup sidebar
+        // Klik area gelap di luar menu untuk menutup
         overlay.addEventListener('click', function() {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
         });
 
-        // Klik item menu di sidebar: otomatis tutup sidebar di HP
+        // Klik menu sidebar: otomatis tutup di HP
         document.querySelectorAll('.sidebar-menu-item').forEach(function(item) {
             item.addEventListener('click', function() {
                 if (window.innerWidth <= 767) {
@@ -2728,15 +2796,6 @@ function renderTransferLainnya() {
             });
         });
     }
-
-    // Saat resize layar dari HP ke PC, reset sidebar agar tidak error
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 767) {
-            var s = document.querySelector('.sidebar');
-            var o = document.getElementById('sidebarOverlay');
-            if (s && o) { s.classList.remove('open'); o.classList.remove('active'); }
-        }
-    });
     // ===== AKHIR BLOK 8.2.6 =====
 </script>
 <!-- ===== AKHIR BLOK 8.2 ===== -->
