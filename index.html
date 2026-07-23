@@ -3017,7 +3017,7 @@ function toggleForm(tipe) {
 }
 // ===== AKHIR BLOK 8.2.1 =====
 
-   // ===== BLOK 8.2.2 - LOGIN SUBMIT (GABUNGAN USER + KASIR) =====
+  // ===== BLOK 8.2.2 - LOGIN SUBMIT (AMAN) =====
 var loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async function(e) {
@@ -3027,16 +3027,14 @@ if (loginForm) {
         var errorBox = document.getElementById('authenticationError');
         var errorText = document.getElementById('authenticationErrorText');
         
-        // Sembunyikan error lama
         if (errorBox) errorBox.style.display = 'none';
 
-        // --- 1. Coba Login Sebagai User Biasa (Akun dari 2r_akun) ---
+        // --- Login user biasa ---
         var dataAkun = getDataAkun();
         var user = null;
         for (var i = 0; i < dataAkun.length; i++) {
             if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
         }
-
         if (user) {
             await migrasiPasswordJikaPerlu(username, password);
             dataAkun = getDataAkun();
@@ -3055,25 +3053,22 @@ if (loginForm) {
                 localStorage.setItem('2r_user', JSON.stringify(user));
                 localStorage.setItem('2r_user_role', user.role);
                 tampilkanDashboard(user);
-                return; // Login berhasil, stop di sini.
+                return;
             }
         }
 
-        // --- 2. Jika Gagal, Coba Login Sebagai Kasir (Akun dari 2r_kasir) ---
+        // --- Login kasir ---
         var kasir = await validasiLoginKasir(username, password);
         if (kasir && kasir.status === 'Aktif') {
-            // Simpan mode kasir
             localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
-            // Simpan role asli (agar bisa kembali ke toko saat logout)
-            localStorage.setItem('2r_user_original_role', 'toko'); 
+            localStorage.setItem('2r_user_original_role', 'toko');
             localStorage.setItem('2r_user_role', 'kasir');
-            
             tampilkanToast('Login sebagai kasir berhasil!', 'success');
             tampilkanDashboardKasir(kasir);
-            return; // Login berhasil, stop di sini.
+            return;
         }
 
-        // --- 3. Jika Semua Gagal, Tampilkan Error ---
+        // --- Gagal ---
         if (errorBox) {
             errorBox.style.display = 'block';
             errorText.textContent = 'Username atau password salah!';
@@ -3108,42 +3103,44 @@ if (loginForm) {
     });
     // ===== AKHIR BLOK 8.2.3 =====
 
-    // ===== BLOK 8.2.4 - LUPA PASSWORD (DENGAN PENGECUALIAN SUPERADMIN) =====
-document.getElementById('tombolLupaPassword').addEventListener('click', async function() {
-    var username = document.getElementById('loginUsername').value.trim();
-    if (!username) { tampilkanToast('Masukkan username terlebih dahulu!', 'warning'); return; }
-    
-    // 🔒 Cegah reset password untuk SuperAdmin
-    if (username === 'admin') {
-        tampilkanToast('SuperAdmin tidak dapat mereset password melalui form ini. Hubungi pengelola sistem.', 'error');
-        return;
-    }
+    // ===== BLOK 8.2.4 - LUPA PASSWORD (AMAN) =====
+var tombolLupa = document.getElementById('tombolLupaPassword');
+if (tombolLupa) {
+    tombolLupa.addEventListener('click', async function() {
+        var username = document.getElementById('loginUsername').value.trim();
+        if (!username) { tampilkanToast('Masukkan username terlebih dahulu!', 'warning'); return; }
+        
+        // 🔒 Cegah reset password untuk SuperAdmin
+        if (username === 'admin') {
+            tampilkanToast('SuperAdmin tidak dapat mereset password melalui form ini. Hubungi pengelola sistem.', 'error');
+            return;
+        }
 
-    var dataAkun = getDataAkun();
-    var user = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
-    }
-    if (!user) { tampilkanToast('Username tidak ditemukan!', 'error'); return; }
-    
-    var newPassword = Math.random().toString(36).slice(-8);
-    var hash = await hashPassword(newPassword);
-    user.password = hash;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].username === username) { dataAkun[i].password = hash; break; }
-    }
-    simpanDataAkun(dataAkun);
-    tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
-});
-
-    // ===== BLOK 8.2.5 - LOGOUT (AMAN) =====
+        var dataAkun = getDataAkun();
+        var user = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
+        }
+        if (!user) { tampilkanToast('Username tidak ditemukan!', 'error'); return; }
+        
+        var newPassword = Math.random().toString(36).slice(-8);
+        var hash = await hashPassword(newPassword);
+        user.password = hash;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].username === username) { dataAkun[i].password = hash; break; }
+        }
+        simpanDataAkun(dataAkun);
+        tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
+    });
+}
+// ===== AKHIR BLOK 8.2.4 =====
+// ===== BLOK 8.2.5 - LOGOUT (AMAN) =====
 var logoutBtn = document.getElementById('buttonLogout');
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function() {
         if (confirm('Keluar dari aplikasi?')) {
             localStorage.removeItem('2r_user');
             localStorage.removeItem('2r_user_role');
-            // Jika sedang mode kasir, hapus juga
             localStorage.removeItem('2r_mode_kasir');
             localStorage.removeItem('2r_user_original_role');
             location.reload();
@@ -3151,7 +3148,6 @@ if (logoutBtn) {
     });
 }
 // ===== AKHIR BLOK 8.2.5 =====
-
             // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE (FIX TOMBOL HP) =====
     var tombolMenu = document.getElementById('menuToggle');
     var sidebar = document.querySelector('.sidebar');
@@ -3990,7 +3986,7 @@ function tampilkanDashboard(user) {
 }
 // ===== AKHIR BLOK 8.6.1 =====
 
-    // ===== BLOK 8.6.2 - DOMContentLoaded =====
+    // ===== BLOK 8.6.2 - DOMContentLoaded (BERSIH) =====
 document.addEventListener('DOMContentLoaded', async function() {
     await inisialisasiSuperAdmin();
     var dataUser = localStorage.getItem('2r_user');
