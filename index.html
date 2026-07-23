@@ -10924,7 +10924,7 @@ function ambilLokasiPengajuan() {
 // AKHIR BLOK 8.56
 // ============================================================
 // ============================================================
-// BLOK 8.57 - RENDER KATALOG PRODUK (SEMUA PRODUK DARI SEMUA TOKO)
+// BLOK 8.57 - RENDER KATALOG PRODUK (PERBAIKAN)
 // ============================================================
 
 function renderSemuaProduk() {
@@ -10932,7 +10932,6 @@ function renderSemuaProduk() {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
-    // --- Filter dan Pencarian ---
     var html = `
     <div class="page-header">
         <h2><i class="fas fa-store-alt" style="color:#FF6B00;"></i> Katalog Produk</h2>
@@ -10968,17 +10967,16 @@ function renderSemuaProduk() {
     </div>
     `;
 
-    // --- Grid Produk ---
     html += '<div id="gridKatalog" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; padding:5px;">';
 
     if (semuaProduk.length === 0) {
-        html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3></div></div>';
+        html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk yang diupload</h3><p>Silakan upload produk dari menu Upload Produk Publik.</p></div></div>';
     } else {
         for (var i = 0; i < semuaProduk.length; i++) {
             var p = semuaProduk[i];
             var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
 
-            // Cari nama pemilik
+            // Cari nama pemilik dengan fallback
             var pemilik = null;
             for (var j = 0; j < dataAkun.length; j++) {
                 if (dataAkun[j].id === p.ownerId) {
@@ -10986,7 +10984,7 @@ function renderSemuaProduk() {
                     break;
                 }
             }
-            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username || 'Unknown') : 'Toko Tidak Ditemukan';
 
             html += `
             <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
@@ -11009,7 +11007,7 @@ function renderSemuaProduk() {
     areaKonten.innerHTML = html;
 }
 
-// --- Fungsi Filter (dipanggil dari input/select) ---
+// --- Fungsi Filter Sama Seperti Sebelumnya ---
 function filterKatalog() {
     var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
     var kategori = document.getElementById('filterKategoriKatalog').value;
@@ -11019,11 +11017,8 @@ function filterKatalog() {
     var dataAkun = getDataAkun();
 
     var filtered = semuaProduk.filter(function(p) {
-        // Filter nama produk
         if (search && !p.judul.toLowerCase().includes(search)) return false;
-        // Filter kategori
         if (kategori && p.kategori !== kategori) return false;
-        // Filter role penjual
         if (role) {
             var pemilik = null;
             for (var i = 0; i < dataAkun.length; i++) {
@@ -11038,7 +11033,6 @@ function filterKatalog() {
     });
 
     document.getElementById('totalKatalog').textContent = filtered.length;
-
     var grid = document.getElementById('gridKatalog');
     var html = '';
     if (filtered.length === 0) {
@@ -11054,7 +11048,7 @@ function filterKatalog() {
                     break;
                 }
             }
-            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username || 'Unknown') : 'Toko Tidak Ditemukan';
             html += `
             <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
@@ -11073,7 +11067,6 @@ function filterKatalog() {
     }
     grid.innerHTML = html;
 }
-
 // ============================================================
 // AKHIR BLOK 8.57
 // ============================================================
@@ -11352,6 +11345,45 @@ function inisialisasiDataDemo() {
 }
 // ============================================================
 // AKHIR BLOK 8.58
+// ============================================================
+// ============================================================
+// BLOK 8.59 - RENDER LIHAT TOKO TERDEKAT (PERBAIKAN)
+// ============================================================
+
+function renderLihatTokoTerdekat() {
+    var areaKonten = document.getElementById('mainContent');
+    var dataAkun = getDataAkun();
+    
+    // Tampilkan semua role penjual: toko, pedagang, codseller
+    var toko = dataAkun.filter(function(a) { 
+        return a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller'; 
+    });
+
+    var html = '<div class="page-header"><h2>Lihat Toko Terdekat</h2><p>Total: ' + toko.length + ' toko/penjual</p></div>';
+    
+    if (toko.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada toko atau penjual terdaftar</h3></div></div>';
+    } else {
+        html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">';
+        for (var i = 0; i < toko.length; i++) {
+            var a = toko[i];
+            // Gunakan nama toko atau username jika nama kosong
+            var namaToko = a.nama || a.username || 'Toko Tanpa Nama';
+            
+            html += '<div style="background:white; border:1px solid #eee; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">';
+            html += '<h4 style="margin:0 0 5px 0;">' + escapeHtml(namaToko) + '</h4>';
+            html += '<p style="font-size:13px; color:#888; margin:0;">' + escapeHtml(a.alamat || 'Alamat belum diisi') + '</p>';
+            html += '<div style="margin-top:12px; display:flex; gap:8px;">';
+            html += '<button class="button button-primary button-small" onclick="navigasiKeHalaman(\'chat\')"><i class="fas fa-comments"></i> Chat</button>';
+            html += '<button class="button button-secondary button-small" onclick="navigasiKeHalaman(\'katalogProduk\')"><i class="fas fa-box"></i> Lihat Produk</button>';
+            html += '</div></div>';
+        }
+        html += '</div>';
+    }
+    areaKonten.innerHTML = html;
+}
+// ============================================================
+// AKHIR BLOK 8.59
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
