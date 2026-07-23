@@ -866,7 +866,6 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
                         { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
-                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
@@ -1225,7 +1224,6 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
     else if (namaHalaman === 'statusAkun') renderStatusAkun();
     else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
-    else if (namaHalaman === 'loginKasir') renderLoginKasir();
     else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
     else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
     else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
@@ -8699,47 +8697,10 @@ function hapusKasirConfirm(id) {
 // ===== AKHIR BLOK 8.38 =====
 
 // ============================================================
-// BLOK 8.39 - LOGIN/LOGOUT KASIR
+// BLOK 8.39 - LOGOUT KASIR & DASHBOARD KASIR
 // ============================================================
 
-function renderLoginKasir() {
-    var areaKonten = document.getElementById('mainContent');
-    var html = '<div class="page-header"><h2>Login Kasir</h2></div>';
-    html += '<div class="card" style="max-width:400px; margin:0 auto;">';
-    html += '<div class="form-group"><label>Username Kasir</label><input type="text" id="loginKasirUsername" class="form-input"></div>';
-    html += '<div class="form-group"><label>Password</label><input type="password" id="loginKasirPassword" class="form-input"></div>';
-    html += '<button class="button button-primary" onclick="prosesLoginKasir()"><i class="fas fa-sign-in-alt"></i> Login sebagai Kasir</button>';
-    html += '</div>';
-    areaKonten.innerHTML = html;
-}
-
-async function prosesLoginKasir() {
-    var username = document.getElementById('loginKasirUsername').value.trim();
-    var password = document.getElementById('loginKasirPassword').value.trim();
-
-    if (!username || !password) {
-        tampilkanToast('Data wajib diisi!', 'warning');
-        return;
-    }
-
-    var kasir = await validasiLoginKasir(username, password);
-    if (!kasir) {
-        tampilkanToast('Username atau password salah!', 'error');
-        return;
-    }
-    if (kasir.status !== 'Aktif') {
-        tampilkanToast('Kasir tidak aktif!', 'error');
-        return;
-    }
-
-    localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
-    localStorage.setItem('2r_user_original_role', localStorage.getItem('2r_user_role'));
-    localStorage.setItem('2r_user_role', 'kasir');
-
-    tampilkanToast('Login sebagai kasir berhasil!', 'success');
-    tampilkanDashboardKasir(kasir);
-}
-
+// --- LOGOUT KASIR (Kembali ke mode pemilik toko) ---
 function logoutKasir() {
     localStorage.removeItem('2r_mode_kasir');
     var originalRole = localStorage.getItem('2r_user_original_role') || 'toko';
@@ -8749,30 +8710,40 @@ function logoutKasir() {
     location.reload();
 }
 
+// --- CEK MODE AKTIF (Kasir atau Owner) ---
 function getModeAktif() {
     var kasir = JSON.parse(localStorage.getItem('2r_mode_kasir') || 'null');
     if (kasir) return 'kasir';
     return 'owner';
 }
 
+// --- TAMPILKAN DASHBOARD KHUSUS KASIR ---
 function tampilkanDashboardKasir(kasir) {
+    // Sembunyikan login, tampilkan dashboard
     document.getElementById('pageAuthentication').style.display = 'none';
     document.getElementById('pageDashboard').style.display = 'block';
 
+    // Ganti nama user dan role di navbar
     document.getElementById('userNama').textContent = kasir.nama;
     document.getElementById('roleBadge').textContent = 'Kasir';
 
+    // Sidebar khusus kasir (hanya 2 menu utama)
     var sidebarHtml = '<div class="sidebar-menu-title">Menu Kasir</div>';
     sidebarHtml += '<div class="sidebar-menu-item" data-page="transaksiKasir"><i class="fas fa-cash-register"></i><span>Transaksi</span></div>';
     sidebarHtml += '<div class="sidebar-menu-item" data-page="pemeriksaanStok"><i class="fas fa-clipboard-check"></i><span>Cek Stok</span></div>';
     sidebarHtml += '<div class="sidebar-menu-item" onclick="logoutKasir()"><i class="fas fa-sign-out-alt"></i><span>Logout Kasir</span></div>';
     document.getElementById('sidebarContainer').innerHTML = sidebarHtml;
 
+    // Setup navigasi sidebar agar tombol berfungsi
     setupNavigasiSidebar();
+
+    // Tampilkan halaman transaksi kasir sebagai default
     renderTransaksiKasir();
 }
 
-// ===== AKHIR BLOK 8.39 =====
+// ============================================================
+// AKHIR BLOK 8.39
+// ============================================================
 
 // ============================================================
 // BLOK 8.40 - TRANSAKSI KASIR
