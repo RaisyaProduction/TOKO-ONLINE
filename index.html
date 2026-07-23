@@ -1203,6 +1203,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanUploadProduk') renderPengajuanUploadProduk();
     else if (namaHalaman === 'dataPenagihan') renderDataPenagihan();
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
+    else if (namaHalaman === 'resetCleanup') renderResetCleanup();
     else if (namaHalaman === 'notepad') renderNotepad();
     
     
@@ -7971,6 +7972,151 @@ function tolakPengajuanBukaAkun(idPengajuan) {
     renderPengajuanBukaAkun();
 }
 // ===== AKHIR BLOK 8.26 =====
+    // ============================================================
+// BLOK 8.33 - RESET & PEMBERSIHAN (SuperAdmin)
+// ============================================================
+function renderResetCleanup() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin yang dapat mengakses halaman ini!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-broom" style="color:#FF6B00;"></i> Reset & Pembersihan Aplikasi</h2>
+        <p>Hapus data yang sudah tidak diperlukan untuk menjaga performa aplikasi.</p>
+    </div>
+    <div class="card" style="border-top:4px solid #f44336;">
+        <div class="card-header" style="color:#c62828; font-weight:700;">
+            <i class="fas fa-comment-slash"></i> Pembersihan Pesan Chat
+        </div>
+        <p style="font-size:14px; color:#666;">Menghapus semua pesan chat yang sudah berumur lebih dari <strong>3 bulan</strong> (berdasarkan waktu pembuatan).</p>
+        <div style="margin:15px 0;">
+            <button class="button button-danger" onclick="hapusPesanTua()"><i class="fas fa-trash-alt"></i> Hapus Pesan > 3 Bulan</button>
+        </div>
+        <div id="hasilPembersihan" style="display:none; background:#e8f5e9; padding:10px; border-radius:8px; margin-top:10px;"></div>
+    </div>
+
+    <div class="card" style="border-top:4px solid #FF9800;">
+        <div class="card-header" style="color:#e65100; font-weight:700;">
+            <i class="fas fa-trash-alt"></i> Pembersihan Sampah Lainnya
+        </div>
+        <p style="font-size:14px; color:#666;">Hapus notifikasi yang sudah lama, log stok, dan data sementara yang tidak diperlukan.</p>
+        <div style="margin:15px 0; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="button button-warning" onclick="hapusNotifikasiTua()"><i class="fas fa-bell-slash"></i> Hapus Notifikasi > 3 Bulan</button>
+            <button class="button button-warning" onclick="hapusLogStokTua()"><i class="fas fa-history"></i> Hapus Log Stok > 3 Bulan</button>
+            <button class="button button-danger" onclick="resetTotalAplikasi()"><i class="fas fa-undo-alt"></i> Reset Total (Bersihkan Semua)</button>
+        </div>
+        <div id="hasilSampah" style="display:none; background:#e8f5e9; padding:10px; border-radius:8px; margin-top:10px;"></div>
+    </div>
+    `;
+    areaKonten.innerHTML = html;
+}
+
+// --- Fungsi Hapus Pesan Chat > 3 bulan ---
+function hapusPesanTua() {
+    if (!confirm('Yakin ingin menghapus semua pesan chat yang berusia lebih dari 3 bulan? Data tidak dapat dikembalikan.')) return;
+    
+    var semuaPesan = JSON.parse(localStorage.getItem('2r_chat_messages') || '[]');
+    var sekarang = new Date();
+    var batas = new Date(sekarang);
+    batas.setMonth(batas.getMonth() - 3);
+    
+    var pesanBaru = [];
+    var jumlahDihapus = 0;
+    for (var i = 0; i < semuaPesan.length; i++) {
+        var waktu = new Date(semuaPesan[i].waktu);
+        if (waktu >= batas) {
+            pesanBaru.push(semuaPesan[i]);
+        } else {
+            jumlahDihapus++;
+        }
+    }
+    
+    localStorage.setItem('2r_chat_messages', JSON.stringify(pesanBaru));
+    var hasil = document.getElementById('hasilPembersihan');
+    hasil.style.display = 'block';
+    hasil.innerHTML = '<i class="fas fa-check-circle" style="color:#4CAF50;"></i> Berhasil menghapus <strong>' + jumlahDihapus + '</strong> pesan chat lama.';
+    tampilkanToast('Pembersihan pesan selesai!', 'success');
+}
+
+// --- Fungsi Hapus Notifikasi > 3 bulan ---
+function hapusNotifikasiTua() {
+    if (!confirm('Hapus notifikasi yang sudah lebih dari 3 bulan?')) return;
+    
+    var dataNotif = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+    var sekarang = new Date();
+    var batas = new Date(sekarang);
+    batas.setMonth(batas.getMonth() - 3);
+    
+    var notifBaru = [];
+    var jumlahDihapus = 0;
+    for (var i = 0; i < dataNotif.length; i++) {
+        var waktu = new Date(dataNotif[i].waktu);
+        if (waktu >= batas) {
+            notifBaru.push(dataNotif[i]);
+        } else {
+            jumlahDihapus++;
+        }
+    }
+    localStorage.setItem('2r_notifikasi', JSON.stringify(notifBaru));
+    var hasil = document.getElementById('hasilSampah');
+    hasil.style.display = 'block';
+    hasil.innerHTML = '<i class="fas fa-check-circle" style="color:#4CAF50;"></i> Berhasil menghapus <strong>' + jumlahDihapus + '</strong> notifikasi lama.';
+    tampilkanToast('Notifikasi lama dibersihkan!', 'success');
+}
+
+// --- Fungsi Hapus Log Stok > 3 bulan ---
+function hapusLogStokTua() {
+    if (!confirm('Hapus log stok yang sudah lebih dari 3 bulan?')) return;
+    
+    var dataLog = JSON.parse(localStorage.getItem('2r_log_stok') || '[]');
+    var sekarang = new Date();
+    var batas = new Date(sekarang);
+    batas.setMonth(batas.getMonth() - 3);
+    
+    var logBaru = [];
+    var jumlahDihapus = 0;
+    for (var i = 0; i < dataLog.length; i++) {
+        var waktu = new Date(dataLog[i].waktu);
+        if (waktu >= batas) {
+            logBaru.push(dataLog[i]);
+        } else {
+            jumlahDihapus++;
+        }
+    }
+    localStorage.setItem('2r_log_stok', JSON.stringify(logBaru));
+    var hasil = document.getElementById('hasilSampah');
+    hasil.style.display = 'block';
+    hasil.innerHTML = '<i class="fas fa-check-circle" style="color:#4CAF50;"></i> Berhasil menghapus <strong>' + jumlahDihapus + '</strong> log stok lama.';
+    tampilkanToast('Log stok lama dibersihkan!', 'success');
+}
+
+// --- Fungsi Reset Total (Bersihkan Semua Data Sampah) ---
+function resetTotalAplikasi() {
+    if (!confirm('⚠️ RESET TOTAL akan menghapus SEMUA data chat, notifikasi, log stok, dan data sementara lainnya. Lanjutkan?')) return;
+    if (!confirm('KONFIRMASI TERAKHIR: Yakin ingin membersihkan semua data sampah?')) return;
+    
+    // Hapus semua
+    localStorage.removeItem('2r_chat_messages');
+    localStorage.removeItem('2r_notifikasi');
+    localStorage.removeItem('2r_log_stok');
+    
+    // Hapus juga data temporary lainnya (misal gambar temp)
+    var keys = ['2r_iklan_gambar_temp', '2r_announcement_gambar_temp', '2r_produk_gudang_foto_temp', '2r_edit_produk_gudang_foto_temp', '2r_produk_gambar_temp', '2r_ktp_temp', '2r_ktp_temp_lengkap', '2r_foto_profil_temp_customer'];
+    for (var i = 0; i < keys.length; i++) {
+        localStorage.removeItem(keys[i]);
+    }
+    
+    var hasil = document.getElementById('hasilSampah');
+    hasil.style.display = 'block';
+    hasil.innerHTML = '<i class="fas fa-check-circle" style="color:#4CAF50;"></i> Reset total selesai! Semua data sampah dibersihkan.';
+    tampilkanToast('Reset total berhasil!', 'success');
+}
+// ============================================================
+// AKHIR BLOK 8.33
+// ============================================================
 // ============================================================
 // ============================================================
 // BLOK 8.34 - NOTEPAD+ (Versi Baru dengan Preview Code)
