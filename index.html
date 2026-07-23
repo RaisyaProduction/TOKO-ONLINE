@@ -6407,15 +6407,230 @@ function eksekusiDelete() {
 }
 // ===== AKHIR BLOK 8.16.11 =====
 // ===== AKHIR BLOK 8.16 =====
-// ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
-// Fitur ini hanya bisa diakses oleh SuperAdmin
-// Data disimpan di localStorage key: 2r_harga_produk_publik, 2r_harga_akun_pro, 2r_penagihan_item
+// ============================================================
+// BLOK 8.17 - SETTING HARGA APLIKASI (LENGKAP)
+// ============================================================
 
-// --- TAMBAHKAN NAVIGASI DI BLOK 6.2.1 ---
-// Tambahkan ini di fungsi navigasiKeHalaman:
-// else if (namaHalaman === 'settingHargaAplikasi') renderSettingHargaAplikasi();
+function renderSettingHargaAplikasi() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin yang dapat mengakses halaman ini!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
 
-// ===== 8.17.1 - RENDER HALAMAN SETTING HARGA =====
+    // Ambil data yang tersimpan
+    var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+    var hargaAkunPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
+    var itemPenagihan = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
+    var hargaOjekPerKm = parseFloat(localStorage.getItem('2r_harga_ojek_per_km')) || 2000;
+    var feeOrderOjek = parseFloat(localStorage.getItem('2r_fee_order_ojek')) || 1000;
+    var hargaProOjek = parseFloat(localStorage.getItem('2r_harga_ojek_pro')) || 25000;
+
+    var html = '';
+    html += '<div class="page-header"><h2>Setting Harga Aplikasi</h2><p>Kelola harga upload produk publik, Akun Pro, item penagihan, dan pengaturan Ojek.</p></div>';
+
+    // --- BAGIAN 1: HARGA UPLOAD PRODUK PUBLIK ---
+    html += '<div class="card">';
+    html += '  <div class="card-header">Harga Upload Produk Publik <button class="button button-primary button-small" onclick="tambahBarisHargaUpload()"><i class="fas fa-plus"></i> Tambah Paket</button></div>';
+    html += '  <div class="table-container">';
+    html += '    <table class="table" id="tabelHargaUpload">';
+    html += '      <thead><tr><th>Jumlah Produk</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>';
+    html += '      <tbody>';
+    var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+    if (keys.length === 0) {
+        html += '      <tr><td colspan="3" style="text-align:center; color:#888;">Belum ada paket harga.</td></tr>';
+    } else {
+        for (var i = 0; i < keys.length; i++) {
+            var jml = keys[i];
+            var hrg = hargaUpload[jml];
+            html += '      <tr id="rowUpload_' + i + '">';
+            html += '        <td><input type="number" class="form-input" id="editUploadJml_' + i + '" value="' + jml + '" style="width:80px;"></td>';
+            html += '        <td><input type="number" class="form-input" id="editUploadHrg_' + i + '" value="' + hrg + '" style="width:120px;"></td>';
+            html += '        <td><button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(' + i + ')"><i class="fas fa-save"></i> Simpan</button>';
+            html += '        <button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td>';
+            html += '      </tr>';
+        }
+    }
+    html += '      </tbody></table></div></div>';
+
+    // --- BAGIAN 2: HARGA AKUN PRO TOKO ---
+    html += '<div class="card">';
+    html += '  <div class="card-header">Harga Akun Pro (Toko/Pedagang/COD)</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Harga Berlangganan Akun Pro (Rp)</label><input type="number" id="hargaAkunProInput" class="form-input" value="' + hargaAkunPro + '"></div>';
+    html += '    <div style="display:flex; align-items:flex-end;"><button class="button button-primary" onclick="simpanHargaAkunPro()"><i class="fas fa-save"></i> Simpan</button></div>';
+    html += '  </div>';
+    html += '</div>';
+
+    // --- BAGIAN 3: PENGATURAN OJEK ---
+    html += '<div class="card" style="border-top:4px solid #FF6B00;">';
+    html += '  <div class="card-header" style="color:#FF6B00; font-weight:700;">Pengaturan Ojek</div>';
+    html += '  <div class="grid-2">';
+    html += '    <div><label class="form-label">Harga per Km (Rp)</label><input type="number" id="hargaOjekPerKmInput" class="form-input" value="' + hargaOjekPerKm + '" placeholder="Contoh: 2000"></div>';
+    html += '    <div><label class="form-label">Fee per Order (Rp)</label><input type="number" id="feeOrderOjekInput" class="form-input" value="' + feeOrderOjek + '" placeholder="Contoh: 1000"></div>';
+    html += '    <div><label class="form-label">Harga Paket Pro Ojek (Rp/bulan)</label><input type="number" id="hargaProOjekInput" class="form-input" value="' + hargaProOjek + '" placeholder="Contoh: 25000"></div>';
+    html += '  </div>';
+    html += '  <p style="font-size:12px; color:#888; margin-top:5px;">* Fee per order akan ditambahkan ke tagihan bulanan ojek.</p>';
+    html += '  <button class="button button-primary" onclick="simpanPengaturanOjek()"><i class="fas fa-save"></i> Simpan Semua</button>';
+    html += '</div>';
+
+    // --- BAGIAN 4: ITEM PENAGIHAN OTOMATIS ---
+    html += '<div class="card">';
+    html += '  <div class="card-header">Item Penagihan Otomatis <button class="button button-primary button-small" onclick="tambahItemPenagihan()"><i class="fas fa-plus"></i> Tambah Item</button></div>';
+    html += '  <div class="table-container">';
+    html += '    <table class="table" id="tabelItemPenagihan">';
+    html += '      <thead><tr><th>Nama Item</th><th>Harga (Rp)</th><th>Aksi</th></tr></thead>';
+    html += '      <tbody>';
+    if (itemPenagihan.length === 0) {
+        html += '      <tr><td colspan="3" style="text-align:center; color:#888;">Belum ada item penagihan.</td></tr>';
+    } else {
+        for (var i = 0; i < itemPenagihan.length; i++) {
+            var item = itemPenagihan[i];
+            html += '      <tr id="rowItem_' + i + '">';
+            html += '        <td><input type="text" class="form-input" id="editItemNama_' + i + '" value="' + escapeHtml(item.nama) + '" style="width:200px;"></td>';
+            html += '        <td><input type="number" class="form-input" id="editItemHrg_' + i + '" value="' + item.harga + '" style="width:120px;"></td>';
+            html += '        <td><button class="button button-success button-extra-small" onclick="simpanItemPenagihan(' + i + ')"><i class="fas fa-save"></i> Simpan</button>';
+            html += '        <button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(' + i + ')"><i class="fas fa-trash"></i> Hapus</button></td>';
+            html += '      </tr>';
+        }
+    }
+    html += '      </tbody></table></div></div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// ===== FUNGSI-FUNGSI PENDUKUNG =====
+
+// Upload Produk Publik
+function tambahBarisHargaUpload() {
+    var table = document.getElementById('tabelHargaUpload').getElementsByTagName('tbody')[0];
+    var row = table.insertRow();
+    var idx = table.rows.length - 1;
+    row.id = 'rowUpload_' + idx;
+    row.innerHTML = `
+        <td><input type="number" class="form-input" id="editUploadJml_${idx}" value="10" style="width:80px;"></td>
+        <td><input type="number" class="form-input" id="editUploadHrg_${idx}" value="1000" style="width:120px;"></td>
+        <td>
+            <button class="button button-success button-extra-small" onclick="simpanBarisHargaUpload(${idx})"><i class="fas fa-save"></i> Simpan</button>
+            <button class="button button-danger button-extra-small" onclick="hapusBarisHargaUpload(${idx})"><i class="fas fa-trash"></i> Hapus</button>
+        </td>
+    `;
+}
+
+function simpanBarisHargaUpload(index) {
+    var jmlInput = document.getElementById('editUploadJml_' + index);
+    var hrgInput = document.getElementById('editUploadHrg_' + index);
+    if (!jmlInput || !hrgInput) return;
+
+    var jumlah = parseInt(jmlInput.value);
+    var harga = parseInt(hrgInput.value);
+    if (isNaN(jumlah) || jumlah <= 0) { tampilkanToast('Jumlah produk harus lebih dari 0!', 'warning'); return; }
+    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
+
+    var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}');
+    data[jumlah] = harga;
+    localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data));
+    tampilkanToast('Harga paket ' + jumlah + ' produk berhasil disimpan!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+function hapusBarisHargaUpload(index) {
+    if (!confirm('Yakin ingin menghapus paket harga ini?')) return;
+    var jmlInput = document.getElementById('editUploadJml_' + index);
+    if (!jmlInput) return;
+    var jumlah = parseInt(jmlInput.value);
+    var data = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{}');
+    delete data[jumlah];
+    localStorage.setItem('2r_harga_produk_publik', JSON.stringify(data));
+    tampilkanToast('Paket harga dihapus!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+// Harga Akun Pro Toko
+function simpanHargaAkunPro() {
+    var input = document.getElementById('hargaAkunProInput');
+    var harga = parseFloat(input.value);
+    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
+    localStorage.setItem('2r_harga_akun_pro', String(harga));
+    tampilkanToast('Harga Akun Pro berhasil disimpan!', 'success');
+}
+
+// Pengaturan Ojek
+function simpanPengaturanOjek() {
+    var perKm = parseFloat(document.getElementById('hargaOjekPerKmInput').value) || 0;
+    var feeOrder = parseFloat(document.getElementById('feeOrderOjekInput').value) || 0;
+    var proPrice = parseFloat(document.getElementById('hargaProOjekInput').value) || 0;
+    localStorage.setItem('2r_harga_ojek_per_km', String(perKm));
+    localStorage.setItem('2r_fee_order_ojek', String(feeOrder));
+    localStorage.setItem('2r_harga_ojek_pro', String(proPrice));
+    tampilkanToast('Pengaturan ojek disimpan!', 'success');
+}
+
+// Item Penagihan
+function tambahItemPenagihan() {
+    var table = document.getElementById('tabelItemPenagihan').getElementsByTagName('tbody')[0];
+    var row = table.insertRow();
+    var idx = table.rows.length - 1;
+    row.id = 'rowItem_' + idx;
+    row.innerHTML = `
+        <td><input type="text" class="form-input" id="editItemNama_${idx}" value="Item Baru" style="width:200px;"></td>
+        <td><input type="number" class="form-input" id="editItemHrg_${idx}" value="10000" style="width:120px;"></td>
+        <td>
+            <button class="button button-success button-extra-small" onclick="simpanItemPenagihan(${idx})"><i class="fas fa-save"></i> Simpan</button>
+            <button class="button button-danger button-extra-small" onclick="hapusItemPenagihan(${idx})"><i class="fas fa-trash"></i> Hapus</button>
+        </td>
+    `;
+}
+
+function simpanItemPenagihan(index) {
+    var namaInput = document.getElementById('editItemNama_' + index);
+    var hrgInput = document.getElementById('editItemHrg_' + index);
+    if (!namaInput || !hrgInput) return;
+
+    var nama = namaInput.value.trim();
+    var harga = parseInt(hrgInput.value);
+    if (!nama) { tampilkanToast('Nama item wajib diisi!', 'warning'); return; }
+    if (isNaN(harga) || harga < 0) { tampilkanToast('Harga harus valid!', 'warning'); return; }
+
+    var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
+    if (data[index]) {
+        data[index] = { nama: nama, harga: harga };
+    } else {
+        data.push({ nama: nama, harga: harga });
+    }
+    localStorage.setItem('2r_penagihan_item', JSON.stringify(data));
+    tampilkanToast('Item penagihan berhasil disimpan!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+function hapusItemPenagihan(index) {
+    if (!confirm('Yakin ingin menghapus item penagihan ini?')) return;
+    var data = JSON.parse(localStorage.getItem('2r_penagihan_item') || '[]');
+    data.splice(index, 1);
+    localStorage.setItem('2r_penagihan_item', JSON.stringify(data));
+    tampilkanToast('Item penagihan dihapus!', 'success');
+    renderSettingHargaAplikasi();
+}
+
+// Helper untuk mengambil nilai (dipanggil di sistem lain)
+function getHargaProToko() {
+    return parseFloat(localStorage.getItem('2r_harga_akun_pro')) || 50000;
+}
+function getHargaProOjek() {
+    return parseFloat(localStorage.getItem('2r_harga_ojek_pro')) || 25000;
+}
+function getFeeOrderOjek() {
+    return parseFloat(localStorage.getItem('2r_fee_order_ojek')) || 1000;
+}
+function getHargaPerKmOjek() {
+    return parseFloat(localStorage.getItem('2r_harga_ojek_per_km')) || 2000;
+}
+
+// ============================================================
+// AKHIR BLOK 8.17
+// ============================================================
 function renderSettingHargaAplikasi() {
     var role = localStorage.getItem('2r_user_role');
     if (role !== 'superadmin') {
@@ -7277,11 +7492,14 @@ function renderRekapPenjualan() {
     areaKonten.innerHTML = html;
 }
 // ===== AKHIR BLOK 8.22 =====
-// ===== BLOK 8.23 - LOGIKA STATUS AKUN, TAGIHAN, & SUSPEN (FINAL) =====
+// ============================================================
+// BLOK 8.23 - INISIALISASI SISTEM TAGIHAN (TOKO + OJEK)
+// ============================================================
 
-// --- 1. Inisialisasi Data Tagihan & Status (Saat Login) ---
 function inisialisasiSistemTagihan() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    if (!user.id) return;
+
     var dataAkun = getDataAkun();
     var userData = null;
     for (var i = 0; i < dataAkun.length; i++) {
@@ -7292,148 +7510,180 @@ function inisialisasiSistemTagihan() {
     }
     if (!userData) return;
 
-    // 1. Cek dan Update Status PRO jika belum ada (default: false)
-    if (!userData.isPro) userData.isPro = false;
-    
-    // 2. Cek Status SUSPEN
+    // Pastikan flag Pro dan OjekPro ada
+    if (userData.isPro === undefined) userData.isPro = false;
+    if (userData.isOjekPro === undefined) userData.isOjekPro = false;
+
     var sekarang = new Date();
     var hariIni = sekarang.getDate();
     var bulanIni = sekarang.getMonth() + 1;
     var tahunIni = sekarang.getFullYear();
 
-    // Ambil data tagihan akun ini
     var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var tagihanBulanIni = null;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && 
-            dataTagihan[i].bulan === bulanIni && 
-            dataTagihan[i].tahun === tahunIni) {
-            tagihanBulanIni = dataTagihan[i];
-            break;
+
+    // ---- CEK TAGIHAN TOKO ----
+    if (userData.role === 'toko' || userData.role === 'pedagang' || userData.role === 'codseller') {
+        var tagihanBulanIni = null;
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === user.id && 
+                dataTagihan[i].bulan === bulanIni && 
+                dataTagihan[i].tahun === tahunIni) {
+                tagihanBulanIni = dataTagihan[i];
+                break;
+            }
+        }
+
+        // Tanggal 5: buat tagihan
+        if (hariIni >= 5 && !tagihanBulanIni) {
+            var totalTagihan = 0;
+            if (userData.isPro) {
+                totalTagihan += getHargaProToko();
+            }
+            // Hitung produk publik
+            var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+            var produkSaya = produkPublik.filter(function(p) { return p.ownerId === user.id; });
+            var jmlProduk = produkSaya.length;
+            var batasDasar = userData.isPro ? 50 : 5;
+            if (jmlProduk > batasDasar) {
+                var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+                var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+                var ketemuPaket = false;
+                for (var k = 0; k < keys.length; k++) {
+                    var jmlKey = parseInt(keys[k]);
+                    if (jmlProduk <= jmlKey) {
+                        totalTagihan += hargaUpload[keys[k]];
+                        ketemuPaket = true;
+                        break;
+                    }
+                }
+                if (!ketemuPaket) {
+                    totalTagihan += hargaUpload[keys[keys.length - 1]];
+                }
+            }
+            if (totalTagihan > 0) {
+                dataTagihan.push({
+                    id: 'TAG-' + Date.now(),
+                    akunId: user.id,
+                    bulan: bulanIni,
+                    tahun: tahunIni,
+                    jumlahTagihan: totalTagihan,
+                    status: 'BELUM_BAYAR'
+                });
+                localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+                tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihan.toLocaleString('id-ID'), 'info');
+                tagihanBulanIni = dataTagihan[dataTagihan.length - 1];
+            }
+        }
+
+        // Tanggal 10: SUSPEN
+        if (hariIni >= 10 && tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
+            if (userData.status !== 'SUSPEN') {
+                userData.status = 'SUSPEN';
+                for (var i = 0; i < dataAkun.length; i++) {
+                    if (dataAkun[i].id === user.id) {
+                        dataAkun[i].status = 'SUSPEN';
+                        break;
+                    }
+                }
+                localStorage.setItem('2r_user', JSON.stringify(userData));
+                simpanDataAkun(dataAkun);
+                tampilkanToast('Akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
+                location.reload();
+            }
+        } else {
+            if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
+                userData.status = 'AKTIF';
+                for (var i = 0; i < dataAkun.length; i++) {
+                    if (dataAkun[i].id === user.id) {
+                        dataAkun[i].status = 'AKTIF';
+                        break;
+                    }
+                }
+                localStorage.setItem('2r_user', JSON.stringify(userData));
+                simpanDataAkun(dataAkun);
+                tampilkanToast('Selamat! Status akun Anda telah kembali AKTIF.', 'success');
+                location.reload();
+            }
         }
     }
 
-    // --- LOGIKA TANGGAL 5: BUAT TAGIHAN ---
-    if (hariIni >= 5 && !tagihanBulanIni) {
-        var totalTagihan = 0;
-        if (userData.isPro) {
-            var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
-            totalTagihan += hargaPro;
-        }
-        var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-        var produkSaya = produkPublik.filter(function(p) { return p.ownerId === user.id; });
-        var jmlProduk = produkSaya.length;
-        var batasDasar = userData.isPro ? 50 : 5;
-        if (jmlProduk > batasDasar) {
-            var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
-            var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-            var ketemuPaket = false;
-            for (var k = 0; k < keys.length; k++) {
-                var jmlKey = parseInt(keys[k]);
-                if (jmlProduk <= jmlKey) {
-                    totalTagihan += hargaUpload[keys[k]];
-                    ketemuPaket = true;
-                    break;
-                }
-            }
-            if (!ketemuPaket) {
-                totalTagihan += hargaUpload[keys[keys.length - 1]];
+    // ---- CEK TAGIHAN OJEK ----
+    if (userData.role === 'ojek' && userData.isOjekPro) {
+        var tagihanOjek = null;
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === user.id && 
+                dataTagihan[i].bulan === bulanIni && 
+                dataTagihan[i].tahun === tahunIni) {
+                tagihanOjek = dataTagihan[i];
+                break;
             }
         }
-        if (totalTagihan > 0) {
-            dataTagihan.push({
-                id: 'TAG-' + Date.now(),
-                akunId: user.id,
-                bulan: bulanIni,
-                tahun: tahunIni,
-                jumlahTagihan: totalTagihan,
-                status: 'BELUM_BAYAR'
+
+        // Tanggal 5: buat tagihan (Pro + Fee Order)
+        if (hariIni >= 5 && !tagihanOjek) {
+            var hargaProOjek = getHargaProOjek();
+            var feePerOrder = getFeeOrderOjek();
+            
+            // Hitung total fee order bulan lalu (bulan sekarang - 1)
+            var dataOrder = getOrderOjek();
+            var orderBulanLalu = dataOrder.filter(function(o) { 
+                return o.ojekId === user.id && 
+                       o.status === 'SEDANG_DIANTAR' && 
+                       new Date(o.createdAt).getMonth() === (bulanIni - 1);
             });
-            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-            tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihan.toLocaleString('id-ID'), 'info');
-            tagihanBulanIni = dataTagihan[dataTagihan.length - 1];
-        }
-    }
+            var totalFee = orderBulanLalu.length * feePerOrder;
+            var totalTagihanOjek = hargaProOjek + totalFee;
 
-    // --- LOGIKA TANGGAL 10: SUSPEN AKUN ---
-    if (hariIni >= 10 && tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
-        if (userData.status !== 'SUSPEN') {
-            userData.status = 'SUSPEN';
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === user.id) {
-                    dataAkun[i].status = 'SUSPEN';
-                    break;
-                }
+            if (totalTagihanOjek > 0) {
+                dataTagihan.push({
+                    id: 'TAG-OJK-' + Date.now(),
+                    akunId: user.id,
+                    bulan: bulanIni,
+                    tahun: tahunIni,
+                    jumlahTagihan: totalTagihanOjek,
+                    status: 'BELUM_BAYAR'
+                });
+                localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+                tampilkanToast('Tagihan Ojek bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + totalTagihanOjek.toLocaleString('id-ID'), 'info');
             }
-            localStorage.setItem('2r_user', JSON.stringify(userData));
-            simpanDataAkun(dataAkun);
-            tampilkanToast('Status akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
-            location.reload();
         }
-    } else {
-        if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
-            userData.status = 'AKTIF';
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === user.id) {
-                    dataAkun[i].status = 'AKTIF';
-                    break;
+
+        // Tanggal 10: SUSPEN Ojek
+        if (hariIni >= 10 && tagihanOjek && tagihanOjek.status === 'BELUM_BAYAR') {
+            if (userData.status !== 'SUSPEN') {
+                userData.status = 'SUSPEN';
+                for (var i = 0; i < dataAkun.length; i++) {
+                    if (dataAkun[i].id === user.id) {
+                        dataAkun[i].status = 'SUSPEN';
+                        break;
+                    }
                 }
+                localStorage.setItem('2r_user', JSON.stringify(userData));
+                simpanDataAkun(dataAkun);
+                tampilkanToast('Akun Ojek Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
+                location.reload();
             }
-            localStorage.setItem('2r_user', JSON.stringify(userData));
-            simpanDataAkun(dataAkun);
-            tampilkanToast('Selamat! Status akun Anda telah kembali AKTIF.', 'success');
-            location.reload();
+        } else {
+            if (userData.status === 'SUSPEN' && tagihanOjek && tagihanOjek.status === 'LUNAS') {
+                userData.status = 'AKTIF';
+                for (var i = 0; i < dataAkun.length; i++) {
+                    if (dataAkun[i].id === user.id) {
+                        dataAkun[i].status = 'AKTIF';
+                        break;
+                    }
+                }
+                localStorage.setItem('2r_user', JSON.stringify(userData));
+                simpanDataAkun(dataAkun);
+                tampilkanToast('Selamat! Akun Ojek Anda telah kembali AKTIF.', 'success');
+                location.reload();
+            }
         }
     }
 }
 
-// --- 2. Modifikasi Fungsi Render Dashboard (Tambahkan Pengecekan SUSPEN) ---
-function tampilkanDashboard(user) {
-    if (!user || !user.nama) {
-        localStorage.removeItem('2r_user');
-        localStorage.removeItem('2r_user_role');
-        location.reload();
-        return;
-    }
-
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    
-    if (userData && userData.status === 'SUSPEN') {
-        document.getElementById('pageAuthentication').style.display = 'none';
-        document.getElementById('pageDashboard').style.display = 'block';
-        document.getElementById('userNama').textContent = user.nama;
-        document.getElementById('roleBadge').textContent = user.role;
-        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
-        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
-        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
-        document.getElementById('mainContent').innerHTML = '';
-        renderStatusAkun();
-        return;
-    }
-
-    document.getElementById('pageAuthentication').style.display = 'none';
-    document.getElementById('pageDashboard').style.display = 'block';
-    document.getElementById('userNama').textContent = user.nama;
-    var daftarRole = { superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek', pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service', staf_owner_toko: 'Staf Owner Toko', staf_owner_ojek: 'Staf Owner Ojek', sponsor: 'Sponsor' };
-    document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
-
-    document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
-    setupNavigasiSidebar();
-
-    var avatar = document.getElementById('userAvatar');
-    var placeholder = document.getElementById('userAvatarPlaceholder');
-    if (user.fotoProfil) { avatar.src = user.fotoProfil; avatar.style.display = 'block'; placeholder.style.display = 'none'; } 
-    else { avatar.style.display = 'none'; placeholder.style.display = 'block'; }
-
-    inisialisasiSistemTagihan();
-
-    renderDashboard();
-}
-// ===== AKHIR BLOK 8.23 =====
+// ============================================================
+// AKHIR BLOK 8.23
+// ============================================================
 // ===== BLOK 8.24 - MENU STATUS AKUN & UPGRADE PRO =====
 
 // --- 1. Render Halaman Status Akun ---
@@ -9395,6 +9645,728 @@ function renderHalamanTransaksi() {
 }
 
 // ===== AKHIR BLOK 8.46 =====
+// ============================================================
+// BLOK 8.50 - TRANSAKSI 3 (ORDER OJEK + KOMISI BULANAN)
+// ============================================================
+
+// ---------- DATA ORDER OJEK ----------
+function getOrderOjek() {
+    return JSON.parse(localStorage.getItem('2r_order_ojek') || '[]');
+}
+function simpanOrderOjek(data) {
+    localStorage.setItem('2r_order_ojek', JSON.stringify(data));
+}
+
+// ---------- TOKO: BUAT ORDER OJEK ----------
+function renderOrderAntarOjek() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var dataOjek = getDataAkun().filter(function(a) { 
+        return a.role === 'ojek' && a.status === 'AKTIF' && a.fitur && a.fitur.orderAntar; 
+    });
+    var dataOrder = getOrderOjek();
+    var orderSaya = dataOrder.filter(function(o) { return o.tokoId === user.id && (o.status === 'MENUNGGU_OJEK' || o.status === 'DIPROSES_OJEK'); });
+
+    var html = '<div class="page-header"><h2>Antar Ojek (Transaksi 3)</h2><p>Buat order antar, pilih ojek, dan pantau status.</p></div>';
+    
+    // Form buat order
+    html += '<div class="card"><div class="card-header">Buat Order Antar Baru</div>';
+    html += '<div class="grid-2">';
+    html += '<div><label>Nama Customer</label><input type="text" id="antarNama" class="form-input"></div>';
+    html += '<div><label>Alamat Tujuan</label><input type="text" id="antarAlamat" class="form-input"></div>';
+    html += '<div><label>Total Harga Barang (Rp)</label><input type="number" id="antarTotalBarang" class="form-input" placeholder="0"></div>';
+    html += '<div><label>Jarak Tempuh (Km)</label><input type="number" id="antarJarak" class="form-input" placeholder="Contoh: 5" step="0.1"></div>';
+    html += '</div>';
+    html += '<div class="form-group"><label>Catatan untuk Ojek</label><textarea id="antarCatatan" class="form-input" rows="2" placeholder="Misal: Ambil di toko, antar ke alamat"></textarea></div>';
+    html += '<button class="button button-primary" onclick="prosesBuatOrderOjek()"><i class="fas fa-paper-plane"></i> Buat Order & Pilih Ojek</button>';
+    html += '</div>';
+
+    // Daftar order yang belum dikirim ke ojek
+    html += '<div class="card"><div class="card-header">Order Siap Kirim ke Ojek</div>';
+    var orderSiap = dataOrder.filter(function(o) { return o.tokoId === user.id && o.status === 'MENUNGGU_OJEK'; });
+    if (orderSiap.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-clock"></i><h3>Belum ada order siap kirim</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Ongkir</th><th>Tagihan</th><th>Pilih Ojek</th><th>Kirim</th></tr></thead><tbody>';
+        for (var i = 0; i < orderSiap.length; i++) {
+            var o = orderSiap[i];
+            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td>';
+            html += '<td>Rp ' + o.totalBarang.toLocaleString('id-ID') + '</td>';
+            html += '<td>Rp ' + o.ongkir.toLocaleString('id-ID') + '</td>';
+            html += '<td><strong>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</strong></td>';
+            html += '<td><select id="pilihOjek_' + o.id + '" class="form-input" style="width:150px;">';
+            html += '<option value="">-- Pilih Ojek --</option>';
+            for (var j = 0; j < dataOjek.length; j++) {
+                html += '<option value="' + dataOjek[j].id + '">' + escapeHtml(dataOjek[j].nama || dataOjek[j].username) + '</option>';
+            }
+            html += '</select></td>';
+            html += '<td><button class="button button-primary button-small" onclick="kirimOrderKeOjek(\'' + o.id + '\')"><i class="fas fa-paper-plane"></i> Kirim</button></td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    // Order sedang diproses ojek
+    html += '<div class="card"><div class="card-header">Order Sedang Diantar</div>';
+    var orderProses = dataOrder.filter(function(o) { return o.tokoId === user.id && o.status === 'DIPROSES_OJEK'; });
+    if (orderProses.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-truck"></i><h3>Tidak ada order sedang diantar</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Ojek</th><th>Total</th><th>Status</th></tr></thead><tbody>';
+        for (var i = 0; i < orderProses.length; i++) {
+            var o = orderProses[i];
+            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>' + escapeHtml(o.ojekId) + '</td><td>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</td><td><span class="badge badge-warning">Sedang Diantar</span></td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// ---------- PROSES BUAT ORDER OJEK ----------
+function prosesBuatOrderOjek() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var nama = document.getElementById('antarNama').value.trim();
+    var alamat = document.getElementById('antarAlamat').value.trim();
+    var totalBarang = parseFloat(document.getElementById('antarTotalBarang').value) || 0;
+    var jarak = parseFloat(document.getElementById('antarJarak').value) || 0;
+    var catatan = document.getElementById('antarCatatan').value.trim();
+
+    if (!nama || !alamat || totalBarang <= 0 || jarak <= 0) {
+        tampilkanToast('Data tidak lengkap atau jarak 0!', 'warning');
+        return;
+    }
+
+    var hargaPerKm = getHargaOjekPerKm();
+    var ongkir = jarak * hargaPerKm;
+    var totalTagihan = totalBarang + ongkir;
+
+    var dataOrder = getOrderOjek();
+    var order = {
+        id: 'OJ-' + Date.now(),
+        tokoId: user.id,
+        ojekId: null,
+        namaCustomer: nama,
+        alamatTujuan: alamat,
+        totalBarang: totalBarang,
+        jarak: jarak,
+        hargaPerKm: hargaPerKm,
+        ongkir: ongkir,
+        totalTagihan: totalTagihan,
+        catatan: catatan,
+        status: 'MENUNGGU_OJEK',
+        createdAt: new Date().toISOString(),
+        selesaiAt: null
+    };
+    dataOrder.push(order);
+    simpanOrderOjek(dataOrder);
+    tampilkanToast('Order berhasil dibuat! Pilih ojek sekarang.', 'success');
+    renderOrderAntarOjek();
+}
+
+// ---------- KIRIM ORDER KE OJEK ----------
+function kirimOrderKeOjek(idOrder) {
+    var select = document.getElementById('pilihOjek_' + idOrder);
+    var ojekId = select.value;
+    if (!ojekId) { tampilkanToast('Pilih ojek terlebih dahulu!', 'warning'); return; }
+
+    var dataOrder = getOrderOjek();
+    for (var i = 0; i < dataOrder.length; i++) {
+        if (dataOrder[i].id === idOrder) {
+            dataOrder[i].ojekId = ojekId;
+            dataOrder[i].status = 'DIPROSES_OJEK';
+            break;
+        }
+    }
+    simpanOrderOjek(dataOrder);
+    tampilkanToast('Order berhasil dikirim ke ojek!', 'success');
+    renderOrderAntarOjek();
+}
+
+// ---------- OJEK: ORDER ANTAR MASUK ----------
+function renderOrderAntarMasuk() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var dataOrder = getOrderOjek();
+    var orderSaya = dataOrder.filter(function(o) { return o.ojekId === user.id && o.status === 'DIPROSES_OJEK'; });
+
+    var html = '<div class="page-header"><h2>Order Antar Masuk</h2><p>Pesanan yang perlu Anda antar.</p></div>';
+    
+    if (orderSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-motorcycle"></i><h3>Belum ada order masuk</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Dari Toko</th><th>Customer</th><th>Alamat</th><th>Total Tagihan</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < orderSaya.length; i++) {
+            var o = orderSaya[i];
+            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.tokoId) + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>' + escapeHtml(o.alamatTujuan) + '</td><td><strong>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</strong></td>';
+            html += '<td>';
+            html += '<button class="button button-success button-extra-small" onclick="terimaOrderOjek(\'' + o.id + '\')"><i class="fas fa-check"></i> Terima & Antar</button>';
+            html += '<button class="button button-danger button-extra-small" onclick="tolakOrderOjek(\'' + o.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
+            html += '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+function terimaOrderOjek(idOrder) {
+    if (!confirm('Ambil order ini?')) return;
+    var dataOrder = getOrderOjek();
+    for (var i = 0; i < dataOrder.length; i++) {
+        if (dataOrder[i].id === idOrder) { dataOrder[i].status = 'SEDANG_DIANTAR'; break; }
+    }
+    simpanOrderOjek(dataOrder);
+    tampilkanToast('Order diambil, segera antar!', 'success');
+    renderOrderAntarMasuk();
+}
+
+function tolakOrderOjek(idOrder) {
+    if (!confirm('Tolak order ini?')) return;
+    var dataOrder = getOrderOjek();
+    for (var i = 0; i < dataOrder.length; i++) {
+        if (dataOrder[i].id === idOrder) { dataOrder[i].status = 'DIBATALKAN_OJEK'; break; }
+    }
+    simpanOrderOjek(dataOrder);
+    tampilkanToast('Order ditolak!', 'success');
+    renderOrderAntarMasuk();
+}
+
+// ---------- OJEK: RIWAYAT ORDER & PENAGIHAN ----------
+function renderRiwayatOrderOjek() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var dataOrder = getOrderOjek();
+    var orderSaya = dataOrder.filter(function(o) { return o.ojekId === user.id && o.status === 'SEDANG_DIANTAR'; });
+
+    var html = '<div class="page-header"><h2>Riwayat Order Saya</h2><p>Daftar order yang sudah Anda antar.</p></div>';
+    
+    if (orderSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada riwayat order</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Total Tagihan</th><th>Tanggal</th></tr></thead><tbody>';
+        for (var i = 0; i < orderSaya.length; i++) {
+            var o = orderSaya[i];
+            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</td><td>' + new Date(o.createdAt).toLocaleDateString('id-ID') + '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// ---------- SUPERADMIN: LAPORAN PENAGIHAN KOMISI OJEK ----------
+function renderLaporanTagihanOjek() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var dataOrder = getOrderOjek();
+    var dataAkun = getDataAkun();
+
+    // Filter order yang sudah selesai atau sedang diantar (yang bisa ditagih)
+    var orderTagihan = dataOrder.filter(function(o) { 
+        return o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI'; 
+    });
+
+    // Komisi per order (Rp 1000)
+    var komisiPerOrder = 1000;
+    var totalKomisi = 0;
+    var perOjek = {};
+
+    for (var i = 0; i < orderTagihan.length; i++) {
+        var o = orderTagihan[i];
+        var ojekId = o.ojekId;
+        if (!ojekId) continue;
+        if (!perOjek[ojekId]) perOjek[ojekId] = { orders: [], total: 0 };
+        perOjek[ojekId].orders.push(o);
+        perOjek[ojekId].total += komisiPerOrder;
+        totalKomisi += komisiPerOrder;
+    }
+
+    var html = '<div class="page-header"><h2>Laporan Tagihan Komisi Ojek</h2>';
+    html += '<p>Periode: <strong>' + new Date().toLocaleDateString('id-ID') + '</strong></p>';
+    html += '<p>Komisi per order: <strong>Rp ' + komisiPerOrder.toLocaleString('id-ID') + '</strong></p>';
+    html += '<p>Total tagihan bulan ini: <strong style="color:#FF6B00; font-size:20px;">Rp ' + totalKomisi.toLocaleString('id-ID') + '</strong></p></div>';
+
+    if (Object.keys(perOjek).length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada data tagihan bulan ini</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID Ojek</th><th>Nama Ojek</th><th>Jumlah Order</th><th>Total Tagihan</th><th>Detail Order</th></tr></thead><tbody>';
+        for (var ojekId in perOjek) {
+            var data = perOjek[ojekId];
+            var namaOjek = 'Ojek ' + ojekId;
+            for (var k = 0; k < dataAkun.length; k++) {
+                if (dataAkun[k].id === ojekId) { namaOjek = dataAkun[k].nama || dataAkun[k].username; break; }
+            }
+            html += '<tr><td>' + ojekId + '</td><td>' + escapeHtml(namaOjek) + '</td><td>' + data.orders.length + ' order</td><td><strong>Rp ' + data.total.toLocaleString('id-ID') + '</strong></td>';
+            html += '<td><button class="button button-primary button-extra-small" onclick="detailTagihanOjek(\'' + ojekId + '\')"><i class="fas fa-eye"></i> Lihat Detail</button></td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+
+    areaKonten.innerHTML = html;
+}
+
+// ---------- DETAIL TAGIHAN PER OJEK ----------
+function detailTagihanOjek(ojekId) {
+    var dataOrder = getOrderOjek();
+    var orderOjek = dataOrder.filter(function(o) { return o.ojekId === ojekId && (o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI'); });
+    var komisiPerOrder = 1000;
+
+    var html = '<div class="modal-overlay" id="modalDetailTagihan" style="display:flex; z-index:9999;">';
+    html += '<div class="modal" style="max-width:700px; max-height:80vh; overflow-y:auto;">';
+    html += '<div class="modal-header"><h3>Detail Tagihan Ojek ' + ojekId + '</h3><button class="modal-close" onclick="tutupModalDetailTagihan()">&times;</button></div>';
+    html += '<div class="modal-body"><div class="table-container"><table class="table"><thead><tr><th>ID Order</th><th>Customer</th><th>Total Tagihan</th><th>Tanggal</th><th>Komisi</th></tr></thead><tbody>';
+    var total = 0;
+    for (var i = 0; i < orderOjek.length; i++) {
+        var o = orderOjek[i];
+        total += komisiPerOrder;
+        html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</td><td>' + new Date(o.createdAt).toLocaleDateString('id-ID') + '</td><td>Rp ' + komisiPerOrder.toLocaleString('id-ID') + '</td></tr>';
+    }
+    html += '<tr style="font-weight:700; background:#f8f9fa;"><td colspan="4" style="text-align:right;">Total Tagihan</td><td style="color:#d32f2f;">Rp ' + total.toLocaleString('id-ID') + '</td></tr>';
+    html += '</tbody></table></div></div>';
+    html += '<div class="modal-footer"><button class="button button-secondary" onclick="tutupModalDetailTagihan()">Tutup</button></div>';
+    html += '</div></div>';
+    var body = document.body;
+    var container = document.createElement('div');
+    container.innerHTML = html;
+    body.appendChild(container);
+}
+
+function tutupModalDetailTagihan() {
+    var modal = document.getElementById('modalDetailTagihan');
+    if (modal) modal.remove();
+}
+
+// ---------- NAVIGASI ----------
+// Tambahkan di sidebar:
+// Untuk Toko/Pedagang/COD: { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Antar Ojek' }
+// Untuk Ojek: { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' }
+// Untuk Ojek: { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order' }
+// Untuk SuperAdmin: { halaman: 'laporanTagihanOjek', icon: 'fa-file-invoice-dollar', label: 'Tagihan Ojek' }
+
+// Tambahkan di navigasiKeHalaman:
+// else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
+// else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
+// else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
+// else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
+
+// ============================================================
+// AKHIR BLOK 8.50
+// ============================================================
+ // ============================================================
+// BLOK 8.51 - SISTEM PENAGIHAN & SUSPEN TERPADU (TOKO + OJEK)
+// ============================================================
+
+// ---------- AMBIL NILAI HARGA DARI SETTING ----------
+function getHargaProToko() {
+    return parseFloat(localStorage.getItem('2r_harga_akun_pro')) || 50000;
+}
+function getHargaProOjek() {
+    return parseFloat(localStorage.getItem('2r_harga_ojek_pro')) || 25000;
+}
+function getFeeOrderOjek() {
+    return parseFloat(localStorage.getItem('2r_fee_order_ojek')) || 1000;
+}
+function getHargaPerKmOjek() {
+    return parseFloat(localStorage.getItem('2r_harga_ojek_per_km')) || 2000;
+}
+
+// ---------- HITUNG TAGIHAN TOKO ----------
+function hitungTagihanToko(userId, bulan, tahun) {
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === userId) { userData = dataAkun[i]; break; }
+    }
+    if (!userData) return 0;
+
+    var total = 0;
+    if (userData.isPro) {
+        total += getHargaProToko();
+    }
+    var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var produkSaya = produkPublik.filter(function(p) { return p.ownerId === userId; });
+    var jmlProduk = produkSaya.length;
+    var batasDasar = userData.isPro ? 50 : 5;
+    if (jmlProduk > batasDasar) {
+        var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+        var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+        var ketemuPaket = false;
+        for (var k = 0; k < keys.length; k++) {
+            var jmlKey = parseInt(keys[k]);
+            if (jmlProduk <= jmlKey) {
+                total += hargaUpload[keys[k]];
+                ketemuPaket = true;
+                break;
+            }
+        }
+        if (!ketemuPaket) {
+            total += hargaUpload[keys[keys.length - 1]];
+        }
+    }
+    return total;
+}
+
+// ---------- HITUNG TAGIHAN OJEK ----------
+function hitungTagihanOjek(userId, bulan, tahun) {
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === userId) { userData = dataAkun[i]; break; }
+    }
+    if (!userData || !userData.isOjekPro) return 0;
+
+    var total = getHargaProOjek();
+    var feePerOrder = getFeeOrderOjek();
+    var dataOrder = getOrderOjek();
+    var orderBulanLalu = dataOrder.filter(function(o) {
+        return o.ojekId === userId &&
+               o.status === 'SEDANG_DIANTAR' &&
+               new Date(o.createdAt).getMonth() === (bulan - 1);
+    });
+    total += orderBulanLalu.length * feePerOrder;
+    return total;
+}
+
+// ---------- BUAT TAGIHAN BULAN INI ----------
+function buatTagihanBulanIni() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    if (!user.id) return;
+
+    var sekarang = new Date();
+    var hariIni = sekarang.getDate();
+    var bulanIni = sekarang.getMonth() + 1;
+    var tahunIni = sekarang.getFullYear();
+
+    if (hariIni < 5) return; // Belum waktunya tagihan
+
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var sudahAda = false;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id &&
+            dataTagihan[i].bulan === bulanIni &&
+            dataTagihan[i].tahun === tahunIni) {
+            sudahAda = true;
+            break;
+        }
+    }
+    if (sudahAda) return;
+
+    var jumlahTagihan = 0;
+    if (user.role === 'toko' || user.role === 'pedagang' || user.role === 'codseller') {
+        jumlahTagihan = hitungTagihanToko(user.id, bulanIni, tahunIni);
+    } else if (user.role === 'ojek') {
+        jumlahTagihan = hitungTagihanOjek(user.id, bulanIni, tahunIni);
+    }
+
+    if (jumlahTagihan > 0) {
+        dataTagihan.push({
+            id: 'TAG-' + Date.now(),
+            akunId: user.id,
+            bulan: bulanIni,
+            tahun: tahunIni,
+            jumlahTagihan: jumlahTagihan,
+            status: 'BELUM_BAYAR'
+        });
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + jumlahTagihan.toLocaleString('id-ID'), 'info');
+    }
+}
+
+// ---------- CEK DAN EKSEKUSI SUSPEN ----------
+function cekDanEksekusiSuspen() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    if (!user.id) return;
+
+    var sekarang = new Date();
+    var hariIni = sekarang.getDate();
+    var bulanIni = sekarang.getMonth() + 1;
+    var tahunIni = sekarang.getFullYear();
+
+    if (hariIni < 10) return; // Belum waktunya suspensi
+
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    if (!userData) return;
+
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihanBulanIni = null;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id &&
+            dataTagihan[i].bulan === bulanIni &&
+            dataTagihan[i].tahun === tahunIni) {
+            tagihanBulanIni = dataTagihan[i];
+            break;
+        }
+    }
+
+    if (tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
+        if (userData.status !== 'SUSPEN') {
+            userData.status = 'SUSPEN';
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === user.id) {
+                    dataAkun[i].status = 'SUSPEN';
+                    break;
+                }
+            }
+            localStorage.setItem('2r_user', JSON.stringify(userData));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
+            location.reload();
+        }
+    } else {
+        if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
+            userData.status = 'AKTIF';
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === user.id) {
+                    dataAkun[i].status = 'AKTIF';
+                    break;
+                }
+            }
+            localStorage.setItem('2r_user', JSON.stringify(userData));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Selamat! Akun Anda telah kembali AKTIF.', 'success');
+            location.reload();
+        }
+    }
+}
+
+// ---------- RENDER STATUS AKUN (GABUNGAN TOKO & OJEK) ----------
+function renderStatusAkunGabungan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    if (!userData) { tampilkanToast('Akun tidak ditemukan!', 'error'); return; }
+
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
+    tagihanSaya.sort(function(a,b) { return new Date(b.id) - new Date(a.id); });
+
+    var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
+    if (userData.status === 'SUSPEN') {
+        html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-header">Info Akun</div>';
+    html += '<div class="grid-2"><div><strong>ID Akun:</strong> ' + user.id + '</div>';
+    html += '<div><strong>Role:</strong> ' + user.role + '</div>';
+    html += '<div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div>';
+    html += '<div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
+    if (user.role === 'ojek') {
+        html += '<div><strong>Ojek Pro:</strong> ' + (userData.isOjekPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
+    }
+    html += '</div>';
+
+    // Tombol Upgrade ke Pro (Toko) / Ojek Pro
+    if (user.role === 'toko' || user.role === 'pedagang' || user.role === 'codseller') {
+        if (!userData.isPro) {
+            html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
+            html += '  <button class="button button-primary" onclick="upgradeKePro()"><i class="fas fa-crown"></i> Upgrade ke Akun Pro (Rp ' + getHargaProToko().toLocaleString('id-ID') + ')</button>';
+            html += '</div>';
+        }
+    }
+    if (user.role === 'ojek') {
+        if (!userData.isOjekPro) {
+            html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
+            html += '  <button class="button button-primary" onclick="upgradeOjekKePro()"><i class="fas fa-motorcycle"></i> Upgrade ke Ojek Pro (Rp ' + getHargaProOjek().toLocaleString('id-ID') + '/bulan + fee order)</button>';
+            html += '</div>';
+        }
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
+    if (tagihanSaya.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
+        for (var i = 0; i < tagihanSaya.length; i++) {
+            var t = tagihanSaya[i];
+            var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+            html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+
+    // Tombol Bayar (jika SUSPEN)
+    if (userData.status === 'SUSPEN') {
+        html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
+        html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
+        var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
+        html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
+        html += '<strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
+        html += '<strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
+        html += '<strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
+        html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
+        html += '</div>';
+    }
+
+    areaKonten.innerHTML = html;
+}
+
+// ---------- UPGRADE KE PRO (TOKO) ----------
+function upgradeKePro() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
+    if (userData.isPro) { tampilkanToast('Anda sudah menjadi Akun Pro!', 'info'); return; }
+
+    if (!confirm('Anda akan melakukan upgrade ke Akun Pro dengan biaya Rp ' + getHargaProToko().toLocaleString('id-ID') + '. Lanjutkan?')) return;
+
+    userData.isPro = true;
+    userData.status = 'AKTIF';
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].isPro = true;
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+    userLogin.isPro = true;
+    userLogin.status = 'AKTIF';
+    localStorage.setItem('2r_user', JSON.stringify(userLogin));
+
+    var sekarang = new Date();
+    var bulanIni = sekarang.getMonth() + 1;
+    var tahunIni = sekarang.getFullYear();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var sudahAda = false;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
+            sudahAda = true;
+            break;
+        }
+    }
+    if (!sudahAda) {
+        dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: getHargaProToko(), status: 'BELUM_BAYAR' });
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+    }
+
+    tampilkanToast('Selamat! Anda kini menjadi Akun PRO.', 'success');
+    renderStatusAkunGabungan();
+}
+
+// ---------- UPGRADE OJEK KE PRO ----------
+function upgradeOjekKePro() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
+    }
+    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
+    if (userData.isOjekPro) { tampilkanToast('Anda sudah menjadi Ojek Pro!', 'info'); return; }
+
+    if (!confirm('Anda akan upgrade ke Ojek Pro dengan biaya Rp ' + getHargaProOjek().toLocaleString('id-ID') + '/bulan + fee per order. Lanjutkan?')) return;
+
+    userData.isOjekPro = true;
+    userData.status = 'AKTIF';
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].isOjekPro = true;
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+    userLogin.isOjekPro = true;
+    userLogin.status = 'AKTIF';
+    localStorage.setItem('2r_user', JSON.stringify(userLogin));
+
+    var sekarang = new Date();
+    var bulanIni = sekarang.getMonth() + 1;
+    var tahunIni = sekarang.getFullYear();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    var sudahAda = false;
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
+            sudahAda = true;
+            break;
+        }
+    }
+    if (!sudahAda) {
+        dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: getHargaProOjek(), status: 'BELUM_BAYAR' });
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+    }
+
+    tampilkanToast('Selamat! Anda kini menjadi Ojek PRO.', 'success');
+    renderStatusAkunGabungan();
+}
+
+// ---------- KONFIRMASI PEMBAYARAN ----------
+function konfirmasiPembayaran() {
+    if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+    for (var i = 0; i < dataTagihan.length; i++) {
+        if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
+            dataTagihan[i].status = 'LUNAS';
+            break;
+        }
+    }
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            dataAkun[i].status = 'AKTIF';
+            break;
+        }
+    }
+    localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+    simpanDataAkun(dataAkun);
+    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+    userLogin.status = 'AKTIF';
+    localStorage.setItem('2r_user', JSON.stringify(userLogin));
+    tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
+    location.reload();
+}
+
+// ---------- MENU AJUKAN PENGAKTIFAN (HANYA UNTUK SUSPEN) ----------
+function renderAjukanPengaktifan() {
+    var areaKonten = document.getElementById('mainContent');
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-undo-alt"></i> Ajukan Pengaktifan Akun</h2>
+        <p style="color:#d32f2f; font-weight:600;">Akun Anda sedang SUSPEN. Untuk mengaktifkan kembali, silakan bayar tagihan.</p>
+    </div>
+    <div class="card" style="border:2px solid #f44336;">
+        <div class="card-header" style="color:#f44336;">Cara Mengaktifkan Akun</div>
+        <div style="margin-bottom:15px;">
+            <p>1. Lakukan pembayaran tagihan ke rekening berikut:</p>
+            <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
+                <strong>Bank:</strong> BCA<br>
+                <strong>No. Rek:</strong> 1234567890<br>
+                <strong>a.n:</strong> Toko Online 2R
+            </div>
+            <p>2. Setelah transfer, klik tombol di bawah ini.</p>
+        </div>
+        <button class="button button-success" onclick="konfirmasiPembayaran()" style="width:100%;"><i class="fas fa-check"></i> Saya Sudah Bayar</button>
+        <p style="font-size:12px; color:#888; text-align:center; margin-top:10px;">* Sistem akan otomatis mengaktifkan akun jika tagihan terbayar.</p>
+    </div>
+    `;
+    areaKonten.innerHTML = html;
+}
+
+// ============================================================
+// AKHIR BLOK 8.51
+// ============================================================   
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
