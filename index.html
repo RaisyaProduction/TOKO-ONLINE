@@ -827,7 +827,13 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) {base.push({ halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' });
+                    // --- PAKET 2: SISTEM KASIR & PEMERIKSAAN STOK ---
+                    if (paket.includes('paket2')) {
+                        base.push(
+                            { halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' }
+                            // Tambahan menu kasir lain bisa ditambahkan di sini
+                        );
+                    }
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
@@ -860,7 +866,7 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                    if (paket.includes('paket2')) base.push({ halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' });
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
@@ -893,11 +899,19 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                    if (paket.includes('paket2')) base.push({ halaman: 'akunKasir', icon: 'fa-user-cog', label: 'Akun Kasir' });
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
             }
+        ],
+        // === KASIR (Role baru) ===
+        'kasir': [
+            { judul: 'Menu Kasir', items: [
+                { halaman: 'dashboardKasir', icon: 'fa-th-large', label: 'Dasbor' },
+                { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
+                { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok Fisik' }
+            ] }
         ],
         // === STAF ADMIN, CS, STAF OWNER, SPONSOR ===
         'staf_admin': [
