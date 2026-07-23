@@ -62,6 +62,7 @@
                 <div class="authentication-footer">
                     Belum punya akun? 
                     <a onclick="toggleForm('register')">Daftar di sini</a>
+                    <br><a onclick="toggleForm('pengajuanBukaAkun')" style="font-size:12px; color:#FF6B00; cursor:pointer;">Ajukan Buka Akun via Admin</a>
                 </div>
             </form>
             <!-- ===== AKHIR BLOK 2.1.3 ===== -->
@@ -118,6 +119,30 @@
                 </div>
             </form>
             <!-- ===== AKHIR BLOK 2.1.4 ===== -->
+            <!-- ===== BLOK 2.1.5 - FORM PENGAJUAN BUKA AKUN ===== -->
+<form class="authentication-form hidden-form" id="pengajuanBukaAkunForm">
+    <div class="form-group">
+        <label>Nama Lengkap</label>
+        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="pengajuanNama" placeholder="Nama lengkap" required></div>
+    </div>
+    <div class="form-group">
+        <label>Email / Nomor HP</label>
+        <div class="input-group"><i class="fas fa-envelope"></i><input type="text" id="pengajuanKontak" placeholder="Email atau HP" required></div>
+    </div>
+    <div class="form-group">
+        <label>Role yang Diinginkan</label>
+        <div class="input-group"><i class="fas fa-user-tag"></i>
+            <select id="pengajuanRole"><option value="toko">Toko</option><option value="pedagang">Pedagang Pasar</option><option value="codseller">COD Seller</option></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Alasan Pembuatan Akun</label>
+        <div class="input-group"><i class="fas fa-comment"></i><input type="text" id="pengajuanAlasan" placeholder="Misal: Ingin berjualan online" required></div>
+    </div>
+    <button type="submit" class="button-submit"><i class="fas fa-paper-plane"></i> Ajukan ke Admin</button>
+    <div class="authentication-footer">Sudah punya akun? <a onclick="toggleForm('login')">Login di sini</a></div>
+</form>
+<!-- ===== AKHIR BLOK 2.1.5 ===== -->
         </div>
     </div>
 </div>
@@ -7442,6 +7467,136 @@ function renderDataPenagihan() {
     areaKonten.innerHTML = html;
 }
 // ===== AKHIR BLOK 8.25 =====
+    // ===== BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN =====
+
+// --- 1. Perbaiki toggleForm agar bisa membuka form pengajuan ---
+function toggleForm(tipe) {
+    var error = document.getElementById('authenticationError');
+    if (error) error.style.display = 'none';
+    var login = document.getElementById('loginForm');
+    var register = document.getElementById('registerForm');
+    var pengajuan = document.getElementById('pengajuanBukaAkunForm');
+    
+    if (tipe === 'register') {
+        login.classList.add('hidden-form');
+        register.classList.remove('hidden-form');
+        if (pengajuan) pengajuan.classList.add('hidden-form');
+    } else if (tipe === 'pengajuanBukaAkun') {
+        login.classList.add('hidden-form');
+        register.classList.add('hidden-form');
+        if (pengajuan) pengajuan.classList.remove('hidden-form');
+    } else { // login
+        register.classList.add('hidden-form');
+        if (pengajuan) pengajuan.classList.add('hidden-form');
+        login.classList.remove('hidden-form');
+    }
+}
+
+// --- 2. Fungsi Simpan Pengajuan Buka Akun ---
+document.getElementById('pengajuanBukaAkunForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var nama = document.getElementById('pengajuanNama').value.trim();
+    var kontak = document.getElementById('pengajuanKontak').value.trim();
+    var role = document.getElementById('pengajuanRole').value;
+    var alasan = document.getElementById('pengajuanAlasan').value.trim();
+    if (!nama || !kontak || !role || !alasan) { tampilkanToast('Semua data wajib diisi!', 'warning'); return; }
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    dataPengajuan.push({
+        id: 'PB-' + Date.now(),
+        nama: nama,
+        kontak: kontak,
+        role: role,
+        alasan: alasan,
+        status: 'MENUNGGU',
+        waktu: new Date().toISOString()
+    });
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+    tampilkanToast('Pengajuan Anda telah dikirim ke Staf Admin!', 'success');
+    toggleForm('login');
+});
+
+// --- 3. Render Halaman Pengajuan Buka Akun untuk Staf Admin ---
+function renderPengajuanBukaAkun() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    if (!areaKonten) return;
+
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    var pengajuanMenunggu = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
+
+    var html = '<div class="page-header"><h2>Pengajuan Buka Akun</h2><p>Daftar calon user yang ingin dibuatkan akun.</p></div>';
+
+    if (pengajuanMenunggu.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan menunggu</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Nama</th><th>Kontak</th><th>Role</th><th>Alasan</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < pengajuanMenunggu.length; i++) {
+            var p = pengajuanMenunggu[i];
+            html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.kontak) + '</td><td>' + p.role + '</td><td>' + escapeHtml(p.alasan) + '</td><td>';
+            html += '<button class="button button-success button-extra-small" onclick="setujuiPengajuanBukaAkun(\'' + p.id + '\')">Setujui & Buat Akun</button>';
+            html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanBukaAkun(\'' + p.id + '\')">Tolak</button>';
+            html += '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// --- 4. Fungsi Setujui & Tolak Pengajuan ---
+async function setujuiPengajuanBukaAkun(idPengajuan) {
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    var index = -1;
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) { index = i; break; }
+    }
+    if (index === -1) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
+
+    var p = dataPengajuan[index];
+    // Buat akun baru (status NONAKTIF, menunggu verifikasi)
+    var dataAkun = getDataAkun();
+    var username = p.nama.toLowerCase().replace(/\s/g, '') + Math.floor(Math.random() * 100);
+    var passwordHash = await hashPassword('123456'); // Password default
+    var akunBaru = {
+        id: generateId(p.role),
+        role: p.role,
+        username: username,
+        password: passwordHash,
+        nama: p.nama,
+        email: p.kontak,
+        nomorHp: p.kontak,
+        status: 'NONAKTIF (Menunggu Verifikasi)',
+        waktuRegistrasi: new Date().toISOString()
+    };
+    dataAkun.push(akunBaru);
+    simpanDataAkun(dataAkun);
+
+    // Update status pengajuan
+    dataPengajuan[index].status = 'DISETUJUI';
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+
+    tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Pass: 123456. Silakan hubungi calon user.', 'success');
+    renderPengajuanBukaAkun();
+}
+
+function tolakPengajuanBukaAkun(idPengajuan) {
+    if (!confirm('Yakin ingin menolak pengajuan ini?')) return;
+    var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            dataPengajuan[i].status = 'DITOLAK';
+            break;
+        }
+    }
+    localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+    tampilkanToast('Pengajuan ditolak.', 'success');
+    renderPengajuanBukaAkun();
+}
+// ===== AKHIR BLOK 8.26 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
