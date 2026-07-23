@@ -6413,6 +6413,112 @@ function eksekusiDelete() {
     }
 }
 // ===== AKHIR BLOK 8.16.11 =====
+// ============================================================
+// BLOK 8.16.12 - FUNGSI PENDUKUNG TRANSAKSI (hitungTotalAkhir & Scan)
+// ============================================================
+
+// --- 1. Hitung Total Akhir dengan Diskon ---
+function hitungTotalAkhir() {
+    var total = 0;
+    var i = 0;
+    // Jumlahkan semua subtotal dari baris transaksi
+    while (document.getElementById('trxSubtotal' + i)) {
+        total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+        i++;
+    }
+    // Update tampilan Total
+    document.getElementById('trxTotal').textContent = total.toLocaleString('id-ID');
+
+    // Hitung diskon dan Grand Total
+    var diskon = parseFloat(document.getElementById('trxDiskon').value) || 0;
+    var grandTotal = total - diskon;
+    if (grandTotal < 0) grandTotal = 0;
+    document.getElementById('trxGrandTotal').textContent = grandTotal.toLocaleString('id-ID');
+}
+
+// --- 2. Proses Scan Barcode (Manual Input) ---
+function prosesScanBarcode() {
+    var input = document.getElementById('trxScanInput');
+    if (!input) return;
+    var kode = input.value.trim();
+    if (!kode) {
+        tampilkanToast('Masukkan kode produk terlebih dahulu!', 'warning');
+        return;
+    }
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produk = null;
+
+    // Cari produk milik toko ini berdasarkan kode produk
+    for (var i = 0; i < semuaProduk.length; i++) {
+        if (semuaProduk[i].tokoId === user.id && semuaProduk[i].kodeProduk === kode) {
+            produk = semuaProduk[i];
+            break;
+        }
+    }
+
+    if (!produk) {
+        tampilkanToast('Produk dengan kode ' + kode + ' tidak ditemukan!', 'error');
+        return;
+    }
+
+    // Cari baris kosong pertama
+    var index = 0;
+    while (document.getElementById('trxProduk' + index)) {
+        var select = document.getElementById('trxProduk' + index);
+        if (select.value === '') {
+            // Isi baris yang kosong
+            select.value = produk.id;
+            updateHargaSatuan(index);
+            document.getElementById('trxJumlah' + index).value = 1;
+            hitungSubtotal(index);
+            input.value = '';
+            tampilkanToast('Produk ditemukan: ' + produk.namaProduk, 'success');
+            hitungTotalAkhir(); // Update total setelah scan
+            return;
+        }
+        index++;
+    }
+
+    // Jika semua baris penuh, tambahkan baris baru
+    var container = document.getElementById('trxItemContainer');
+    var row = document.createElement('div');
+    row.className = 'grid-2';
+    row.style.marginTop = '10px';
+    row.style.borderTop = '1px solid #eee';
+    row.style.paddingTop = '10px';
+    row.id = 'trxItemRow' + index;
+
+    var html = '';
+    html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
+    html += '    <option value="">-- Pilih Produk --</option>';
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+    for (var i = 0; i < produkSaya.length; i++) {
+        var p = produkSaya[i];
+        html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+    }
+    html += '  </select></div>';
+    html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
+    html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
+    html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
+    row.innerHTML = html;
+    container.appendChild(row);
+
+    // Isi produk yang baru discan ke baris baru
+    document.getElementById('trxProduk' + index).value = produk.id;
+    updateHargaSatuan(index);
+    document.getElementById('trxJumlah' + index).value = 1;
+    hitungSubtotal(index);
+    input.value = '';
+    tampilkanToast('Produk ditemukan: ' + produk.namaProduk + ' (baris baru ditambahkan)', 'success');
+    hitungTotalAkhir(); // Update total setelah scan
+}
+
+// ============================================================
+// AKHIR BLOK 8.16.12
+// ============================================================
 // ===== AKHIR BLOK 8.16 =====
 // ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
 // Fitur ini hanya bisa diakses oleh SuperAdmin
