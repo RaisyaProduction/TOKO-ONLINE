@@ -8581,14 +8581,13 @@ function downloadIndexHTML() {
 // AKHIR BLOK 8.34
 // ============================================================
 // ============================================================
-// BLOK 8.37 - DATA KASIR (LENGKAP)
+// BLOK 8.37 - DATA KASIR (LENGKAP DENGAN TOKOID)
 // ============================================================
 
 // --- Ambil dan simpan data kasir ---
 function getDataKasir() {
     return JSON.parse(localStorage.getItem('2r_kasir') || '[]');
 }
-
 function simpanDataKasir(data) {
     localStorage.setItem('2r_kasir', JSON.stringify(data));
 }
@@ -8604,10 +8603,14 @@ function generateIdKasir() {
     return 'KSR-' + String(max + 1).padStart(3, '0');
 }
 
-// --- Tambah kasir baru ---
+// --- Tambah kasir baru (DENGAN TOKOID) ---
 async function tambahKasir(nama, username, password) {
     var data = getDataKasir();
-    // Cek username sudah ada
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}'); // ambil user yang sedang login
+    if (!user.id) {
+        tampilkanToast('Anda belum login!', 'error');
+        return false;
+    }
     for (var i = 0; i < data.length; i++) {
         if (data[i].username === username) {
             tampilkanToast('Username kasir sudah ada!', 'error');
@@ -8617,6 +8620,7 @@ async function tambahKasir(nama, username, password) {
     var hash = await hashPassword(password);
     var kasir = {
         id: generateIdKasir(),
+        tokoId: user.id, // <-- TAMBAHKAN TOKOID
         nama: nama,
         username: username,
         password: hash,
@@ -8634,7 +8638,7 @@ function hapusKasir(id) {
     simpanDataKasir(baru);
 }
 
-// --- Validasi login kasir (digunakan di BLOK 8.2.2) ---
+// --- Validasi login kasir ---
 async function validasiLoginKasir(username, password) {
     var data = getDataKasir();
     for (var i = 0; i < data.length; i++) {
@@ -8649,25 +8653,27 @@ async function validasiLoginKasir(username, password) {
 // ============================================================
 // AKHIR BLOK 8.37
 // ============================================================
-
 // ============================================================
-// BLOK 8.38 - KELOLA KASIR (UI)
+// BLOK 8.38 - KELOLA KASIR (UI) - DENGAN FILTER TOKOID
 // ============================================================
 
 function renderKelolaKasir() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     var dataKasir = getDataKasir();
-    var kasirSaya = dataKasir; // Semua kasir milik toko ini (karena hanya toko ini yang akses)
+    // FILTER HANYA KASIR MILIK TOKO INI
+    var kasirSaya = dataKasir.filter(function(k) { return k.tokoId === user.id; });
 
     var html = '<div class="page-header"><h2>Kelola Kasir</h2><p>Total kasir: ' + kasirSaya.length + '</p></div>';
 
+    // Form tambah kasir
     html += '<div class="card"><div class="card-header">Tambah Kasir Baru</div>';
     html += '<div class="grid-2"><div><label class="form-label">Nama Kasir</label><input type="text" id="kasirNama" class="form-input"></div>';
     html += '<div><label class="form-label">Username</label><input type="text" id="kasirUsername" class="form-input"></div>';
     html += '<div><label class="form-label">Password</label><input type="password" id="kasirPassword" class="form-input"></div>';
     html += '</div><button class="button button-primary" onclick="simpanKasirBaru()"><i class="fas fa-user-plus"></i> Tambah Kasir</button></div>';
 
+    // Tabel daftar kasir
     if (kasirSaya.length === 0) {
         html += '<div class="card"><div class="empty-state"><i class="fas fa-users"></i><h3>Belum ada kasir</h3></div></div>';
     } else {
@@ -8681,6 +8687,7 @@ function renderKelolaKasir() {
     areaKonten.innerHTML = html;
 }
 
+// --- Simpan kasir baru ---
 async function simpanKasirBaru() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var nama = document.getElementById('kasirNama').value.trim();
@@ -8711,6 +8718,7 @@ async function simpanKasirBaru() {
     var hash = await hashPassword(password);
     var kasir = {
         id: generateIdKasir(),
+        tokoId: user.id, // <-- TOKOID DISIMPAN SAAT TAMBAH
         nama: nama,
         username: username,
         password: hash,
@@ -8727,6 +8735,7 @@ async function simpanKasirBaru() {
     renderKelolaKasir();
 }
 
+// --- Hapus kasir ---
 function hapusKasirConfirm(id) {
     if (!confirm('Yakin ingin menghapus kasir ini?')) return;
     hapusKasir(id);
@@ -8734,7 +8743,9 @@ function hapusKasirConfirm(id) {
     renderKelolaKasir();
 }
 
-// ===== AKHIR BLOK 8.38 =====
+// ============================================================
+// AKHIR BLOK 8.38
+// ============================================================
 
 // ============================================================
 // BLOK 8.39 - LOGOUT KASIR & DASHBOARD KASIR (TANPA MENU SIDEBAR LOGOUT)
