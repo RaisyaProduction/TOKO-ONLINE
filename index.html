@@ -750,7 +750,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 <!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
 <script>            
 // ============================================================
-// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP)
+// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP - FINAL)
 // ============================================================
 function buatSidebarHTML(role) {
     // --- Hitung notifikasi belum dibaca ---
@@ -798,7 +798,6 @@ function buatSidebarHTML(role) {
                     { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
-                    { halaman: 'riwayatOrderOjekAdmin', icon: 'fa-history', label: 'Riwayat Ojek' }
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
@@ -843,7 +842,7 @@ function buatSidebarHTML(role) {
             }
         ],
 
-                // ===== TOKO =====
+        // ===== TOKO =====
         'toko': [
             {
                 judul: 'Menu Utama',
@@ -870,7 +869,8 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                     ];
                     // --- Paket Transaksi 1 ---
                     if (paket.includes('paket1')) {
@@ -883,8 +883,7 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                             );
                         }
                     }
@@ -919,11 +918,11 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
                         { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
-                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -935,8 +934,7 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                             );
                         }
                     }
@@ -971,11 +969,11 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
                         { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
-                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -987,8 +985,7 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
-                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
                             );
                         }
                     }
@@ -1018,7 +1015,10 @@ function buatSidebarHTML(role) {
                 items: [
                     { halaman: 'orderMasuk', icon: 'fa-motorcycle', label: 'Order Masuk' },
                     { halaman: 'riwayatOrder', icon: 'fa-history', label: 'Riwayat Order' },
-                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' }
+                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' },
+                    { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' },
+                    { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order Ojek' },
+                    { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                 ]
             }
         ],
@@ -1170,7 +1170,9 @@ function buatSidebarHTML(role) {
 
 <!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
 <script>
-    // ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
+// ============================================================
+// BLOK 6.2.1 - NAVIGASI KE HALAMAN (LENGKAP - FINAL)
+// ============================================================
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
@@ -1214,30 +1216,28 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'resetCleanup') renderResetCleanup();
     else if (namaHalaman === 'notepad') renderNotepad();
-    else if (namaHalaman === 'riwayatOrderOjekAdmin') renderRiwayatOrderOjekAdmin();
-    else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
-    else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
-    else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
-    else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
-    
-    
-    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
     else if (namaHalaman === 'logStok') renderLogStok();
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
-    else if (namaHalaman === 'statusAkun') renderStatusAkun();
+    else if (namaHalaman === 'statusAkun') renderStatusAkunGabungan();
     else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
     else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
     else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
     else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
-    // ------------------------------------------------
-    
+    // ---- Transaksi 3 (Ojek) ----
+    else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
+    else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
+    else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
+    else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
+    // -----------------------------
     else renderPlaceholder(namaHalaman);
 }
-// ===== AKHIR BLOK 6.2.1 =====
+// ============================================================
+// AKHIR BLOK 6.2.1
+// ============================================================
 
     // ===== BLOK 6.2.2 - RENDER PLACEHOLDER =====
     function renderPlaceholder(judul) {
