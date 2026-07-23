@@ -789,7 +789,6 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 // BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP - FINAL)
 // ============================================================
 function buatSidebarHTML(role) {
-    // --- Hitung notifikasi belum dibaca ---
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var notifBelumDibaca = 0;
     if (user.id) {
@@ -801,13 +800,11 @@ function buatSidebarHTML(role) {
         }
     }
 
-    // --- Status PRO dan fitur ---
     var isPro = user.isPro || false;
     if (!user.fitur) user.fitur = {};
     if (!user.fitur.paketTransaksi) user.fitur.paketTransaksi = ['paket1'];
     var paket = user.fitur.paketTransaksi;
 
-    // --- Struktur menu per role ---
     var menuRole = {
 
         // ===== SUPERADMIN =====
@@ -838,8 +835,8 @@ function buatSidebarHTML(role) {
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
                     { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' },
-                    { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' },
-                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' },
+                    { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' }
                 ]
             }
         ],
@@ -893,7 +890,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
-                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
@@ -911,7 +908,8 @@ function buatSidebarHTML(role) {
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
                         { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
                         { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
-                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' }
+                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -933,8 +931,8 @@ function buatSidebarHTML(role) {
                 })()
             }
         ],
-
-        // ===== PEDAGANG PASAR =====
+        
+        // ===== PEDAGANG =====
         'pedagang': [
             {
                 judul: 'Menu Utama',
@@ -946,7 +944,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
-                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
@@ -964,7 +962,8 @@ function buatSidebarHTML(role) {
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
                         { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
                         { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
-                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' }
+                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -999,7 +998,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
-                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
@@ -1017,7 +1016,8 @@ function buatSidebarHTML(role) {
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
                         { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
                         { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
-                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' }
+                        { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -1082,6 +1082,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' },
                     { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' }
                 ]
             }
@@ -1164,10 +1165,7 @@ function buatSidebarHTML(role) {
         ]
     };
 
-    // --- Pilih menu sesuai role ---
     var daftarMenu = menuRole[role] || menuRole['customer'];
-
-    // --- Bangun HTML sidebar ---
     var html = '';
     for (var i = 0; i < daftarMenu.length; i++) {
         var bagian = daftarMenu[i];
@@ -4055,10 +4053,9 @@ function renderPapanInformasi() {
 <!-- ===== BLOK 8.6 - JS_INIT_UTAMA (DOMContentLoaded) ===== -->
 <script>
 // ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (LENGKAP - FINAL - ANTI ERROR)
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (LENGKAP - FINAL)
 // ============================================================
 function tampilkanDashboard(user) {
-    // Jika data user tidak valid, logout paksa dan reload
     if (!user || !user.nama) {
         localStorage.removeItem('2r_user');
         localStorage.removeItem('2r_user_role');
@@ -4069,10 +4066,7 @@ function tampilkanDashboard(user) {
     var dataAkun = getDataAkun();
     var userData = null;
     for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            userData = dataAkun[i];
-            break;
-        }
+        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
     }
 
     // --- PENANGANAN AKUN SUSPEN ---
@@ -4094,6 +4088,7 @@ function tampilkanDashboard(user) {
     document.getElementById('pageAuthentication').style.display = 'none';
     document.getElementById('pageDashboard').style.display = 'block';
     document.getElementById('userNama').textContent = user.nama;
+    
     var daftarRole = {
         superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek',
         pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service',
@@ -4104,11 +4099,9 @@ function tampilkanDashboard(user) {
     document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
     setupNavigasiSidebar();
 
-    // --- FITUR FOTO PROFIL (DENGAN PENGECEKAN AMAN) ---
+    // --- FITUR FOTO PROFIL (PENGECEKAN AMAN) ---
     var avatar = document.getElementById('userAvatar');
     var placeholder = document.getElementById('userAvatarPlaceholder');
-    
-    // Hanya jalankan jika elemen avatar dan placeholder benar-benar ada di DOM
     if (avatar && placeholder) {
         if (user.fotoProfil) {
             avatar.src = user.fotoProfil;
@@ -4119,12 +4112,10 @@ function tampilkanDashboard(user) {
             placeholder.style.display = 'block';
         }
     }
-    // ==========================================================
 
     // Jalankan inisialisasi tagihan (otomatis buat tagihan tgl 5 & suspensi tgl 10)
     inisialisasiSistemTagihan();
 
-    // Render halaman dashboard sesuai role
     renderDashboard();
 }
 // ============================================================
