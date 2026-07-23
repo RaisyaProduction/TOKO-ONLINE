@@ -2350,29 +2350,31 @@ async function resetPasswordUser(id) {
     }
     // ===== AKHIR BLOK 8.1.1 =====
 
-        // ===== BLOK 8.1.2 - KELOLA IKLAN (DIUBAH MENJADI GRID KARTU BESAR) =====
+    <!-- ===== BLOK 8.1.2 - KELOLA IKLAN ===== -->
+<script>
     function renderMenuIklan() {
         var role = localStorage.getItem('2r_user_role');
         var areaKonten = document.getElementById('mainContent');
         var dataIklan = JSON.parse(localStorage.getItem('2r_iklan') || '[]');
         
-        var html = '<div class="page-header"><h2>Kelola Iklan Sponsor</h2><p>Kumpulan iklan yang ditampilkan di dashboard semua pengguna.</p></div>';
+        var html = '<div class="page-header"><h2>Kelola Iklan Sponsor</h2><p>Kelola iklan yang ditampilkan di dashboard semua pengguna.</p></div>';
         
         // Hanya SuperAdmin yang bisa menambah iklan
         if (role === 'superadmin') {
-            html += '<div style="margin-bottom:20px;"><button class="button button-primary" onclick="bukaFormIklan()"><i class="fas fa-plus"></i> Tambah Iklan Baru</button></div>';
+            html += '<div style="margin-bottom:20px;"><button class="button button-primary" onclick="bukaFormIklan()"><i class="fas fa-plus"></i> Tambah Iklan</button></div>';
         }
 
         if (dataIklan.length === 0) {
             html += '<div class="card"><div class="empty-state"><i class="fas fa-ad"></i><h3>Belum ada iklan</h3></div></div>';
         } else {
-            // --- MULAI GRID KARTU IKLAN ---
-            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:25px; padding:10px 0;">';
+            // ===== TAMPILAN GRID KARTU DENGAN GAMBAR BESAR =====
+            html += '<div class="card">';
+            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px; padding:5px;">';
             
             for (var i = 0; i < dataIklan.length; i++) {
                 var iklan = dataIklan[i];
                 
-                // Konversi data gambar ke array
+                // === KONVERSI DATA GAMBAR KE ARRAY ===
                 var gambarArray = [];
                 if (iklan.gambar) {
                     if (Array.isArray(iklan.gambar)) {
@@ -2381,54 +2383,47 @@ async function resetPasswordUser(id) {
                         gambarArray = [iklan.gambar];
                     }
                 }
+                // =====================================
 
-                // Mulai kartu per item
-                html += '<div style="background:white; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; overflow:hidden; display:flex; flex-direction:column; transition:transform 0.2s, box-shadow 0.2s;">';
-                html += '<div style="flex:1; display:flex; flex-direction:column;">';
-
-                                // --- 1. BAGIAN GAMBAR (DI ATAS) ---
-                html += '<div style="height:300px; background:#f8f9fa; display:flex; overflow-x:auto; gap:0; scroll-snap-type:x mandatory; scrollbar-width:thin; border-bottom:1px solid #f0f0f0; position:relative;">';
+                // Mulai Card Iklan
+                html += '<div style="border:1px solid #eee; border-radius:12px; padding:20px; background:white; box-shadow:0 2px 8px rgba(0,0,0,0.04); display:flex; flex-direction:column;">';
+                
+                // Warna (strip di atas)
+                var warna = iklan.warna || '#FF6B00';
+                html += '<div style="height:6px; background:' + warna + '; border-radius:12px 12px 0 0; margin:-20px -20px 15px -20px;"></div>';
+                
+                // Judul
+                html += '<h4 style="font-size:18px; font-weight:600; margin:0 0 10px 0; color:#333;">' + escapeHtml(iklan.judul) + '</h4>';
+                
+                // GAMBAR BESAR
                 if (gambarArray.length > 0) {
-                    for (var j = 0; j < gambarArray.length; j++) {
-                        html += '<img src="' + gambarArray[j] + '" style="width:100%; height:100%; object-fit:contain; cursor:pointer; flex-shrink:0; scroll-snap-align:start; display:block;" onclick="previewGambar(\'' + gambarArray[j] + '\',\'Preview Iklan\')">';
-                    }
+                    // Ambil gambar pertama agar tampil besar
+                    html += '<img src="' + gambarArray[0] + '" style="width:100%; max-height:300px; object-fit:contain; border-radius:8px; margin-bottom:15px; cursor:pointer; border:1px solid #f0f0f0;" onclick="previewGambar(\'' + gambarArray[0] + '\',\'Preview Iklan\')">';
                 } else {
-                    html += '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#ccc;"><i class="fas fa-image" style="font-size:48px;"></i></div>';
+                    html += '<div style="width:100%; height:200px; background:#f8f9fa; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; margin-bottom:15px; border:1px solid #eee;"><i class="fas fa-image" style="font-size:40px;"></i></div>';
                 }
-                html += '</div>';
 
-                // --- 2. BAGIAN JUDUL, WARNA, DESKRIPSI (DI BAWAH GAMBAR) ---
-                html += '<div style="padding:20px 20px 15px 20px; flex:1; display:flex; flex-direction:column;">';
+                // DESKRIPSI DI BAWAH GAMBAR
+                html += '<p style="font-size:14px; color:#555; margin:0 0 15px 0; line-height:1.6;">' + escapeHtml(iklan.deskripsi) + '</p>';
                 
-                // Judul & Warna
-                html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">';
-                html += '<h3 style="font-size:18px; font-weight:700; color:#333; margin:0; flex:1;">' + escapeHtml(iklan.judul) + '</h3>';
-                html += '<span style="display:inline-block; width:24px; height:24px; background:' + (iklan.warna || '#FF6B00') + '; border-radius:50%; border:1px solid #eee; flex-shrink:0;"></span>';
-                html += '</div>';
-
-                // Deskripsi
-                html += '<p style="font-size:14px; color:#666; line-height:1.6; margin:0; flex:1;">' + escapeHtml(iklan.deskripsi) + '</p>';
-                
-                html += '</div>'; // tutup padding konten teks
-
-                // --- 3. BAGIAN AKSI (KHUSUS SUPERADMIN) ---
+                // AKSI (Hanya untuk SuperAdmin)
                 if (role === 'superadmin') {
-                    html += '<div style="padding:10px 20px 20px 20px; border-top:1px solid #f0f0f0; display:flex; gap:10px; justify-content:flex-end;">';
+                    html += '<div style="display:flex; gap:10px; margin-top:auto; border-top:1px solid #f0f0f0; padding-top:15px;">';
                     html += '<button class="button button-primary button-extra-small" onclick="editIklan(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
                     html += '<button class="button button-danger button-extra-small" onclick="hapusIklan(' + i + ')"><i class="fas fa-trash"></i> Hapus</button>';
                     html += '</div>';
                 }
-
-                html += '</div></div>'; // tutup flex container & kartu
+                
+                html += '</div>'; // Tutup Card Iklan
             }
             
-            html += '</div>'; // tutup grid
-            // --- AKHIR GRID KARTU IKLAN ---
+            html += '</div></div>'; // Tutup Grid dan Card
+            // ===============================================
         }
 
-        // Form tambah/edit (tetap sama, hanya untuk SuperAdmin)
+        // Form tambah/edit hanya untuk SuperAdmin
         if (role === 'superadmin') {
-            html += '<div id="formIklanContainer" class="hidden" style="margin-top:30px;"><div class="card"><div class="card-header"><span id="formIklanTitle">Tambah Iklan Baru</span><button class="button button-danger button-small" onclick="tutupFormIklan()"><i class="fas fa-times"></i> Tutup</button></div>';
+            html += '<div id="formIklanContainer" class="hidden" style="margin-top:20px;"><div class="card"><div class="card-header"><span id="formIklanTitle">Tambah Iklan Baru</span><button class="button button-danger button-small" onclick="tutupFormIklan()"><i class="fas fa-times"></i> Tutup</button></div>';
             html += '<div class="grid-2"><div><label class="form-label">Judul Iklan</label><input type="text" id="iklanJudul" class="form-input" placeholder="Judul iklan"></div>';
             html += '<div><label class="form-label">Warna Latar (opsional)</label><input type="color" id="iklanWarna" class="form-input" value="#FF6B00" style="padding:2px;height:40px;"></div>';
             html += '<div><label class="form-label">Deskripsi</label><input type="text" id="iklanDeskripsi" class="form-input" placeholder="Deskripsi singkat"></div>';
@@ -2441,10 +2436,11 @@ async function resetPasswordUser(id) {
 
         areaKonten.innerHTML = html;
         
-        // Event listener untuk upload banyak gambar
+        // Event listener untuk upload banyak gambar (dipasang ulang setiap render)
         setTimeout(function() {
             var inputGambar = document.getElementById('iklanGambar');
             if (inputGambar) {
+                // Hapus event listener lama untuk menghindari duplikasi
                 var newInput = inputGambar.cloneNode(true);
                 inputGambar.parentNode.replaceChild(newInput, inputGambar);
                 
@@ -2470,10 +2466,12 @@ async function resetPasswordUser(id) {
                                     selesai++;
                                     if (selesai === total) {
                                         localStorage.setItem('2r_iklan_gambar_temp', JSON.stringify(tempData));
+                                        console.log('Gambar berhasil dikonversi ke Base64. Total:', total, 'file');
                                     }
                                 };
                                 reader.onerror = function(err) {
                                     console.error('Error membaca file:', file.name, err);
+                                    tampilkanToast('Gagal membaca file: ' + file.name, 'error');
                                 };
                                 reader.readAsDataURL(file);
                             })(files[i]);
@@ -2482,6 +2480,77 @@ async function resetPasswordUser(id) {
                 });
             }
         }, 300);
+    }
+
+    function bukaFormIklan() {
+        document.getElementById('formIklanContainer').classList.remove('hidden');
+        document.getElementById('formIklanTitle').textContent = 'Tambah Iklan Baru';
+        document.getElementById('iklanEditIndex').value = '-1';
+        document.getElementById('iklanJudul').value = '';
+        document.getElementById('iklanDeskripsi').value = '';
+        document.getElementById('iklanWarna').value = '#FF6B00';
+        document.getElementById('iklanNamaGambar').textContent = 'Belum ada gambar';
+        localStorage.removeItem('2r_iklan_gambar_temp');
+        document.getElementById('formIklanContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+    function tutupFormIklan() { document.getElementById('formIklanContainer').classList.add('hidden'); }
+    function simpanIklan() {
+        var judul = document.getElementById('iklanJudul').value.trim();
+        var deskripsi = document.getElementById('iklanDeskripsi').value.trim();
+        var warna = document.getElementById('iklanWarna').value;
+        var gambarTemp = localStorage.getItem('2r_iklan_gambar_temp');
+        var gambarArray = [];
+        if (gambarTemp) {
+            try {
+                gambarArray = JSON.parse(gambarTemp);
+                console.log('Gambar yang akan disimpan:', gambarArray.length, 'file');
+            } catch (e) { 
+                console.warn('Gagal parse gambarTemp:', e);
+                gambarArray = []; 
+            }
+        } else {
+            console.log('Tidak ada gambar temporary yang disimpan.');
+        }
+        var editIndex = parseInt(document.getElementById('iklanEditIndex').value);
+        if (!judul || !deskripsi) { tampilkanToast('Judul dan deskripsi wajib diisi!', 'warning'); return; }
+        var dataIklan = JSON.parse(localStorage.getItem('2r_iklan') || '[]');
+        if (editIndex === -1) {
+            dataIklan.push({ id: Date.now(), judul: judul, deskripsi: deskripsi, warna: warna, gambar: gambarArray });
+            tampilkanToast('Iklan berhasil ditambahkan!', 'success');
+        } else {
+            dataIklan[editIndex].judul = judul;
+            dataIklan[editIndex].deskripsi = deskripsi;
+            dataIklan[editIndex].warna = warna;
+            if (gambarArray.length > 0) dataIklan[editIndex].gambar = gambarArray;
+            tampilkanToast('Iklan berhasil diperbarui!', 'success');
+        }
+        localStorage.setItem('2r_iklan', JSON.stringify(dataIklan));
+        localStorage.removeItem('2r_iklan_gambar_temp');
+        tutupFormIklan();
+        renderMenuIklan();
+    }
+    function editIklan(index) {
+        var dataIklan = JSON.parse(localStorage.getItem('2r_iklan') || '[]');
+        if (index < 0 || index >= dataIklan.length) { tampilkanToast('Iklan tidak ditemukan!', 'error'); return; }
+        var iklan = dataIklan[index];
+        document.getElementById('formIklanContainer').classList.remove('hidden');
+        document.getElementById('formIklanTitle').textContent = 'Edit Iklan';
+        document.getElementById('iklanEditIndex').value = index;
+        document.getElementById('iklanJudul').value = iklan.judul;
+        document.getElementById('iklanDeskripsi').value = iklan.deskripsi;
+        document.getElementById('iklanWarna').value = iklan.warna || '#FF6B00';
+        var jmlGambar = (iklan.gambar && Array.isArray(iklan.gambar)) ? iklan.gambar.length : 0;
+        document.getElementById('iklanNamaGambar').textContent = (jmlGambar > 0) ? 'Gambar sudah ada (' + jmlGambar + ' file)' : 'Belum ada gambar';
+        localStorage.removeItem('2r_iklan_gambar_temp');
+        document.getElementById('formIklanContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+    function hapusIklan(index) {
+        if (!confirm('Yakin ingin menghapus iklan ini?')) return;
+        var dataIklan = JSON.parse(localStorage.getItem('2r_iklan') || '[]');
+        dataIklan.splice(index, 1);
+        localStorage.setItem('2r_iklan', JSON.stringify(dataIklan));
+        renderMenuIklan();
+        tampilkanToast('Iklan dihapus!', 'success');
     }
     // ===== AKHIR BLOK 8.1.2 =====
 
