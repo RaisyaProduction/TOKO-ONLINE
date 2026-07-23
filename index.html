@@ -6457,16 +6457,17 @@ function renderPengajuanUploadProduk() {
         html += '  <button class="button button-primary margin-top-10" onclick="simpanPengajuanUpload()"><i class="fas fa-paper-plane"></i> Ajukan</button>';
         html += '</div>';
 
-        html += '<div class="card"><div class="card-header">Riwayat Pengajuan Saya</div>';
+                html += '<div class="card"><div class="card-header">Riwayat Pengajuan Saya</div>';
         if (pengajuanSaya.length === 0) {
             html += '  <div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div>';
         } else {
-            html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jumlah Diminta</th><th>Alasan</th><th>Status</th></tr></thead><tbody>';
+            html += '  <div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Jumlah Diminta</th><th>Alasan</th><th>Status</th><th>Alasan Penolakan</th></tr></thead><tbody>';
             pengajuanSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
             for (var i = 0; i < pengajuanSaya.length; i++) {
                 var p = pengajuanSaya[i];
                 var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
-                html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
+                var alasanTolak = p.status === 'DITOLAK' ? (p.alasanPenolakan || '-') : '-';
+                html += '  <tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td><td>' + p.jumlahDiminta + ' Produk</td><td>' + escapeHtml(p.alasan || '-') + '</td><td><span class="badge ' + badge + '">' + p.status + '</span></td><td>' + escapeHtml(alasanTolak) + '</td></tr>';
             }
             html += '  </tbody></table></div>';
         }
@@ -6607,20 +6608,25 @@ function setujuiPengajuanUpload(idPengajuan) {
     renderPengajuanUploadProduk();
 }
 
-// ===== 8.18.4 - TOLAK PENGAJUAN (OLEH SUPERADMIN/STAF ADMIN) =====
+// ===== BLOK 8.18.4 - TOLAK PENGAJUAN (DENGAN ALASAN) =====
 function tolakPengajuanUpload(idPengajuan) {
-    if (!confirm('Tolak pengajuan ini?')) return;
+    var alasan = prompt('Alasan penolakan (opsional):');
+    if (alasan === null) return; // user membatalkan
+    alasan = alasan.trim() || 'Tidak ada alasan yang diberikan';
 
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
     for (var i = 0; i < dataPengajuan.length; i++) {
         if (dataPengajuan[i].id === idPengajuan) {
             dataPengajuan[i].status = 'DITOLAK';
+            dataPengajuan[i].alasanPenolakan = alasan;
             break;
         }
     }
     localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
     tampilkanToast('Pengajuan ditolak!', 'success');
     renderPengajuanUploadProduk();
+}
+// ===== AKHIR BLOK 8.18.4 =====
 }
 // ===== AKHIR BLOK 8.18 =====
 // ===== BLOK 8.19 - JS_HUTANG_PIUTANG =====
