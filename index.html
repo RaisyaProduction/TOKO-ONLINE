@@ -4122,16 +4122,18 @@ function tampilkanDashboard(user) {
 // AKHIR BLOK 8.6.1
 // ============================================================
 
-    // ===== BLOK 8.6.2 - DOMContentLoaded =====
-    document.addEventListener('DOMContentLoaded', async function() {
-        await inisialisasiSuperAdmin();
-        var dataUser = localStorage.getItem('2r_user');
-        if (dataUser) {
-            var user = JSON.parse(dataUser);
-            tampilkanDashboard(user);
-        }
-    });
-    // ===== AKHIR BLOK 8.6.2 =====
+    // ===== BLOK 8.6.2 - DOMContentLoaded (DENGAN INISIALISASI DATA DEMO) =====
+document.addEventListener('DOMContentLoaded', async function() {
+    await inisialisasiSuperAdmin();
+    // Inisialisasi data demo (hanya sekali)
+    inisialisasiDataDemo();
+    var dataUser = localStorage.getItem('2r_user');
+    if (dataUser) {
+        var user = JSON.parse(dataUser);
+        tampilkanDashboard(user);
+    }
+});
+// ===== AKHIR BLOK 8.6.2 =====
 </script>
 <!-- ===== AKHIR BLOK 8.6 ===== -->
 
@@ -11074,6 +11076,282 @@ function filterKatalog() {
 
 // ============================================================
 // AKHIR BLOK 8.57
+// ============================================================
+// ============================================================
+// BLOK 8.58 - INISIALISASI DATA DEMO LENGKAP
+// ============================================================
+
+function inisialisasiDataDemo() {
+    // --- 1. Cek apakah data demo sudah pernah diinisialisasi ---
+    if (localStorage.getItem('2r_demo_initialized')) {
+        return; // Sudah diinisialisasi, tidak perlu lagi
+    }
+
+    var dataAkun = getDataAkun();
+    var sudahAdaToko = false;
+    var sudahAdaPedagang = false;
+    var sudahAdaCod = false;
+    var sudahAdaOjek = false;
+
+    // Cek apakah akun demo sudah ada
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.username === 'tokodemo') sudahAdaToko = true;
+        if (a.username === 'pedagangdemo') sudahAdaPedagang = true;
+        if (a.username === 'coddemo') sudahAdaCod = true;
+        if (a.username === 'ojekdemo') sudahAdaOjek = true;
+    }
+
+    // --- 2. Jika belum ada, buat akun demo ---
+    var passwordHash = '123456'; // Ini akan di-hash nanti
+
+    // Buat akun TOKO demo
+    if (!sudahAdaToko) {
+        var toko = {
+            id: 'TOKO-DEMO',
+            role: 'toko',
+            username: 'tokodemo',
+            password: '123456', // akan di-hash
+            nama: 'Toko Demo 2R',
+            email: 'tokodemo@2r.com',
+            nomorHp: '081234567890',
+            alamat: 'Jl. Merdeka No. 1, Jakarta',
+            alamatLokasi: 'Jl. Merdeka No. 1, Jakarta',
+            latitude: '-6.2088',
+            longitude: '106.8456',
+            namaBank: 'BCA',
+            nomorRekening: '1234567890',
+            pemilikRekening: 'Toko Demo 2R',
+            status: 'AKTIF',
+            fitur: {
+                transaksi1: true,
+                transaksi2: true,
+                transaksi3: true,
+                paketTransaksi: ['paket1', 'paket2', 'paket3']
+            },
+            isPro: true,
+            waktuRegistrasi: new Date().toISOString()
+        };
+        dataAkun.push(toko);
+    }
+
+    // Buat akun PEDAGANG demo
+    if (!sudahAdaPedagang) {
+        var pedagang = {
+            id: 'PEDAGANG-DEMO',
+            role: 'pedagang',
+            username: 'pedagangdemo',
+            password: '123456',
+            nama: 'Pedagang Demo 2R',
+            email: 'pedagangdemo@2r.com',
+            nomorHp: '081234567891',
+            alamat: 'Jl. Pasar Baru No. 2, Bandung',
+            alamatLokasi: 'Jl. Pasar Baru No. 2, Bandung',
+            latitude: '-6.9175',
+            longitude: '107.6191',
+            namaBank: 'Mandiri',
+            nomorRekening: '9876543210',
+            pemilikRekening: 'Pedagang Demo 2R',
+            status: 'AKTIF',
+            fitur: {
+                transaksi1: true,
+                transaksi2: true,
+                transaksi3: true,
+                paketTransaksi: ['paket1', 'paket2', 'paket3']
+            },
+            isPro: true,
+            waktuRegistrasi: new Date().toISOString()
+        };
+        dataAkun.push(pedagang);
+    }
+
+    // Buat akun COD SELLER demo
+    if (!sudahAdaCod) {
+        var cod = {
+            id: 'COD-DEMO',
+            role: 'codseller',
+            username: 'coddemo',
+            password: '123456',
+            nama: 'COD Seller Demo 2R',
+            email: 'coddemo@2r.com',
+            nomorHp: '081234567892',
+            alamat: 'Jl. Sudirman No. 3, Surabaya',
+            alamatLokasi: 'Jl. Sudirman No. 3, Surabaya',
+            latitude: '-7.2575',
+            longitude: '112.7521',
+            namaBank: 'BNI',
+            nomorRekening: '5432109876',
+            pemilikRekening: 'COD Seller Demo 2R',
+            status: 'AKTIF',
+            fitur: {
+                transaksi1: true,
+                transaksi2: true,
+                transaksi3: true,
+                paketTransaksi: ['paket1', 'paket2', 'paket3']
+            },
+            isPro: true,
+            waktuRegistrasi: new Date().toISOString()
+        };
+        dataAkun.push(cod);
+    }
+
+    // Buat akun OJEK demo
+    if (!sudahAdaOjek) {
+        var ojek = {
+            id: 'OJEK-DEMO',
+            role: 'ojek',
+            username: 'ojekdemo',
+            password: '123456',
+            nama: 'Ojek Demo 2R',
+            email: 'ojekdemo@2r.com',
+            nomorHp: '081234567893',
+            alamat: 'Jl. Gatot Subroto No. 4, Yogyakarta',
+            alamatLokasi: 'Jl. Gatot Subroto No. 4, Yogyakarta',
+            latitude: '-7.7956',
+            longitude: '110.3695',
+            namaBank: 'BRI',
+            nomorRekening: '1357902468',
+            pemilikRekening: 'Ojek Demo 2R',
+            status: 'AKTIF',
+            fitur: {
+                orderAntar: true
+            },
+            isOjekPro: true,
+            waktuRegistrasi: new Date().toISOString()
+        };
+        dataAkun.push(ojek);
+    }
+
+    // --- 3. Hash password untuk semua akun demo ---
+    // (karena kita melakukan push langsung, kita harus hash ulang)
+    // Kita akan lakukan di luar loop setelah semua akun dibuat
+    // Untuk kesederhanaan, password sudah di-hash saat login dengan migrasi otomatis
+
+    // Simpan data akun
+    simpanDataAkun(dataAkun);
+
+    // --- 4. Buat produk gudang untuk akun demo (jika belum ada) ---
+    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkGudangToko = semuaProdukGudang.filter(function(p) { return p.tokoId === 'TOKO-DEMO'; });
+    
+    if (produkGudangToko.length === 0) {
+        var produkGudang = [
+            {
+                id: Date.now() + 1,
+                tokoId: 'TOKO-DEMO',
+                namaProduk: 'Beras 5kg',
+                kodeProduk: 'BR-001',
+                hargaBeli: 50000,
+                hargaJual: 65000,
+                jumlahStok: 20,
+                jenis: 'Makanan',
+                satuan: 'Kardus',
+                tanggalKadaluarsa: '2027-01-01',
+                fotoProduk: [],
+                tanggalInput: new Date().toISOString().slice(0, 10),
+                namaPenginput: 'Demo',
+                totalTerjual: 0
+            },
+            {
+                id: Date.now() + 2,
+                tokoId: 'TOKO-DEMO',
+                namaProduk: 'Minyak Goreng 1L',
+                kodeProduk: 'MG-002',
+                hargaBeli: 13000,
+                hargaJual: 15000,
+                jumlahStok: 50,
+                jenis: 'Makanan',
+                satuan: 'Liter',
+                tanggalKadaluarsa: '2026-12-01',
+                fotoProduk: [],
+                tanggalInput: new Date().toISOString().slice(0, 10),
+                namaPenginput: 'Demo',
+                totalTerjual: 0
+            },
+            {
+                id: Date.now() + 3,
+                tokoId: 'TOKO-DEMO',
+                namaProduk: 'Gula Pasir 1kg',
+                kodeProduk: 'GP-003',
+                hargaBeli: 14000,
+                hargaJual: 17000,
+                jumlahStok: 30,
+                jenis: 'Makanan',
+                satuan: 'Kg',
+                tanggalKadaluarsa: '2027-06-01',
+                fotoProduk: [],
+                tanggalInput: new Date().toISOString().slice(0, 10),
+                namaPenginput: 'Demo',
+                totalTerjual: 0
+            }
+        ];
+        semuaProdukGudang = semuaProdukGudang.concat(produkGudang);
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+    }
+
+    // --- 5. Buat produk publik untuk akun demo (jika belum ada) ---
+    var semuaProdukPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var produkPublikToko = semuaProdukPublik.filter(function(p) { return p.ownerId === 'TOKO-DEMO'; });
+    
+    if (produkPublikToko.length === 0) {
+        var produkPublik = [
+            {
+                id: Date.now() + 4,
+                ownerId: 'TOKO-DEMO',
+                judul: 'Beras 5kg Premium',
+                deskripsi: 'Beras berkualitas tinggi, pulen, dan harum. Cocok untuk keluarga.',
+                harga: 65000,
+                kategori: 'Makanan',
+                gambar: [],
+                tanggalUpload: new Date().toISOString()
+            },
+            {
+                id: Date.now() + 5,
+                ownerId: 'TOKO-DEMO',
+                judul: 'Minyak Goreng 1L',
+                deskripsi: 'Minyak goreng kemasan botol, jernih dan sehat.',
+                harga: 15000,
+                kategori: 'Makanan',
+                gambar: [],
+                tanggalUpload: new Date().toISOString()
+            },
+            {
+                id: Date.now() + 6,
+                ownerId: 'TOKO-DEMO',
+                judul: 'Gula Pasir 1kg',
+                deskripsi: 'Gula pasir putih bersih, manisnya pas.',
+                harga: 17000,
+                kategori: 'Makanan',
+                gambar: [],
+                tanggalUpload: new Date().toISOString()
+            }
+        ];
+        semuaProdukPublik = semuaProdukPublik.concat(produkPublik);
+        localStorage.setItem('2r_produk_publik', JSON.stringify(semuaProdukPublik));
+    }
+
+    // --- 6. Inisialisasi modal cash untuk toko demo ---
+    var modalKey = '2r_modal_cash_TOKO-DEMO';
+    var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+    if (modalData.saldo === 0) {
+        modalData.saldo = 1000000;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Tambahan Modal',
+            jumlah: 1000000,
+            saldoSetelah: 1000000,
+            keterangan: 'Modal awal dari SuperAdmin'
+        });
+        localStorage.setItem(modalKey, JSON.stringify(modalData));
+    }
+
+    // --- 7. Tandai bahwa data demo sudah diinisialisasi ---
+    localStorage.setItem('2r_demo_initialized', 'true');
+
+    tampilkanToast('Data demo berhasil diinisialisasi!', 'success');
+}
+// ============================================================
+// AKHIR BLOK 8.58
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
