@@ -743,7 +743,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 <!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
 <script>            
-    // ===== BLOK 6.1.1 - BUAT SIDEBAR HTML (DENGAN LOGIKA FREE vs PRO) =====
+// ===== BLOK 6.1.1 - BUAT SIDEBAR HTML (FINAL DENGAN FITUR CHECK) =====
 function buatSidebarHTML(role) {
     // Hitung notifikasi belum dibaca untuk user yang login
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
@@ -759,6 +759,12 @@ function buatSidebarHTML(role) {
 
     // Cek status PRO (untuk membatasi menu)
     var isPro = user.isPro || false;
+
+    // === PENTING: Pastikan user.fitur ada ===
+    if (!user.fitur) user.fitur = {};
+    if (!user.fitur.paketTransaksi) user.fitur.paketTransaksi = ['paket1']; // Default Free
+    var paket = user.fitur.paketTransaksi;
+    // =====================================
 
     var menuRole = {
         // === SUPERADMIN ===
@@ -802,7 +808,6 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
                     ];
-                    var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
 
                     // --- FITUR FREE (selalu ada) ---
                     if (paket.includes('paket1')) {
@@ -827,7 +832,7 @@ function buatSidebarHTML(role) {
                 })()
             }
         ],
-        // === PEDAGANG PASAR (DISAMAKAN DENGAN TOKO FREE) ===
+        // === PEDAGANG PASAR ===
         'pedagang': [
             { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
             { 
@@ -839,7 +844,6 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
                     ];
-                    var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
                     if (paket.includes('paket1')) {
                         base.push(
                             { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
@@ -861,7 +865,7 @@ function buatSidebarHTML(role) {
                 })()
             }
         ],
-        // === COD SELLER (DISAMAKAN DENGAN TOKO FREE) ===
+        // === COD SELLER ===
         'codseller': [
             { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
             { 
@@ -873,7 +877,6 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' }
                     ];
-                    var paket = user.fitur && user.fitur.paketTransaksi ? user.fitur.paketTransaksi : [];
                     if (paket.includes('paket1')) {
                         base.push(
                             { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
@@ -2091,10 +2094,12 @@ function hapusKTPUmum() {
         }
         var status = (role === 'toko' || role === 'ojek') ? 'NONAKTIF (Menunggu Verifikasi)' : 'AKTIF';
         var passwordHash = await hashPassword(password);
-        var akunBaru = {
+                var akunBaru = {
             id: generateId(role), role: role, username: username, password: passwordHash, nama: nama,
             email: '', nomorHp: '', alamat: '', namaBank: '', nomorRekening: '', pemilikRekening: '', ktp: '',
-            status: status, waktuRegistrasi: new Date().toISOString()
+            status: status, 
+            fitur: { paketTransaksi: ['paket1'] }, // <--- TAMBAHKAN DI SINI
+            waktuRegistrasi: new Date().toISOString()
         };
         dataAkun.push(akunBaru);
         simpanDataAkun(dataAkun);
@@ -7727,7 +7732,7 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
     var passwordHash = await hashPassword('123456'); // Password default tetap 123456
 
     // --- BUAT AKUN BARU ---
-    var akunBaru = {
+        var akunBaru = {
         id: generateId(p.role),
         role: p.role,
         username: username,
@@ -7735,6 +7740,7 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
         nama: p.nama,
         email: p.kontak,
         nomorHp: p.kontak,
+        fitur: { paketTransaksi: ['paket1'] }, // <--- TAMBAHKAN DI SINI
         status: 'NONAKTIF (Menunggu Verifikasi)',
         waktuRegistrasi: new Date().toISOString()
     };
