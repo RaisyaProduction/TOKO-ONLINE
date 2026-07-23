@@ -6441,13 +6441,17 @@ function hitungTotalAkhir() {
         i++;
     }
     // Update tampilan Total
-    document.getElementById('trxTotal').textContent = total.toLocaleString('id-ID');
+    var totalEl = document.getElementById('trxTotal');
+    if (totalEl) totalEl.textContent = total.toLocaleString('id-ID');
 
     // Hitung diskon dan Grand Total
-    var diskon = parseFloat(document.getElementById('trxDiskon').value) || 0;
+    var diskonInput = document.getElementById('trxDiskon');
+    var diskon = diskonInput ? (parseFloat(diskonInput.value) || 0) : 0;
     var grandTotal = total - diskon;
     if (grandTotal < 0) grandTotal = 0;
-    document.getElementById('trxGrandTotal').textContent = grandTotal.toLocaleString('id-ID');
+    
+    var grandTotalEl = document.getElementById('trxGrandTotal');
+    if (grandTotalEl) grandTotalEl.textContent = grandTotal.toLocaleString('id-ID');
 }
 
 // --- 2. Proses Scan Barcode (Manual Input) ---
@@ -6497,6 +6501,8 @@ function prosesScanBarcode() {
 
     // Jika semua baris penuh, tambahkan baris baru
     var container = document.getElementById('trxItemContainer');
+    if (!container) return;
+
     var row = document.createElement('div');
     row.className = 'grid-2';
     row.style.marginTop = '10px';
@@ -10230,6 +10236,243 @@ function renderAjukanPengaktifan() {
 
 // ============================================================
 // AKHIR BLOK 8.51
+// ============================================================
+// ============================================================
+// BLOK 8.52 - VERIFIKASI PENGAKTIFAN AKUN (UPLOAD BUKTI BAYAR)
+// ============================================================
+
+// ---------- DATA PENGAJUAN ----------
+function getPengajuanAktifasi() {
+    return JSON.parse(localStorage.getItem('2r_pengajuan_aktifasi') || '[]');
+}
+function simpanPengajuanAktifasi(data) {
+    localStorage.setItem('2r_pengajuan_aktifasi', JSON.stringify(data));
+}
+
+// ---------- RENDER FORM AJUKAN PENGAKTIFAN (HALAMAN SUSPEN) ----------
+function renderAjukanPengaktifan() {
+    var areaKonten = document.getElementById('mainContent');
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-undo-alt"></i> Ajukan Pengaktifan Akun</h2>
+        <p style="color:#d32f2f; font-weight:600;">Akun Anda sedang SUSPEN. Untuk mengaktifkan kembali, silakan kirim bukti pembayaran.</p>
+    </div>
+    <div class="card" style="border:2px solid #f44336;">
+        <div class="card-header" style="color:#f44336;">Formulir Pengajuan Aktifasi</div>
+        <div style="margin-bottom:15px;">
+            <p>Isi data berikut dan upload bukti transfer untuk diverifikasi oleh Admin.</p>
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="aktifasiNama" class="form-input" placeholder="Nama lengkap Anda">
+            </div>
+            <div class="form-group">
+                <label>Nomor HP</label>
+                <input type="tel" id="aktifasiHp" class="form-input" placeholder="Nomor HP aktif">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Upload Bukti Pembayaran (Foto/Scan struk transfer)</label>
+            <input type="file" id="aktifasiBukti" accept="image/*" style="display:none;">
+            <button class="button button-primary button-small" onclick="document.getElementById('aktifasiBukti').click();">Pilih File</button>
+            <span id="aktifasiNamaFile" style="font-size:12px; color:#888; margin-left:10px;">Belum ada file</span>
+        </div>
+        <div style="margin-top:10px;">
+            <button class="button button-primary" onclick="prosesAjukanPengaktifan()"><i class="fas fa-paper-plane"></i> Kirim Pengajuan</button>
+        </div>
+        <div id="statusPengajuan" style="margin-top:10px; display:none;"></div>
+    </div>
+    `;
+    areaKonten.innerHTML = html;
+
+    // Event listener untuk upload file
+    setTimeout(function() {
+        var inputFile = document.getElementById('aktifasiBukti');
+        if (inputFile) {
+            inputFile.onchange = function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    document.getElementById('aktifasiNamaFile').textContent = file.name;
+                    // Simpan file sementara (base64) untuk demo
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        localStorage.setItem('2r_aktifasi_bukti_temp', ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+        }
+    }, 300);
+}
+
+// ---------- PROSES KIRIM PENGAJUAN ----------
+function prosesAjukanPengaktifan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var nama = document.getElementById('aktifasiNama').value.trim();
+    var hp = document.getElementById('aktifasiHp').value.trim();
+    var bukti = localStorage.getItem('2r_aktifasi_bukti_temp') || '';
+    var statusDiv = document.getElementById('statusPengajuan');
+
+    if (!nama || !hp) {
+        tampilkanToast('Nama dan Nomor HP wajib diisi!', 'warning');
+        return;
+    }
+    if (!bukti) {
+        tampilkanToast('Bukti pembayaran wajib diupload!', 'warning');
+        return;
+    }
+
+    // Cek apakah sudah ada pengajuan yang menunggu untuk user ini
+    var dataPengajuan = getPengajuanAktifasi();
+    var sudahAda = false;
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].userId === user.id && dataPengajuan[i].status === 'MENUNGGU') {
+            sudahAda = true;
+            break;
+        }
+    }
+    if (sudahAda) {
+        tampilkanToast('Anda sudah memiliki pengajuan yang menunggu verifikasi.', 'warning');
+        return;
+    }
+
+    // Simpan pengajuan baru
+    var pengajuan = {
+        id: 'AKT-' + Date.now(),
+        userId: user.id,
+        username: user.username,
+        nama: nama,
+        nomorHp: hp,
+        bukti: bukti,
+        status: 'MENUNGGU',
+        waktu: new Date().toISOString()
+    };
+    dataPengajuan.push(pengajuan);
+    simpanPengajuanAktifasi(dataPengajuan);
+
+    // Bersihkan form dan tampilkan pesan sukses
+    localStorage.removeItem('2r_aktifasi_bukti_temp');
+    document.getElementById('aktifasiNama').value = '';
+    document.getElementById('aktifasiHp').value = '';
+    document.getElementById('aktifasiNamaFile').textContent = 'Belum ada file';
+
+    statusDiv.style.display = 'block';
+    statusDiv.innerHTML = '<i class="fas fa-check-circle" style="color:#4CAF50;"></i> Pengajuan berhasil dikirim! Silakan tunggu verifikasi dari Admin.';
+    tampilkanToast('Pengajuan aktifasi berhasil dikirim ke Admin!', 'success');
+}
+
+// ---------- RENDER HALAMAN VERIFIKASI PENGAJUAN (UNTUK ADMIN) ----------
+function renderVerifikasiPengaktifan() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var dataPengajuan = getPengajuanAktifasi();
+    var pengajuanMenunggu = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
+
+    var html = '<div class="page-header"><h2>Verifikasi Pengaktifan Akun</h2><p>Daftar pengajuan aktifasi akun dari user yang SUSPEN.</p></div>';
+
+    if (pengajuanMenunggu.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan menunggu</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Username</th><th>Nama</th><th>Nomor HP</th><th>Waktu</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < pengajuanMenunggu.length; i++) {
+            var p = pengajuanMenunggu[i];
+            html += '<tr>';
+            html += '<td>' + (i+1) + '</td>';
+            html += '<td>' + escapeHtml(p.username) + '</td>';
+            html += '<td>' + escapeHtml(p.nama) + '</td>';
+            html += '<td>' + escapeHtml(p.nomorHp) + '</td>';
+            html += '<td>' + new Date(p.waktu).toLocaleString('id-ID') + '</td>';
+            html += '<td><button class="button button-primary button-extra-small" onclick="previewGambar(\'' + p.bukti + '\',\'Bukti Pembayaran\')"><i class="fas fa-eye"></i> Lihat</button></td>';
+            html += '<td>';
+            html += '<button class="button button-success button-extra-small" onclick="setujuiPengaktifan(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui</button>';
+            html += '<button class="button button-danger button-extra-small" onclick="tolakPengaktifan(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
+            html += '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// ---------- SETUJUI PENGAJUAN ----------
+function setujuiPengaktifan(idPengajuan) {
+    if (!confirm('Setujui pengajuan ini dan aktifkan akun?')) return;
+
+    var dataPengajuan = getPengajuanAktifasi();
+    var dataAkun = getDataAkun();
+    var targetUser = null;
+    var pengajuan = null;
+
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            pengajuan = dataPengajuan[i];
+            break;
+        }
+    }
+    if (!pengajuan) {
+        tampilkanToast('Pengajuan tidak ditemukan!', 'error');
+        return;
+    }
+
+    // Aktifkan akun
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === pengajuan.userId) {
+            dataAkun[i].status = 'AKTIF';
+            targetUser = dataAkun[i];
+            break;
+        }
+    }
+    if (!targetUser) {
+        tampilkanToast('Akun target tidak ditemukan!', 'error');
+        return;
+    }
+
+    // Update status pengajuan
+    pengajuan.status = 'DISETUJUI';
+    simpanPengajuanAktifasi(dataPengajuan);
+    simpanDataAkun(dataAkun);
+
+    // Update user yang sedang login jika dia yang diaktifkan
+    var userLogin = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    if (userLogin.id === pengajuan.userId) {
+        userLogin.status = 'AKTIF';
+        localStorage.setItem('2r_user', JSON.stringify(userLogin));
+    }
+
+    tampilkanToast('Akun ' + targetUser.username + ' telah diaktifkan!', 'success');
+    renderVerifikasiPengaktifan();
+}
+
+// ---------- TOLAK PENGAJUAN ----------
+function tolakPengaktifan(idPengajuan) {
+    if (!confirm('Tolak pengajuan ini?')) return;
+
+    var dataPengajuan = getPengajuanAktifasi();
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === idPengajuan) {
+            dataPengajuan[i].status = 'DITOLAK';
+            break;
+        }
+    }
+    simpanPengajuanAktifasi(dataPengajuan);
+    tampilkanToast('Pengajuan ditolak.', 'success');
+    renderVerifikasiPengaktifan();
+}
+
+// ---------- TAMBAHKAN NAVIGASI & SIDEBAR ----------
+// Di `buatSidebarHTML`:
+// Untuk SuperAdmin: { halaman: 'verifikasiPengaktifan', icon: 'fa-check-double', label: 'Verifikasi Pengaktifan' }
+// Untuk StafAdmin: { halaman: 'verifikasiPengaktifan', icon: 'fa-check-double', label: 'Verifikasi Pengaktifan' }
+
+// Di `navigasiKeHalaman`:
+// else if (namaHalaman === 'verifikasiPengaktifan') renderVerifikasiPengaktifan();
+
+// ============================================================
+// AKHIR BLOK 8.52
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
