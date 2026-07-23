@@ -152,18 +152,24 @@
 <div id="pageDashboard" class="page-dashboard">
     
     <!-- ===== BLOK 2.2.1 - NAVBAR ===== -->
-    <nav class="navbar">
-        <div class="navbar-brand">
-            <button id="menuToggle"><i class="fas fa-bars"></i></button>
-            <i class="fas fa-store-alt"></i> Toko Online 2R
-        </div>
-        <div class="navbar-user">
-            <span class="role-badge" id="roleBadge">Role</span>
-            <span id="userNama" style="font-weight:600;">User</span>
-            <button class="button-logout" id="buttonLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
-        </div>
-    </nav>
-    <!-- ===== AKHIR BLOK 2.2.1 ===== -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <button id="menuToggle"><i class="fas fa-bars"></i></button>
+        <i class="fas fa-store-alt"></i> Toko Online 2R
+    </div>
+    <div class="navbar-user">
+        <!-- Avatar Foto Profil -->
+        <img id="userAvatar" src="" style="display:none; width:32px; height:32px; border-radius:50%; object-fit:cover; margin-right:8px; vertical-align:middle; border:2px solid var(--primary);">
+        <span id="userAvatarPlaceholder" style="display:inline-block; width:32px; height:32px; border-radius:50%; background:#eee; text-align:center; line-height:32px; color:#aaa; margin-right:8px; vertical-align:middle;">
+            <i class="fas fa-user"></i>
+        </span>
+
+        <span class="role-badge" id="roleBadge">Role</span>
+        <span id="userNama" style="font-weight:600;">User</span>
+        <button class="button-logout" id="buttonLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+    </div>
+</nav>
+<!-- ===== AKHIR BLOK 2.2.1 ===== -->
 
     <!-- ===== BLOK 2.2.2 - SIDEBAR ===== -->
     <aside class="sidebar" id="sidebarContainer"></aside>
