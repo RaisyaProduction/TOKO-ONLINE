@@ -7972,7 +7972,8 @@ function tolakPengajuanBukaAkun(idPengajuan) {
 }
 // ===== AKHIR BLOK 8.26 =====
 // ============================================================
-// BLOK 8.34 - NOTEPAD+ (SuperAdmin)
+// ============================================================
+// BLOK 8.34 - NOTEPAD+ (Versi Baru dengan Preview Code)
 // ============================================================
 
 // ---------- DATA ----------
@@ -7985,41 +7986,23 @@ function simpanNotepadBlok(data) {
 
 // ---------- PENOMORAN OTOMATIS ----------
 function generateNomorBlok(daftar, posisiSetelah) {
-    // posisiSetelah: string nomor (misal "1.1") atau null (tambah di akhir)
     if (!posisiSetelah) {
-        // tambah di akhir: cari nomor terakhir, tambah 1
         var last = daftar.length > 0 ? daftar[daftar.length-1].urutan.split('.') : ['0'];
         var lastNum = parseInt(last[last.length-1]) || 0;
         return last[0] + '.' + (lastNum + 1);
     }
-    
-    // Cari indeks posisiSetelah
     var idx = -1;
     for (var i = 0; i < daftar.length; i++) {
         if (daftar[i].urutan === posisiSetelah) { idx = i; break; }
     }
-    if (idx === -1) return generateNomorBlok(daftar, null); // fallback
-    
-    // Ambil nomor posisi
+    if (idx === -1) return generateNomorBlok(daftar, null);
     var parts = posisiSetelah.split('.');
     var level = parts.length;
-    
-    // Buat nomor baru: tambah level (misal 1.1 -> 1.1.1)
     var baru = posisiSetelah + '.1';
-    
-    // Renumber semua blok setelah idx
-    var hasil = [];
-    for (var i = 0; i < daftar.length; i++) {
-        hasil.push(daftar[i]);
-    }
-    
-    // Sisipkan blok baru (akan ditambahkan nanti)
-    // Kita return nomor barunya, nanti di fungsi tambah yang handle
     return baru;
 }
 
 function renumberSemua(daftar) {
-    // Sort berdasarkan urutan (string)
     daftar.sort(function(a,b) {
         var aa = a.urutan.split('.').map(Number);
         var bb = b.urutan.split('.').map(Number);
@@ -8044,15 +8027,12 @@ function tambahBlok(nama, kode, posisiSetelah) {
         urutan: urutanBaru,
         tanggal: new Date().toISOString()
     };
-    // Sisipkan di posisi yang benar
     var idx = -1;
     for (var i = 0; i < daftar.length; i++) {
         if (daftar[i].urutan === posisiSetelah) { idx = i+1; break; }
     }
     if (idx === -1) daftar.push(blok);
     else daftar.splice(idx, 0, blok);
-    
-    // Renumber ulang semua
     daftar = renumberSemua(daftar);
     simpanNotepadBlok(daftar);
     return daftar;
@@ -8140,7 +8120,7 @@ function renderNotepad() {
     }
     html += '</div>';
     
-    // Modal Form Tambah/Edit (tersembunyi)
+    // Modal Form Tambah/Edit
     html += `
     <div id="modalNotepad" class="modal-overlay" style="display:none;">
         <div class="modal" style="max-width:800px; width:95%; max-height:90vh; overflow-y:auto;">
@@ -8180,16 +8160,22 @@ function renderNotepad() {
     </div>
     `;
     
-    // Modal Preview Halaman Penuh
+    // Modal Preview Blok (dengan kode yang bisa diedit via tombol edit)
     html += `
     <div id="modalPreviewNotepad" class="modal-overlay" style="display:none;">
         <div class="modal" style="max-width:95%; width:95%; max-height:95vh; background:transparent; box-shadow:none;">
             <div style="background:white; border-radius:12px; padding:15px; max-height:95vh; overflow-y:auto;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
                     <h3 id="previewNotepadTitle">Preview</h3>
-                    <button class="button button-danger button-small" onclick="tutupPreviewNotepad()"><i class="fas fa-times"></i> Tutup</button>
+                    <div style="display:flex; gap:6px;">
+                        <button class="button button-primary button-small" id="previewEditBtn"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="button button-danger button-small" id="previewHapusBtn"><i class="fas fa-trash"></i> Hapus</button>
+                        <button class="button button-secondary button-small" onclick="tutupPreviewNotepad()"><i class="fas fa-times"></i> Tutup</button>
+                    </div>
                 </div>
-                <div id="previewNotepadContent" style="background:white; border:1px solid #eee; padding:10px; min-height:200px; border-radius:6px; overflow:auto;"></div>
+                <div style="background:#1e1e1e; border:2px solid #2d2d2d; border-radius:8px; padding:15px; overflow:auto; max-height:70vh;">
+                    <pre id="previewNotepadCode" style="color:#00ff00; font-family:'Courier New', monospace; font-size:14px; margin:0; white-space:pre-wrap; word-wrap:break-word;"></pre>
+                </div>
             </div>
         </div>
     </div>
@@ -8202,9 +8188,11 @@ function renderNotepad() {
             <div style="background:white; border-radius:12px; padding:15px; max-height:95vh; overflow-y:auto;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
                     <h3>Hasil Gabungan Semua Blok</h3>
-                    <button class="button button-danger button-small" onclick="tutupModalGabungan()"><i class="fas fa-times"></i> Tutup</button>
+                    <button class="button button-secondary button-small" onclick="tutupModalGabungan()"><i class="fas fa-times"></i> Tutup</button>
                 </div>
-                <div id="previewGabunganContent" style="background:white; border:1px solid #eee; padding:10px; min-height:300px; border-radius:6px; overflow:auto;"></div>
+                <div style="background:#1e1e1e; border:2px solid #2d2d2d; border-radius:8px; padding:15px; overflow:auto; max-height:60vh;">
+                    <pre id="previewGabunganCode" style="color:#00ff00; font-family:'Courier New', monospace; font-size:14px; margin:0; white-space:pre-wrap; word-wrap:break-word;"></pre>
+                </div>
                 <div style="margin-top:10px; text-align:right;">
                     <button class="button button-primary" onclick="downloadIndexHTML()"><i class="fas fa-download"></i> Download index.html</button>
                 </div>
@@ -8237,7 +8225,6 @@ function bukaEditBlok(id) {
     document.getElementById('notepadEditId').value = id;
     document.getElementById('notepadNama').value = blok.nama;
     document.getElementById('notepadKode').value = blok.kode;
-    // Posisi tidak bisa diubah saat edit (biarkan saja)
     document.getElementById('modalNotepad').style.display = 'flex';
 }
 
@@ -8250,15 +8237,11 @@ function simpanBlokNotepad() {
     var nama = document.getElementById('notepadNama').value.trim();
     var kode = document.getElementById('notepadKode').value.trim();
     var posisi = document.getElementById('notepadPosisi').value || null;
-    
     if (!nama || !kode) { tampilkanToast('Nama dan kode wajib diisi!', 'warning'); return; }
-    
     if (editId) {
-        // Edit
         editBlok(editId, nama, kode);
         tampilkanToast('Blok berhasil diperbarui!', 'success');
     } else {
-        // Tambah
         tambahBlok(nama, kode, posisi);
         tampilkanToast('Blok berhasil ditambahkan!', 'success');
     }
@@ -8282,7 +8265,14 @@ function previewBlok(id) {
     }
     if (!blok) { tampilkanToast('Blok tidak ditemukan!', 'error'); return; }
     document.getElementById('previewNotepadTitle').textContent = 'Preview: ' + blok.nama;
-    document.getElementById('previewNotepadContent').innerHTML = blok.kode;
+    document.getElementById('previewNotepadCode').textContent = blok.kode;
+    
+    // Atur tombol Edit dan Hapus di modal preview
+    var editBtn = document.getElementById('previewEditBtn');
+    var hapusBtn = document.getElementById('previewHapusBtn');
+    editBtn.onclick = function() { tutupPreviewNotepad(); bukaEditBlok(id); };
+    hapusBtn.onclick = function() { tutupPreviewNotepad(); hapusBlokConfirm(id); };
+    
     document.getElementById('modalPreviewNotepad').style.display = 'flex';
 }
 
@@ -8292,7 +8282,7 @@ function tutupPreviewNotepad() {
 
 function previewGabungan() {
     var hasil = gabungkanBlok();
-    document.getElementById('previewGabunganContent').innerHTML = hasil;
+    document.getElementById('previewGabunganCode').textContent = hasil;
     document.getElementById('modalGabungan').style.display = 'flex';
 }
 
@@ -8314,10 +8304,9 @@ function downloadIndexHTML() {
     tampilkanToast('Download index.html berhasil!', 'success');
 }
 
-// ---------- NAVIGASI ----------
-// Tambahkan di navigasiKeHalaman: else if (namaHalaman === 'notepad') renderNotepad();
-// Tambahkan di sidebar: { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' }
-// ===== AKHIR BLOK 8.34 =====
+// ============================================================
+// AKHIR BLOK 8.34
+// ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
