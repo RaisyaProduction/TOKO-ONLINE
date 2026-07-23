@@ -864,6 +864,11 @@ function buatSidebarHTML(role) {
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
                         { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
+                        { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
+                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
+                        { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
+                        { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
+                        { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' }
                     ];
                     // --- Paket Transaksi 1 ---
                     if (paket.includes('paket1')) {
@@ -1215,6 +1220,11 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'logStok') renderLogStok();
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
     else if (namaHalaman === 'statusAkun') renderStatusAkun();
+    else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
+    else if (namaHalaman === 'loginKasir') renderLoginKasir();
+    else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
+    else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
+    else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
     // ------------------------------------------------
     
     else renderPlaceholder(namaHalaman);
@@ -8453,6 +8463,744 @@ function downloadIndexHTML() {
 // ============================================================
 // AKHIR BLOK 8.34
 // ============================================================
+// ============================================================
+// BLOK 8.37 - DATA KASIR
+// ============================================================
+
+function getDataKasir() {
+    return JSON.parse(localStorage.getItem('2r_kasir') || '[]');
+}
+function simpanDataKasir(data) {
+    localStorage.setItem('2r_kasir', JSON.stringify(data));
+}
+
+function generateIdKasir() {
+    var data = getDataKasir();
+    var max = 0;
+    for (var i = 0; i < data.length; i++) {
+        var num = parseInt(data[i].id.replace('KSR-', ''));
+        if (num > max) max = num;
+    }
+    return 'KSR-' + String(max + 1).padStart(3, '0');
+}
+
+async function tambahKasir(nama, username, password) {
+    var data = getDataKasir();
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].username === username) {
+            tampilkanToast('Username kasir sudah ada!', 'error');
+            return false;
+        }
+    }
+    var hash = await hashPassword(password);
+    var kasir = {
+        id: generateIdKasir(),
+        nama: nama,
+        username: username,
+        password: hash,
+        status: 'Aktif'
+    };
+    data.push(kasir);
+    simpanDataKasir(data);
+    return true;
+}
+
+function hapusKasir(id) {
+    var data = getDataKasir();
+    var baru = data.filter(function(k) { return k.id !== id; });
+    simpanDataKasir(baru);
+}
+
+async function validasiLoginKasir(username, password) {
+    var data = getDataKasir();
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].username === username) {
+            var cocok = await verifikasiPassword(password, data[i].password);
+            if (cocok) return data[i];
+        }
+    }
+    return null;
+}
+
+// ===== AKHIR BLOK 8.37 =====
+
+// ============================================================
+// BLOK 8.38 - KELOLA KASIR (UI)
+// ============================================================
+
+function renderKelolaKasir() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var dataKasir = getDataKasir();
+    var kasirSaya = dataKasir; // Semua kasir milik toko ini (karena hanya toko ini yang akses)
+
+    var html = '<div class="page-header"><h2>Kelola Kasir</h2><p>Total kasir: ' + kasirSaya.length + '</p></div>';
+
+    html += '<div class="card"><div class="card-header">Tambah Kasir Baru</div>';
+    html += '<div class="grid-2"><div><label class="form-label">Nama Kasir</label><input type="text" id="kasirNama" class="form-input"></div>';
+    html += '<div><label class="form-label">Username</label><input type="text" id="kasirUsername" class="form-input"></div>';
+    html += '<div><label class="form-label">Password</label><input type="password" id="kasirPassword" class="form-input"></div>';
+    html += '</div><button class="button button-primary" onclick="simpanKasirBaru()"><i class="fas fa-user-plus"></i> Tambah Kasir</button></div>';
+
+    if (kasirSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-users"></i><h3>Belum ada kasir</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Nama</th><th>Username</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < kasirSaya.length; i++) {
+            var k = kasirSaya[i];
+            html += '<tr><td>' + k.id + '</td><td>' + escapeHtml(k.nama) + '</td><td>' + escapeHtml(k.username) + '</td><td><span class="badge badge-success">' + k.status + '</span></td><td><button class="button button-danger button-extra-small" onclick="hapusKasirConfirm(\'' + k.id + '\')"><i class="fas fa-trash"></i> Hapus</button></td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+async function simpanKasirBaru() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var nama = document.getElementById('kasirNama').value.trim();
+    var username = document.getElementById('kasirUsername').value.trim();
+    var password = document.getElementById('kasirPassword').value.trim();
+
+    if (!nama || !username || !password) {
+        tampilkanToast('Semua data wajib diisi!', 'warning');
+        return;
+    }
+    if (username.length < 4) {
+        tampilkanToast('Username minimal 4 karakter!', 'warning');
+        return;
+    }
+    if (password.length < 6) {
+        tampilkanToast('Password minimal 6 karakter!', 'warning');
+        return;
+    }
+
+    var data = getDataKasir();
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].username === username) {
+            tampilkanToast('Username sudah ada!', 'error');
+            return;
+        }
+    }
+
+    var hash = await hashPassword(password);
+    var kasir = {
+        id: generateIdKasir(),
+        nama: nama,
+        username: username,
+        password: hash,
+        status: 'Aktif'
+    };
+    data.push(kasir);
+    simpanDataKasir(data);
+
+    document.getElementById('kasirNama').value = '';
+    document.getElementById('kasirUsername').value = '';
+    document.getElementById('kasirPassword').value = '';
+
+    tampilkanToast('Kasir berhasil ditambahkan!', 'success');
+    renderKelolaKasir();
+}
+
+function hapusKasirConfirm(id) {
+    if (!confirm('Yakin ingin menghapus kasir ini?')) return;
+    hapusKasir(id);
+    tampilkanToast('Kasir dihapus!', 'success');
+    renderKelolaKasir();
+}
+
+// ===== AKHIR BLOK 8.38 =====
+
+// ============================================================
+// BLOK 8.39 - LOGIN/LOGOUT KASIR
+// ============================================================
+
+function renderLoginKasir() {
+    var areaKonten = document.getElementById('mainContent');
+    var html = '<div class="page-header"><h2>Login Kasir</h2></div>';
+    html += '<div class="card" style="max-width:400px; margin:0 auto;">';
+    html += '<div class="form-group"><label>Username Kasir</label><input type="text" id="loginKasirUsername" class="form-input"></div>';
+    html += '<div class="form-group"><label>Password</label><input type="password" id="loginKasirPassword" class="form-input"></div>';
+    html += '<button class="button button-primary" onclick="prosesLoginKasir()"><i class="fas fa-sign-in-alt"></i> Login sebagai Kasir</button>';
+    html += '</div>';
+    areaKonten.innerHTML = html;
+}
+
+async function prosesLoginKasir() {
+    var username = document.getElementById('loginKasirUsername').value.trim();
+    var password = document.getElementById('loginKasirPassword').value.trim();
+
+    if (!username || !password) {
+        tampilkanToast('Data wajib diisi!', 'warning');
+        return;
+    }
+
+    var kasir = await validasiLoginKasir(username, password);
+    if (!kasir) {
+        tampilkanToast('Username atau password salah!', 'error');
+        return;
+    }
+    if (kasir.status !== 'Aktif') {
+        tampilkanToast('Kasir tidak aktif!', 'error');
+        return;
+    }
+
+    localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
+    localStorage.setItem('2r_user_original_role', localStorage.getItem('2r_user_role'));
+    localStorage.setItem('2r_user_role', 'kasir');
+
+    tampilkanToast('Login sebagai kasir berhasil!', 'success');
+    tampilkanDashboardKasir(kasir);
+}
+
+function logoutKasir() {
+    localStorage.removeItem('2r_mode_kasir');
+    var originalRole = localStorage.getItem('2r_user_original_role') || 'toko';
+    localStorage.setItem('2r_user_role', originalRole);
+    localStorage.removeItem('2r_user_original_role');
+    tampilkanToast('Logout kasir!', 'success');
+    location.reload();
+}
+
+function getModeAktif() {
+    var kasir = JSON.parse(localStorage.getItem('2r_mode_kasir') || 'null');
+    if (kasir) return 'kasir';
+    return 'owner';
+}
+
+function tampilkanDashboardKasir(kasir) {
+    document.getElementById('pageAuthentication').style.display = 'none';
+    document.getElementById('pageDashboard').style.display = 'block';
+
+    document.getElementById('userNama').textContent = kasir.nama;
+    document.getElementById('roleBadge').textContent = 'Kasir';
+
+    var sidebarHtml = '<div class="sidebar-menu-title">Menu Kasir</div>';
+    sidebarHtml += '<div class="sidebar-menu-item" data-page="transaksiKasir"><i class="fas fa-cash-register"></i><span>Transaksi</span></div>';
+    sidebarHtml += '<div class="sidebar-menu-item" data-page="pemeriksaanStok"><i class="fas fa-clipboard-check"></i><span>Cek Stok</span></div>';
+    sidebarHtml += '<div class="sidebar-menu-item" onclick="logoutKasir()"><i class="fas fa-sign-out-alt"></i><span>Logout Kasir</span></div>';
+    document.getElementById('sidebarContainer').innerHTML = sidebarHtml;
+
+    setupNavigasiSidebar();
+    renderTransaksiKasir();
+}
+
+// ===== AKHIR BLOK 8.39 =====
+
+// ============================================================
+// BLOK 8.40 - TRANSAKSI KASIR
+// ============================================================
+
+function renderTransaksiKasir() {
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var areaKonten = document.getElementById('mainContent');
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProduk.filter(function(p) { return p.tokoId === tokoId; });
+
+    var html = '<div class="page-header"><h2>Transaksi Kasir</h2><p>Kasir: ' + escapeHtml(user.nama) + '</p></div>';
+
+    html += '<div class="card"><div class="card-header">Form Transaksi</div>';
+    html += '<div class="grid-2"><div><label class="form-label">Tanggal</label><input type="date" id="trxKasirTanggal" class="form-input" value="' + new Date().toISOString().slice(0,10) + '"></div>';
+    html += '<div><label class="form-label">Metode</label><select id="trxKasirMetode" class="form-input"><option value="Tunai">Tunai</option></select></div></div>';
+
+    html += '<div id="trxKasirItemContainer">';
+    html += '<div class="grid-2" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;" id="trxKasirRow0">';
+    html += '<div><label class="form-label">Pilih Produk</label><select id="trxKasirProduk0" class="form-input" onchange="updateKasirHarga(0)">';
+    html += '<option value="">-- Pilih Produk --</option>';
+    for (var i = 0; i < produkSaya.length; i++) {
+        var p = produkSaya[i];
+        html += '<option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+    }
+    html += '</select></div>';
+    html += '<div><label class="form-label">Jumlah</label><input type="number" id="trxKasirJumlah0" class="form-input" min="1" onchange="hitungKasirSubtotal(0)" oninput="hitungKasirSubtotal(0)"></div>';
+    html += '<div><label class="form-label">Harga Satuan</label><input type="number" id="trxKasirHarga0" class="form-input" readonly></div>';
+    html += '<div><label class="form-label">Subtotal</label><input type="number" id="trxKasirSubtotal0" class="form-input" readonly></div>';
+    html += '</div></div>';
+
+    html += '<button class="button button-primary button-small" onclick="tambahKasirItem()"><i class="fas fa-plus"></i> Tambah Item</button>';
+    html += '<div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+    html += '<div style="text-align:right; font-size:18px; font-weight:700;">Total: Rp <span id="trxKasirTotal">0</span></div>';
+    html += '</div>';
+    html += '<div class="form-group"><label class="form-label">Catatan</label><input type="text" id="trxKasirCatatan" class="form-input"></div>';
+    html += '<button class="button button-primary" onclick="simpanTransaksiKasir()" style="width:100%;"><i class="fas fa-save"></i> Simpan Transaksi</button>';
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+function updateKasirHarga(index) {
+    var select = document.getElementById('trxKasirProduk' + index);
+    var selected = select.options[select.selectedIndex];
+    if (selected && selected.dataset.harga) {
+        document.getElementById('trxKasirHarga' + index).value = selected.dataset.harga;
+    } else {
+        document.getElementById('trxKasirHarga' + index).value = '';
+    }
+    hitungKasirSubtotal(index);
+}
+
+function hitungKasirSubtotal(index) {
+    var harga = parseFloat(document.getElementById('trxKasirHarga' + index).value) || 0;
+    var jumlah = parseInt(document.getElementById('trxKasirJumlah' + index).value) || 0;
+    var subtotal = harga * jumlah;
+    document.getElementById('trxKasirSubtotal' + index).value = subtotal;
+
+    var total = 0;
+    var i = 0;
+    while (document.getElementById('trxKasirSubtotal' + i)) {
+        total += parseFloat(document.getElementById('trxKasirSubtotal' + i).value) || 0;
+        i++;
+    }
+    document.getElementById('trxKasirTotal').textContent = total.toLocaleString('id-ID');
+}
+
+function tambahKasirItem() {
+    var container = document.getElementById('trxKasirItemContainer');
+    var index = container.children.length;
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProduk.filter(function(p) { return p.tokoId === tokoId; });
+
+    var row = document.createElement('div');
+    row.className = 'grid-2';
+    row.style.marginTop = '10px';
+    row.style.borderTop = '1px solid #eee';
+    row.style.paddingTop = '10px';
+    row.id = 'trxKasirRow' + index;
+
+    var html = '';
+    html += '<div><label class="form-label">Pilih Produk</label><select id="trxKasirProduk' + index + '" class="form-input" onchange="updateKasirHarga(' + index + ')"><option value="">-- Pilih Produk --</option>';
+    for (var i = 0; i < produkSaya.length; i++) {
+        var p = produkSaya[i];
+        html += '<option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+    }
+    html += '</select></div>';
+    html += '<div><label class="form-label">Jumlah</label><input type="number" id="trxKasirJumlah' + index + '" class="form-input" min="1" onchange="hitungKasirSubtotal(' + index + ')" oninput="hitungKasirSubtotal(' + index + ')"></div>';
+    html += '<div><label class="form-label">Harga Satuan</label><input type="number" id="trxKasirHarga' + index + '" class="form-input" readonly></div>';
+    html += '<div><label class="form-label">Subtotal</label><input type="number" id="trxKasirSubtotal' + index + '" class="form-input" readonly></div>';
+    row.innerHTML = html;
+    container.appendChild(row);
+}
+
+function simpanTransaksiKasir() {
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+    var tanggal = document.getElementById('trxKasirTanggal').value;
+    var catatan = document.getElementById('trxKasirCatatan').value.trim();
+
+    var items = [];
+    var i = 0;
+    while (document.getElementById('trxKasirProduk' + i)) {
+        var select = document.getElementById('trxKasirProduk' + i);
+        var produkId = select.value;
+        if (!produkId) { i++; continue; }
+
+        var jumlah = parseInt(document.getElementById('trxKasirJumlah' + i).value) || 0;
+        var harga = parseFloat(document.getElementById('trxKasirHarga' + i).value) || 0;
+        var subtotal = parseFloat(document.getElementById('trxKasirSubtotal' + i).value) || 0;
+
+        if (jumlah <= 0) {
+            tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+            return;
+        }
+
+        var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produk = null;
+        for (var j = 0; j < semuaProduk.length; j++) {
+            if (semuaProduk[j].id == produkId) { produk = semuaProduk[j]; break; }
+        }
+        if (!produk) {
+            tampilkanToast('Produk tidak ditemukan!', 'error');
+            return;
+        }
+        if (produk.jumlahStok < jumlah) {
+            tampilkanToast('Stok ' + produk.namaProduk + ' tidak cukup!', 'error');
+            return;
+        }
+
+        items.push({
+            produkId: parseInt(produkId),
+            nama: produk.namaProduk,
+            harga: harga,
+            jumlah: jumlah,
+            subtotal: subtotal
+        });
+        i++;
+    }
+
+    if (items.length === 0) {
+        tampilkanToast('Minimal satu item!', 'warning');
+        return;
+    }
+
+    var total = 0;
+    for (var i = 0; i < items.length; i++) total += items[i].subtotal;
+
+    var dataTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_kasir') || '[]');
+    var transaksi = {
+        id: 'KSR-TRX-' + Date.now(),
+        tokoId: tokoId,
+        kasirId: user.id,
+        kasirNama: user.nama,
+        tanggal: tanggal,
+        items: items,
+        total: total,
+        catatan: catatan,
+        createdAt: new Date().toISOString()
+    };
+    dataTransaksi.push(transaksi);
+    localStorage.setItem('2r_transaksi_kasir', JSON.stringify(dataTransaksi));
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        for (var j = 0; j < semuaProduk.length; j++) {
+            if (semuaProduk[j].id == item.produkId) {
+                semuaProduk[j].jumlahStok -= item.jumlah;
+                semuaProduk[j].totalTerjual = (semuaProduk[j].totalTerjual || 0) + item.jumlah;
+                break;
+            }
+        }
+    }
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProduk));
+
+    tampilkanToast('Transaksi kasir berhasil! Total: Rp ' + total.toLocaleString('id-ID'), 'success');
+    renderTransaksiKasir();
+}
+
+// ===== AKHIR BLOK 8.40 =====
+
+// ============================================================
+// BLOK 8.41 - PEMERIKSAAN STOK
+// ============================================================
+
+function renderPemeriksaanStok() {
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var areaKonten = document.getElementById('mainContent');
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produkSaya = semuaProduk.filter(function(p) { return p.tokoId === tokoId; });
+    var dataCek = JSON.parse(localStorage.getItem('2r_cek_fisik') || '[]');
+
+    var html = '<div class="page-header"><h2>Pemeriksaan Stok Fisik</h2><p>Total produk: ' + produkSaya.length + '</p></div>';
+    html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>Nama Produk</th><th>Stok Sistem</th><th>Stok Fisik</th><th>Selisih</th><th>Status</th><th>Aksi</th></tr></thead><tbody>';
+
+    for (var i = 0; i < produkSaya.length; i++) {
+        var p = produkSaya[i];
+        var cekTerakhir = null;
+        for (var j = dataCek.length - 1; j >= 0; j--) {
+            if (dataCek[j].produkId === p.id && dataCek[j].tokoId === tokoId) {
+                cekTerakhir = dataCek[j];
+                break;
+            }
+        }
+        var stokFisik = cekTerakhir ? cekTerakhir.stokFisik : '-';
+        var selisih = cekTerakhir ? (cekTerakhir.stokSistem - cekTerakhir.stokFisik) : 0;
+        var status = '';
+        if (cekTerakhir) {
+            if (selisih > 0) status = '<span class="badge badge-danger">Hilang ' + selisih + '</span>';
+            else if (selisih < 0) status = '<span class="badge badge-warning">Lebih ' + Math.abs(selisih) + '</span>';
+            else status = '<span class="badge badge-success">Sesuai</span>';
+        } else {
+            status = '<span class="badge badge-secondary">Belum cek</span>';
+        }
+        html += '<tr><td>' + escapeHtml(p.namaProduk) + '</td><td>' + p.jumlahStok + '</td><td>' + stokFisik + '</td><td>' + selisih + '</td><td>' + status + '</td><td>';
+        html += '<input type="number" id="cekFisik_' + p.id + '" class="form-input" style="width:80px; display:inline-block;" placeholder="Stok fisik">';
+        html += '<button class="button button-primary button-extra-small" onclick="simpanCekFisik(\'' + p.id + '\')"><i class="fas fa-save"></i> Simpan</button>';
+        if (selisih > 0) {
+            html += '<button class="button button-warning button-extra-small" onclick="samakanStok(\'' + p.id + '\')"><i class="fas fa-equals"></i> Samakan</button>';
+        }
+        html += '</td></tr>';
+    }
+    html += '</tbody></table></div></div>';
+    areaKonten.innerHTML = html;
+}
+
+function simpanCekFisik(produkId) {
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+
+    var input = document.getElementById('cekFisik_' + produkId);
+    if (!input) return;
+    var stokFisik = parseInt(input.value);
+    if (isNaN(stokFisik) || stokFisik < 0) {
+        tampilkanToast('Input stok fisik tidak valid!', 'warning');
+        return;
+    }
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var produk = null;
+    for (var i = 0; i < semuaProduk.length; i++) {
+        if (semuaProduk[i].id == produkId) { produk = semuaProduk[i]; break; }
+    }
+    if (!produk) {
+        tampilkanToast('Produk tidak ditemukan!', 'error');
+        return;
+    }
+
+    var dataCek = JSON.parse(localStorage.getItem('2r_cek_fisik') || '[]');
+    dataCek.push({
+        id: 'CEK-' + Date.now(),
+        tokoId: tokoId,
+        produkId: produkId,
+        namaProduk: produk.namaProduk,
+        stokSistem: produk.jumlahStok,
+        stokFisik: stokFisik,
+        selisih: produk.jumlahStok - stokFisik,
+        tanggal: new Date().toISOString()
+    });
+    localStorage.setItem('2r_cek_fisik', JSON.stringify(dataCek));
+    tampilkanToast('Cek fisik tersimpan!', 'success');
+    renderPemeriksaanStok();
+}
+
+function samakanStok(produkId) {
+    if (!confirm('Samakan stok sistem dengan stok fisik terakhir? Selisih akan dicatat sebagai kerugian.')) return;
+
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+
+    var dataCek = JSON.parse(localStorage.getItem('2r_cek_fisik') || '[]');
+    var cekTerakhir = null;
+    for (var i = dataCek.length - 1; i >= 0; i--) {
+        if (dataCek[i].produkId === produkId && dataCek[i].tokoId === tokoId) {
+            cekTerakhir = dataCek[i];
+            break;
+        }
+    }
+    if (!cekTerakhir) {
+        tampilkanToast('Belum ada data cek fisik untuk produk ini!', 'warning');
+        return;
+    }
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    for (var i = 0; i < semuaProduk.length; i++) {
+        if (semuaProduk[i].id == produkId) {
+            var selisih = semuaProduk[i].jumlahStok - cekTerakhir.stokFisik;
+            if (selisih > 0) {
+                catatKerugian(tokoId, produkId, semuaProduk[i].namaProduk, selisih, semuaProduk[i].hargaBeli);
+            }
+            semuaProduk[i].jumlahStok = cekTerakhir.stokFisik;
+            break;
+        }
+    }
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProduk));
+    tampilkanToast('Stok disamakan!', 'success');
+    renderPemeriksaanStok();
+}
+
+function catatKerugian(tokoId, produkId, namaProduk, jumlah, hargaSatuan) {
+    var dataKerugian = JSON.parse(localStorage.getItem('2r_kerugian') || '[]');
+    dataKerugian.push({
+        id: 'RUGI-' + Date.now(),
+        tokoId: tokoId,
+        produkId: produkId,
+        namaProduk: namaProduk,
+        jumlahHilang: jumlah,
+        hargaSatuan: hargaSatuan,
+        totalKerugian: jumlah * hargaSatuan,
+        tanggal: new Date().toISOString()
+    });
+    localStorage.setItem('2r_kerugian', JSON.stringify(dataKerugian));
+}
+
+// ===== AKHIR BLOK 8.41 =====
+
+// ============================================================
+// BLOK 8.42 - LAPORAN KERUGIAN
+// ============================================================
+
+function renderLaporanKerugian() {
+    var mode = getModeAktif();
+    var user = mode === 'kasir' ? JSON.parse(localStorage.getItem('2r_mode_kasir')) : JSON.parse(localStorage.getItem('2r_user'));
+    var areaKonten = document.getElementById('mainContent');
+    var tokoId = mode === 'kasir' ? user.tokoId : user.id;
+
+    var dataKerugian = JSON.parse(localStorage.getItem('2r_kerugian') || '[]');
+    var kerugianSaya = dataKerugian.filter(function(k) { return k.tokoId === tokoId; });
+    kerugianSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+
+    var totalKerugian = 0;
+    for (var i = 0; i < kerugianSaya.length; i++) totalKerugian += kerugianSaya[i].totalKerugian;
+
+    var html = '<div class="page-header"><h2>Laporan Kerugian</h2><p>Total kerugian: <strong style="color:#d32f2f;">Rp ' + totalKerugian.toLocaleString('id-ID') + '</strong></p></div>';
+
+    if (kerugianSaya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Belum ada kerugian</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>Tanggal</th><th>Produk</th><th>Jumlah Hilang</th><th>Harga Satuan</th><th>Total</th></tr></thead><tbody>';
+        for (var i = 0; i < kerugianSaya.length; i++) {
+            var k = kerugianSaya[i];
+            html += '<tr><td>' + new Date(k.tanggal).toLocaleDateString('id-ID') + '</td><td>' + escapeHtml(k.namaProduk) + '</td><td>' + k.jumlahHilang + ' pcs</td><td>Rp ' + k.hargaSatuan.toLocaleString('id-ID') + '</td><td style="color:#d32f2f; font-weight:600;">Rp ' + k.totalKerugian.toLocaleString('id-ID') + '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// ===== AKHIR BLOK 8.42 =====
+
+// ============================================================
+// BLOK 8.43 - DASHBOARD MODE KASIR
+// ============================================================
+
+function renderDashboardToko() {
+    var mode = getModeAktif();
+
+    if (mode === 'kasir') {
+        var kasir = JSON.parse(localStorage.getItem('2r_mode_kasir'));
+        var areaKonten = document.getElementById('mainContent');
+        var html = '<div class="page-header"><h2>Dasbor Kasir</h2><p>Selamat datang, <strong>' + escapeHtml(kasir.nama) + '</strong></p></div>';
+        html += '<div class="widget-grid">';
+        html += '<div class="widget-card" onclick="renderTransaksiKasir()" style="cursor:pointer;"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-cash-register"></i></div><div class="widget-number">Transaksi</div><div class="widget-label">Klik untuk transaksi</div></div>';
+        html += '<div class="widget-card" onclick="renderPemeriksaanStok()" style="cursor:pointer;"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-clipboard-check"></i></div><div class="widget-number">Cek Stok</div><div class="widget-label">Klik untuk cek fisik</div></div>';
+        html += '</div>';
+        areaKonten.innerHTML = html;
+        return;
+    }
+
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var dataOrder = JSON.parse(localStorage.getItem('2r_order_online') || '[]');
+    var orderSaya = dataOrder.filter(function(o) { return o.tokoId === user.id; });
+    var menunggu = orderSaya.filter(function(o) { return o.status === 'Menunggu Konfirmasi'; }).length;
+
+    var html = '<div class="page-header"><h2>Dasbor Toko</h2><p>Selamat datang, <strong>' + escapeHtml(user.nama) + '</strong>!</p></div>';
+    html += '<div class="widget-grid">';
+    html += '<div class="widget-card"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-box"></i></div><div class="widget-number">0</div><div class="widget-label">Total Produk</div></div>';
+    html += '<div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-shopping-cart"></i></div><div class="widget-number">' + menunggu + '</div><div class="widget-label">Pesanan Baru</div></div>';
+    html += '<div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-money-bill-wave"></i></div><div class="widget-number">Rp 0</div><div class="widget-label">Pendapatan</div></div>';
+    html += '</div>';
+    areaKonten.innerHTML = html;
+}
+
+// ===== AKHIR BLOK 8.43 =====
+
+// ============================================================
+// BLOK 8.44 - NAVIGASI & SIDEBAR (Tambahan)
+// ============================================================
+
+// Tambahkan di buatSidebarHTML, bagian menu toko:
+// { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' }
+// { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' }
+// { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' }
+// { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' }
+// { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' }
+
+// Tambahkan di navigasiKeHalaman:
+// else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
+// else if (namaHalaman === 'loginKasir') renderLoginKasir();
+// else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
+// else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
+// else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
+
+// ===== AKHIR BLOK 8.44 =====
+
+// ============================================================
+// BLOK 8.45 - TRANSFER MENU (SuperAdmin)
+// ============================================================
+
+function renderTransferTransaksi() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var dataAkun = getDataAkun();
+    var daftarTarget = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+            daftarTarget.push(a);
+        }
+    }
+
+    var html = '<div class="page-header"><h2>Transfer Menu – Transaksi</h2><p>Pilih jenis transaksi untuk akun target.</p></div>';
+    html += '<div class="card"><div class="card-header">Daftar Akun Target</div>';
+    if (daftarTarget.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada akun target</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>No</th><th>ID</th><th>Nama</th><th>Role</th><th>Transaksi 1</th><th>Transaksi 2</th><th>Transaksi 3</th></tr></thead><tbody>';
+        for (var i = 0; i < daftarTarget.length; i++) {
+            var a = daftarTarget[i];
+            var f = a.fitur || {};
+            var cek1 = f.transaksi1 ? 'checked' : '';
+            var cek2 = f.transaksi2 ? 'checked' : '';
+            var cek3 = f.transaksi3 ? 'checked' : '';
+            html += '<tr><td>' + (i+1) + '</td><td>' + a.id + '</td><td>' + escapeHtml(a.nama || a.username) + '</td><td>' + a.role + '</td>';
+            html += '<td style="text-align:center;"><input type="checkbox" onchange="setTransaksi(\'' + a.id + '\', 1, this.checked)"></td>';
+            html += '<td style="text-align:center;"><input type="checkbox" onchange="setTransaksi(\'' + a.id + '\', 2, this.checked)"></td>';
+            html += '<td style="text-align:center;"><input type="checkbox" onchange="setTransaksi(\'' + a.id + '\', 3, this.checked)"></td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+    areaKonten.innerHTML = html;
+}
+
+function setTransaksi(idAkun, tipe, aktif) {
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === idAkun) {
+            if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+            var key = 'transaksi' + tipe;
+            dataAkun[i].fitur[key] = aktif;
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Transaksi ' + tipe + ' ' + (aktif ? 'diaktifkan' : 'dinonaktifkan') + ' untuk ' + idAkun, 'success');
+}
+
+// ===== AKHIR BLOK 8.45 =====
+
+// ============================================================
+// BLOK 8.46 - HALAMAN TRANSAKSI TERPADU
+// ============================================================
+
+function renderHalamanTransaksi() {
+    var mode = getModeAktif();
+    if (mode === 'kasir') {
+        renderTransaksiKasir();
+        return;
+    }
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var dataAkun = getDataAkun();
+    var akun = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { akun = dataAkun[i]; break; }
+    }
+    if (!akun) { tampilkanToast('Akun tidak ditemukan!', 'error'); return; }
+    var f = akun.fitur || {};
+
+    var areaKonten = document.getElementById('mainContent');
+    var html = '<div class="page-header"><h2>Transaksi</h2><p>Pilih jenis transaksi yang ingin digunakan.</p></div>';
+    html += '<div class="widget-grid">';
+    if (f.transaksi1) {
+        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransaksiPenjualan()"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-cash-register"></i></div><div class="widget-number" style="font-size:18px;">Transaksi 1</div><div class="widget-label">Tanpa Kasir</div></div>';
+    }
+    if (f.transaksi2) {
+        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransaksiKasir()"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-users"></i></div><div class="widget-number" style="font-size:18px;">Transaksi 2</div><div class="widget-label">Dengan Kasir</div></div>';
+    }
+    if (f.transaksi3) {
+        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderPesananMasuk()"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-shopping-cart"></i></div><div class="widget-number" style="font-size:18px;">Transaksi 3</div><div class="widget-label">Online</div></div>';
+    }
+    html += '</div>';
+    areaKonten.innerHTML = html;
+}
+
+// ===== AKHIR BLOK 8.46 =====
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
