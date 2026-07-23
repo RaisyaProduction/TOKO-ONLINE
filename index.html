@@ -36,13 +36,37 @@
                 <span id="authenticationErrorText"></span>
             </div>
             <!-- ===== AKHIR BLOK 2.1.2 ===== -->
-            <!-- ===== BLOK 2.1.3 - FOOTER LOGIN ===== -->
-<div class="authentication-footer">
-    Belum punya akun? 
-    <a onclick="toggleForm('register')">Daftar di sini</a>
-    <br><a onclick="toggleForm('pengajuanBukaAkun')" style="font-size:12px; color:#FF6B00; cursor:pointer;">Ajukan Buka Akun via Admin</a>
-</div>
-<!-- ===== AKHIR BLOK 2.1.3 ===== -->
+
+            <!-- ===== BLOK 2.1.3 - FORM LOGIN ===== -->
+            <form class="authentication-form" id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="loginUsername" placeholder="Masukkan username" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="Masukkan password" required>
+                    </div>
+                </div>
+                <button type="submit" class="button-submit">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+                <div style="text-align:right; margin-top:5px;">
+                    <a id="tombolLupaPassword" style="color:#FF6B00; cursor:pointer; font-size:13px; font-weight:600;">Lupa Password?</a>
+                </div>
+                <div class="authentication-footer">
+                    Belum punya akun? 
+                    <a onclick="toggleForm('register')">Daftar di sini</a>
+                    <br><a onclick="toggleForm('pengajuanBukaAkun')" style="font-size:12px; color:#FF6B00; cursor:pointer;">Ajukan Buka Akun via Admin</a>
+                </div>
+            </form>
+            <!-- ===== AKHIR BLOK 2.1.3 ===== -->
+
             <!-- ===== BLOK 2.1.4 - FORM REGISTER ===== -->
             <form class="authentication-form hidden-form" id="registerForm">
                 <div class="form-group">
@@ -128,24 +152,18 @@
 <div id="pageDashboard" class="page-dashboard">
     
     <!-- ===== BLOK 2.2.1 - NAVBAR ===== -->
-<nav class="navbar">
-    <div class="navbar-brand">
-        <button id="menuToggle"><i class="fas fa-bars"></i></button>
-        <i class="fas fa-store-alt"></i> Toko Online 2R
-    </div>
-    <div class="navbar-user">
-        <!-- Avatar Foto Profil -->
-        <img id="userAvatar" src="" style="display:none; width:32px; height:32px; border-radius:50%; object-fit:cover; margin-right:8px; vertical-align:middle; border:2px solid var(--primary);">
-        <span id="userAvatarPlaceholder" style="display:inline-block; width:32px; height:32px; border-radius:50%; background:#eee; text-align:center; line-height:32px; color:#aaa; margin-right:8px; vertical-align:middle;">
-            <i class="fas fa-user"></i>
-        </span>
-
-        <span class="role-badge" id="roleBadge">Role</span>
-        <span id="userNama" style="font-weight:600;">User</span>
-        <button class="button-logout" id="buttonLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
-    </div>
-</nav>
-<!-- ===== AKHIR BLOK 2.2.1 ===== -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <button id="menuToggle"><i class="fas fa-bars"></i></button>
+            <i class="fas fa-store-alt"></i> Toko Online 2R
+        </div>
+        <div class="navbar-user">
+            <span class="role-badge" id="roleBadge">Role</span>
+            <span id="userNama" style="font-weight:600;">User</span>
+            <button class="button-logout" id="buttonLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+        </div>
+    </nav>
+    <!-- ===== AKHIR BLOK 2.2.1 ===== -->
 
     <!-- ===== BLOK 2.2.2 - SIDEBAR ===== -->
     <aside class="sidebar" id="sidebarContainer"></aside>
@@ -726,7 +744,7 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 <!-- ===== BLOK 6.1 - JS_SIDEBAR_BUILDER ===== -->
 <script>            
 // ============================================================
-// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP - FINAL)
+// BLOK 6.1.1 - BUAT SIDEBAR HTML (LENGKAP)
 // ============================================================
 function buatSidebarHTML(role) {
     // --- Hitung notifikasi belum dibaca ---
@@ -818,7 +836,7 @@ function buatSidebarHTML(role) {
             }
         ],
 
-        // ===== TOKO =====
+                // ===== TOKO =====
         'toko': [
             {
                 judul: 'Menu Utama',
@@ -842,11 +860,11 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
                         { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
+                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
-                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
                     ];
                     // --- Paket Transaksi 1 ---
                     if (paket.includes('paket1')) {
@@ -859,7 +877,8 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
+                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                             );
                         }
                     }
@@ -898,8 +917,7 @@ function buatSidebarHTML(role) {
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
-                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -911,7 +929,8 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
+                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                             );
                         }
                     }
@@ -946,11 +965,11 @@ function buatSidebarHTML(role) {
                         { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
                         { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
                         { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
+                        { halaman: 'loginKasir', icon: 'fa-sign-in-alt', label: 'Login Kasir' },
                         { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
                         { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
                         { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
-                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
-                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' }
                     ];
                     if (paket.includes('paket1')) {
                         base.push(
@@ -962,7 +981,8 @@ function buatSidebarHTML(role) {
                                 { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
                                 { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
                                 { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
-                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' },
+                                { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
                             );
                         }
                     }
@@ -992,10 +1012,7 @@ function buatSidebarHTML(role) {
                 items: [
                     { halaman: 'orderMasuk', icon: 'fa-motorcycle', label: 'Order Masuk' },
                     { halaman: 'riwayatOrder', icon: 'fa-history', label: 'Riwayat Order' },
-                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' },
-                    { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' },
-                    { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order Ojek' },
-                    { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                    { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' }
                 ]
             }
         ],
@@ -1147,9 +1164,7 @@ function buatSidebarHTML(role) {
 
 <!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
 <script>
-// ============================================================
-// BLOK 6.2.1 - NAVIGASI KE HALAMAN (LENGKAP - FINAL)
-// ============================================================
+    // ===== BLOK 6.2.1 - NAVIGASI KE HALAMAN =====
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
@@ -1193,27 +1208,26 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'resetCleanup') renderResetCleanup();
     else if (namaHalaman === 'notepad') renderNotepad();
+    
+    
+    // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
     else if (namaHalaman === 'transaksiPenjualan') renderTransaksiPenjualan();
     else if (namaHalaman === 'rekapPenjualan') renderRekapPenjualan();
     else if (namaHalaman === 'pengeluaran') renderPengeluaran();
     else if (namaHalaman === 'modalCash') renderModalCash();
     else if (namaHalaman === 'logStok') renderLogStok();
     else if (namaHalaman === 'hutangPiutang') renderHutangPiutang();
-    else if (namaHalaman === 'statusAkun') renderStatusAkunGabungan(); // Ganti ke gabungan
+    else if (namaHalaman === 'statusAkun') renderStatusAkun();
     else if (namaHalaman === 'kelolaKasir') renderKelolaKasir();
+    else if (namaHalaman === 'loginKasir') renderLoginKasir();
     else if (namaHalaman === 'transaksiKasir') renderTransaksiKasir();
     else if (namaHalaman === 'pemeriksaanStok') renderPemeriksaanStok();
     else if (namaHalaman === 'laporanKerugian') renderLaporanKerugian();
-    else if (namaHalaman === 'orderAntarOjek') renderOrderAntarOjek();
-    else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
-    else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
-    else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
-    else if (namaHalaman === 'ajukanPengaktifan') renderAjukanPengaktifan();
+    // ------------------------------------------------
+    
     else renderPlaceholder(namaHalaman);
 }
-// ============================================================
-// AKHIR BLOK 6.2.1
-// ============================================================
+// ===== AKHIR BLOK 6.2.1 =====
 
     // ===== BLOK 6.2.2 - RENDER PLACEHOLDER =====
     function renderPlaceholder(judul) {
@@ -2996,40 +3010,28 @@ function toggleForm(tipe) {
     var login = document.getElementById('loginForm');
     var register = document.getElementById('registerForm');
     var pengajuan = document.getElementById('pengajuanBukaAkunForm');
-    var loginKasir = document.getElementById('loginKasirForm');
     
-    // Sembunyikan semua form
-    login.classList.add('hidden-form');
-    register.classList.add('hidden-form');
-    if (pengajuan) pengajuan.classList.add('hidden-form');
-    if (loginKasir) loginKasir.classList.add('hidden-form');
-
-    // Tampilkan form yang dipilih
     if (tipe === 'register') {
+        login.classList.add('hidden-form');
         register.classList.remove('hidden-form');
+        if (pengajuan) pengajuan.classList.add('hidden-form');
     } else if (tipe === 'pengajuanBukaAkun') {
+        login.classList.add('hidden-form');
+        register.classList.add('hidden-form');
         if (pengajuan) pengajuan.classList.remove('hidden-form');
-    } else if (tipe === 'loginKasir') {
-        if (loginKasir) loginKasir.classList.remove('hidden-form');
-    } else { // default ke login
+    } else { // login
+        register.classList.add('hidden-form');
+        if (pengajuan) pengajuan.classList.add('hidden-form');
         login.classList.remove('hidden-form');
     }
 }
 // ===== AKHIR BLOK 8.2.1 =====
 
-  // ===== BLOK 8.2.2 - LOGIN SUBMIT (AMAN) =====
-var loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.addEventListener('submit', async function(e) {
+    // ===== BLOK 8.2.2 - LOGIN SUBMIT =====
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         var username = document.getElementById('loginUsername').value.trim();
         var password = document.getElementById('loginPassword').value.trim();
-        var errorBox = document.getElementById('authenticationError');
-        var errorText = document.getElementById('authenticationErrorText');
-        
-        if (errorBox) errorBox.style.display = 'none';
-
-        // --- Login user biasa ---
         var dataAkun = getDataAkun();
         var user = null;
         for (var i = 0; i < dataAkun.length; i++) {
@@ -3044,38 +3046,23 @@ if (loginForm) {
             var cocok = await verifikasiPassword(password, user.password);
             if (cocok) {
                 if (user.status !== 'AKTIF' && user.role !== 'superadmin') {
-                    if (errorBox) {
-                        errorBox.style.display = 'block';
-                        errorText.textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
-                    }
+                    document.getElementById('authenticationError').style.display = 'block';
+                    document.getElementById('authenticationErrorText').textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
                     return;
                 }
                 localStorage.setItem('2r_user', JSON.stringify(user));
                 localStorage.setItem('2r_user_role', user.role);
                 tampilkanDashboard(user);
-                return;
+            } else {
+                document.getElementById('authenticationError').style.display = 'block';
+                document.getElementById('authenticationErrorText').textContent = 'Username atau password salah!';
             }
-        }
-
-        // --- Login kasir ---
-        var kasir = await validasiLoginKasir(username, password);
-        if (kasir && kasir.status === 'Aktif') {
-            localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
-            localStorage.setItem('2r_user_original_role', 'toko');
-            localStorage.setItem('2r_user_role', 'kasir');
-            tampilkanToast('Login sebagai kasir berhasil!', 'success');
-            tampilkanDashboardKasir(kasir);
-            return;
-        }
-
-        // --- Gagal ---
-        if (errorBox) {
-            errorBox.style.display = 'block';
-            errorText.textContent = 'Username atau password salah!';
+        } else {
+            document.getElementById('authenticationError').style.display = 'block';
+            document.getElementById('authenticationErrorText').textContent = 'Username atau password salah!';
         }
     });
-}
-// ===== AKHIR BLOK 8.2.2 =====
+    // ===== AKHIR BLOK 8.2.2 =====
 
     // ===== BLOK 8.2.3 - REGISTER SUBMIT =====
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
@@ -3103,51 +3090,44 @@ if (loginForm) {
     });
     // ===== AKHIR BLOK 8.2.3 =====
 
-    // ===== BLOK 8.2.4 - LUPA PASSWORD (AMAN) =====
-var tombolLupa = document.getElementById('tombolLupaPassword');
-if (tombolLupa) {
-    tombolLupa.addEventListener('click', async function() {
-        var username = document.getElementById('loginUsername').value.trim();
-        if (!username) { tampilkanToast('Masukkan username terlebih dahulu!', 'warning'); return; }
-        
-        // 🔒 Cegah reset password untuk SuperAdmin
-        if (username === 'admin') {
-            tampilkanToast('SuperAdmin tidak dapat mereset password melalui form ini. Hubungi pengelola sistem.', 'error');
-            return;
-        }
+    // ===== BLOK 8.2.4 - LUPA PASSWORD (DENGAN PENGECUALIAN SUPERADMIN) =====
+document.getElementById('tombolLupaPassword').addEventListener('click', async function() {
+    var username = document.getElementById('loginUsername').value.trim();
+    if (!username) { tampilkanToast('Masukkan username terlebih dahulu!', 'warning'); return; }
+    
+    // 🔒 Cegah reset password untuk SuperAdmin
+    if (username === 'admin') {
+        tampilkanToast('SuperAdmin tidak dapat mereset password melalui form ini. Hubungi pengelola sistem.', 'error');
+        return;
+    }
 
-        var dataAkun = getDataAkun();
-        var user = null;
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
-        }
-        if (!user) { tampilkanToast('Username tidak ditemukan!', 'error'); return; }
-        
-        var newPassword = Math.random().toString(36).slice(-8);
-        var hash = await hashPassword(newPassword);
-        user.password = hash;
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].username === username) { dataAkun[i].password = hash; break; }
-        }
-        simpanDataAkun(dataAkun);
-        tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
-    });
-}
-// ===== AKHIR BLOK 8.2.4 =====
-// ===== BLOK 8.2.5 - LOGOUT (AMAN) =====
-var logoutBtn = document.getElementById('buttonLogout');
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', function() {
+    var dataAkun = getDataAkun();
+    var user = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
+    }
+    if (!user) { tampilkanToast('Username tidak ditemukan!', 'error'); return; }
+    
+    var newPassword = Math.random().toString(36).slice(-8);
+    var hash = await hashPassword(newPassword);
+    user.password = hash;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === username) { dataAkun[i].password = hash; break; }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
+});
+
+    // ===== BLOK 8.2.5 - LOGOUT =====
+    document.getElementById('buttonLogout').addEventListener('click', function() {
         if (confirm('Keluar dari aplikasi?')) {
             localStorage.removeItem('2r_user');
             localStorage.removeItem('2r_user_role');
-            localStorage.removeItem('2r_mode_kasir');
-            localStorage.removeItem('2r_user_original_role');
             location.reload();
         }
     });
-}
-// ===== AKHIR BLOK 8.2.5 =====
+    // ===== AKHIR BLOK 8.2.5 =====
+
             // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE (FIX TOMBOL HP) =====
     var tombolMenu = document.getElementById('menuToggle');
     var sidebar = document.querySelector('.sidebar');
@@ -3986,16 +3966,16 @@ function tampilkanDashboard(user) {
 }
 // ===== AKHIR BLOK 8.6.1 =====
 
-    // ===== BLOK 8.6.2 - DOMContentLoaded (BERSIH) =====
-document.addEventListener('DOMContentLoaded', async function() {
-    await inisialisasiSuperAdmin();
-    var dataUser = localStorage.getItem('2r_user');
-    if (dataUser) {
-        var user = JSON.parse(dataUser);
-        tampilkanDashboard(user);
-    }
-});
-// ===== AKHIR BLOK 8.6.2 =====
+    // ===== BLOK 8.6.2 - DOMContentLoaded =====
+    document.addEventListener('DOMContentLoaded', async function() {
+        await inisialisasiSuperAdmin();
+        var dataUser = localStorage.getItem('2r_user');
+        if (dataUser) {
+            var user = JSON.parse(dataUser);
+            tampilkanDashboard(user);
+        }
+    });
+    // ===== AKHIR BLOK 8.6.2 =====
 </script>
 <!-- ===== AKHIR BLOK 8.6 ===== -->
 
@@ -5857,15 +5837,7 @@ function inisialisasiDataDummyTransaksi(targetId) {
 // ===== AKHIR BLOK 8.16.5 =====
     // ===== BLOK 8.16.6 - DISKON & SCAN BARCODE (FINAL - FREE vs PRO) =====
 function renderTransaksiPenjualan() {
-    function renderTransaksiPenjualan() {
-    // Hapus baris ini:
-    // inisialisasiDataDummyTransaksi();
-
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
-    // ... sisa kode ...
-}
+    inisialisasiDataDummyTransaksi();
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var areaKonten = document.getElementById('mainContent');
     if (!areaKonten) return;
@@ -6434,118 +6406,6 @@ function eksekusiDelete() {
     }
 }
 // ===== AKHIR BLOK 8.16.11 =====
-// ============================================================
-// BLOK 8.16.12 - FUNGSI PENDUKUNG TRANSAKSI (hitungTotalAkhir & Scan)
-// ============================================================
-
-// --- 1. Hitung Total Akhir dengan Diskon ---
-function hitungTotalAkhir() {
-    var total = 0;
-    var i = 0;
-    // Jumlahkan semua subtotal dari baris transaksi
-    while (document.getElementById('trxSubtotal' + i)) {
-        total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
-        i++;
-    }
-    // Update tampilan Total
-    var totalEl = document.getElementById('trxTotal');
-    if (totalEl) totalEl.textContent = total.toLocaleString('id-ID');
-
-    // Hitung diskon dan Grand Total
-    var diskonInput = document.getElementById('trxDiskon');
-    var diskon = diskonInput ? (parseFloat(diskonInput.value) || 0) : 0;
-    var grandTotal = total - diskon;
-    if (grandTotal < 0) grandTotal = 0;
-    
-    var grandTotalEl = document.getElementById('trxGrandTotal');
-    if (grandTotalEl) grandTotalEl.textContent = grandTotal.toLocaleString('id-ID');
-}
-
-// --- 2. Proses Scan Barcode (Manual Input) ---
-function prosesScanBarcode() {
-    var input = document.getElementById('trxScanInput');
-    if (!input) return;
-    var kode = input.value.trim();
-    if (!kode) {
-        tampilkanToast('Masukkan kode produk terlebih dahulu!', 'warning');
-        return;
-    }
-
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-    var produk = null;
-
-    // Cari produk milik toko ini berdasarkan kode produk
-    for (var i = 0; i < semuaProduk.length; i++) {
-        if (semuaProduk[i].tokoId === user.id && semuaProduk[i].kodeProduk === kode) {
-            produk = semuaProduk[i];
-            break;
-        }
-    }
-
-    if (!produk) {
-        tampilkanToast('Produk dengan kode ' + kode + ' tidak ditemukan!', 'error');
-        return;
-    }
-
-    // Cari baris kosong pertama
-    var index = 0;
-    while (document.getElementById('trxProduk' + index)) {
-        var select = document.getElementById('trxProduk' + index);
-        if (select.value === '') {
-            // Isi baris yang kosong
-            select.value = produk.id;
-            updateHargaSatuan(index);
-            document.getElementById('trxJumlah' + index).value = 1;
-            hitungSubtotal(index);
-            input.value = '';
-            tampilkanToast('Produk ditemukan: ' + produk.namaProduk, 'success');
-            hitungTotalAkhir(); // Update total setelah scan
-            return;
-        }
-        index++;
-    }
-
-    // Jika semua baris penuh, tambahkan baris baru
-    var container = document.getElementById('trxItemContainer');
-    if (!container) return;
-
-    var row = document.createElement('div');
-    row.className = 'grid-2';
-    row.style.marginTop = '10px';
-    row.style.borderTop = '1px solid #eee';
-    row.style.paddingTop = '10px';
-    row.id = 'trxItemRow' + index;
-
-    var html = '';
-    html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
-    html += '    <option value="">-- Pilih Produk --</option>';
-    var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-    var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
-    for (var i = 0; i < produkSaya.length; i++) {
-        var p = produkSaya[i];
-        html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
-    }
-    html += '  </select></div>';
-    html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
-    html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
-    html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
-    row.innerHTML = html;
-    container.appendChild(row);
-
-    // Isi produk yang baru discan ke baris baru
-    document.getElementById('trxProduk' + index).value = produk.id;
-    updateHargaSatuan(index);
-    document.getElementById('trxJumlah' + index).value = 1;
-    hitungSubtotal(index);
-    input.value = '';
-    tampilkanToast('Produk ditemukan: ' + produk.namaProduk + ' (baris baru ditambahkan)', 'success');
-    hitungTotalAkhir(); // Update total setelah scan
-}
-
-// ============================================================
-// AKHIR BLOK 8.16.12
-// ============================================================
 // ===== AKHIR BLOK 8.16 =====
 // ===== BLOK 8.17 - JS_SETTING_HARGA_APLIKASI =====
 // Fitur ini hanya bisa diakses oleh SuperAdmin
@@ -9535,952 +9395,6 @@ function renderHalamanTransaksi() {
 }
 
 // ===== AKHIR BLOK 8.46 =====
-// ============================================================
-// BLOK 8.50 - TRANSAKSI 3 (ORDER OJEK + KOMISI BULANAN)
-// ============================================================
-
-// ---------- DATA ORDER OJEK ----------
-function getOrderOjek() {
-    return JSON.parse(localStorage.getItem('2r_order_ojek') || '[]');
-}
-function simpanOrderOjek(data) {
-    localStorage.setItem('2r_order_ojek', JSON.stringify(data));
-}
-
-// ---------- TOKO: BUAT ORDER OJEK ----------
-function renderOrderAntarOjek() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    var dataOjek = getDataAkun().filter(function(a) { 
-        return a.role === 'ojek' && a.status === 'AKTIF' && a.fitur && a.fitur.orderAntar; 
-    });
-    var dataOrder = getOrderOjek();
-    var orderSaya = dataOrder.filter(function(o) { return o.tokoId === user.id && (o.status === 'MENUNGGU_OJEK' || o.status === 'DIPROSES_OJEK'); });
-
-    var html = '<div class="page-header"><h2>Antar Ojek (Transaksi 3)</h2><p>Buat order antar, pilih ojek, dan pantau status.</p></div>';
-    
-    // Form buat order
-    html += '<div class="card"><div class="card-header">Buat Order Antar Baru</div>';
-    html += '<div class="grid-2">';
-    html += '<div><label>Nama Customer</label><input type="text" id="antarNama" class="form-input"></div>';
-    html += '<div><label>Alamat Tujuan</label><input type="text" id="antarAlamat" class="form-input"></div>';
-    html += '<div><label>Total Harga Barang (Rp)</label><input type="number" id="antarTotalBarang" class="form-input" placeholder="0"></div>';
-    html += '<div><label>Jarak Tempuh (Km)</label><input type="number" id="antarJarak" class="form-input" placeholder="Contoh: 5" step="0.1"></div>';
-    html += '</div>';
-    html += '<div class="form-group"><label>Catatan untuk Ojek</label><textarea id="antarCatatan" class="form-input" rows="2" placeholder="Misal: Ambil di toko, antar ke alamat"></textarea></div>';
-    html += '<button class="button button-primary" onclick="prosesBuatOrderOjek()"><i class="fas fa-paper-plane"></i> Buat Order & Pilih Ojek</button>';
-    html += '</div>';
-
-    // Daftar order yang belum dikirim ke ojek
-    html += '<div class="card"><div class="card-header">Order Siap Kirim ke Ojek</div>';
-    var orderSiap = dataOrder.filter(function(o) { return o.tokoId === user.id && o.status === 'MENUNGGU_OJEK'; });
-    if (orderSiap.length === 0) {
-        html += '<div class="empty-state"><i class="fas fa-clock"></i><h3>Belum ada order siap kirim</h3></div>';
-    } else {
-        html += '<div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Ongkir</th><th>Tagihan</th><th>Pilih Ojek</th><th>Kirim</th></tr></thead><tbody>';
-        for (var i = 0; i < orderSiap.length; i++) {
-            var o = orderSiap[i];
-            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td>';
-            html += '<td>Rp ' + o.totalBarang.toLocaleString('id-ID') + '</td>';
-            html += '<td>Rp ' + o.ongkir.toLocaleString('id-ID') + '</td>';
-            html += '<td><strong>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</strong></td>';
-            html += '<td><select id="pilihOjek_' + o.id + '" class="form-input" style="width:150px;">';
-            html += '<option value="">-- Pilih Ojek --</option>';
-            for (var j = 0; j < dataOjek.length; j++) {
-                html += '<option value="' + dataOjek[j].id + '">' + escapeHtml(dataOjek[j].nama || dataOjek[j].username) + '</option>';
-            }
-            html += '</select></td>';
-            html += '<td><button class="button button-primary button-small" onclick="kirimOrderKeOjek(\'' + o.id + '\')"><i class="fas fa-paper-plane"></i> Kirim</button></td></tr>';
-        }
-        html += '</tbody></table></div>';
-    }
-    html += '</div>';
-
-    // Order sedang diproses ojek
-    html += '<div class="card"><div class="card-header">Order Sedang Diantar</div>';
-    var orderProses = dataOrder.filter(function(o) { return o.tokoId === user.id && o.status === 'DIPROSES_OJEK'; });
-    if (orderProses.length === 0) {
-        html += '<div class="empty-state"><i class="fas fa-truck"></i><h3>Tidak ada order sedang diantar</h3></div>';
-    } else {
-        html += '<div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Ojek</th><th>Total</th><th>Status</th></tr></thead><tbody>';
-        for (var i = 0; i < orderProses.length; i++) {
-            var o = orderProses[i];
-            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>' + escapeHtml(o.ojekId) + '</td><td>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</td><td><span class="badge badge-warning">Sedang Diantar</span></td></tr>';
-        }
-        html += '</tbody></table></div>';
-    }
-    html += '</div>';
-
-    areaKonten.innerHTML = html;
-}
-
-// ---------- PROSES BUAT ORDER OJEK ----------
-function prosesBuatOrderOjek() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var nama = document.getElementById('antarNama').value.trim();
-    var alamat = document.getElementById('antarAlamat').value.trim();
-    var totalBarang = parseFloat(document.getElementById('antarTotalBarang').value) || 0;
-    var jarak = parseFloat(document.getElementById('antarJarak').value) || 0;
-    var catatan = document.getElementById('antarCatatan').value.trim();
-
-    if (!nama || !alamat || totalBarang <= 0 || jarak <= 0) {
-        tampilkanToast('Data tidak lengkap atau jarak 0!', 'warning');
-        return;
-    }
-
-    var hargaPerKm = getHargaOjekPerKm();
-    var ongkir = jarak * hargaPerKm;
-    var totalTagihan = totalBarang + ongkir;
-
-    var dataOrder = getOrderOjek();
-    var order = {
-        id: 'OJ-' + Date.now(),
-        tokoId: user.id,
-        ojekId: null,
-        namaCustomer: nama,
-        alamatTujuan: alamat,
-        totalBarang: totalBarang,
-        jarak: jarak,
-        hargaPerKm: hargaPerKm,
-        ongkir: ongkir,
-        totalTagihan: totalTagihan,
-        catatan: catatan,
-        status: 'MENUNGGU_OJEK',
-        createdAt: new Date().toISOString(),
-        selesaiAt: null
-    };
-    dataOrder.push(order);
-    simpanOrderOjek(dataOrder);
-    tampilkanToast('Order berhasil dibuat! Pilih ojek sekarang.', 'success');
-    renderOrderAntarOjek();
-}
-
-// ---------- KIRIM ORDER KE OJEK ----------
-function kirimOrderKeOjek(idOrder) {
-    var select = document.getElementById('pilihOjek_' + idOrder);
-    var ojekId = select.value;
-    if (!ojekId) { tampilkanToast('Pilih ojek terlebih dahulu!', 'warning'); return; }
-
-    var dataOrder = getOrderOjek();
-    for (var i = 0; i < dataOrder.length; i++) {
-        if (dataOrder[i].id === idOrder) {
-            dataOrder[i].ojekId = ojekId;
-            dataOrder[i].status = 'DIPROSES_OJEK';
-            break;
-        }
-    }
-    simpanOrderOjek(dataOrder);
-    tampilkanToast('Order berhasil dikirim ke ojek!', 'success');
-    renderOrderAntarOjek();
-}
-
-// ---------- OJEK: ORDER ANTAR MASUK ----------
-function renderOrderAntarMasuk() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    var dataOrder = getOrderOjek();
-    var orderSaya = dataOrder.filter(function(o) { return o.ojekId === user.id && o.status === 'DIPROSES_OJEK'; });
-
-    var html = '<div class="page-header"><h2>Order Antar Masuk</h2><p>Pesanan yang perlu Anda antar.</p></div>';
-    
-    if (orderSaya.length === 0) {
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-motorcycle"></i><h3>Belum ada order masuk</h3></div></div>';
-    } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Dari Toko</th><th>Customer</th><th>Alamat</th><th>Total Tagihan</th><th>Aksi</th></tr></thead><tbody>';
-        for (var i = 0; i < orderSaya.length; i++) {
-            var o = orderSaya[i];
-            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.tokoId) + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>' + escapeHtml(o.alamatTujuan) + '</td><td><strong>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</strong></td>';
-            html += '<td>';
-            html += '<button class="button button-success button-extra-small" onclick="terimaOrderOjek(\'' + o.id + '\')"><i class="fas fa-check"></i> Terima & Antar</button>';
-            html += '<button class="button button-danger button-extra-small" onclick="tolakOrderOjek(\'' + o.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
-            html += '</td></tr>';
-        }
-        html += '</tbody></table></div></div>';
-    }
-    areaKonten.innerHTML = html;
-}
-
-function terimaOrderOjek(idOrder) {
-    if (!confirm('Ambil order ini?')) return;
-    var dataOrder = getOrderOjek();
-    for (var i = 0; i < dataOrder.length; i++) {
-        if (dataOrder[i].id === idOrder) { dataOrder[i].status = 'SEDANG_DIANTAR'; break; }
-    }
-    simpanOrderOjek(dataOrder);
-    tampilkanToast('Order diambil, segera antar!', 'success');
-    renderOrderAntarMasuk();
-}
-
-function tolakOrderOjek(idOrder) {
-    if (!confirm('Tolak order ini?')) return;
-    var dataOrder = getOrderOjek();
-    for (var i = 0; i < dataOrder.length; i++) {
-        if (dataOrder[i].id === idOrder) { dataOrder[i].status = 'DIBATALKAN_OJEK'; break; }
-    }
-    simpanOrderOjek(dataOrder);
-    tampilkanToast('Order ditolak!', 'success');
-    renderOrderAntarMasuk();
-}
-
-// ---------- OJEK: RIWAYAT ORDER & PENAGIHAN ----------
-function renderRiwayatOrderOjek() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    var dataOrder = getOrderOjek();
-    var orderSaya = dataOrder.filter(function(o) { return o.ojekId === user.id && o.status === 'SEDANG_DIANTAR'; });
-
-    var html = '<div class="page-header"><h2>Riwayat Order Saya</h2><p>Daftar order yang sudah Anda antar.</p></div>';
-    
-    if (orderSaya.length === 0) {
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada riwayat order</h3></div></div>';
-    } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID</th><th>Customer</th><th>Total Tagihan</th><th>Tanggal</th></tr></thead><tbody>';
-        for (var i = 0; i < orderSaya.length; i++) {
-            var o = orderSaya[i];
-            html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</td><td>' + new Date(o.createdAt).toLocaleDateString('id-ID') + '</td></tr>';
-        }
-        html += '</tbody></table></div></div>';
-    }
-    areaKonten.innerHTML = html;
-}
-
-// ---------- SUPERADMIN: LAPORAN PENAGIHAN KOMISI OJEK ----------
-function renderLaporanTagihanOjek() {
-    var role = localStorage.getItem('2r_user_role');
-    if (role !== 'superadmin') {
-        tampilkanToast('Hanya SuperAdmin!', 'error');
-        return;
-    }
-    var areaKonten = document.getElementById('mainContent');
-    var dataOrder = getOrderOjek();
-    var dataAkun = getDataAkun();
-
-    // Filter order yang sudah selesai atau sedang diantar (yang bisa ditagih)
-    var orderTagihan = dataOrder.filter(function(o) { 
-        return o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI'; 
-    });
-
-    // Komisi per order (Rp 1000)
-    var komisiPerOrder = getFeeOrderOjek();
-    var totalKomisi = 0;
-    var perOjek = {};
-
-    for (var i = 0; i < orderTagihan.length; i++) {
-        var o = orderTagihan[i];
-        var ojekId = o.ojekId;
-        if (!ojekId) continue;
-        if (!perOjek[ojekId]) perOjek[ojekId] = { orders: [], total: 0 };
-        perOjek[ojekId].orders.push(o);
-        perOjek[ojekId].total += komisiPerOrder;
-        totalKomisi += komisiPerOrder;
-    }
-
-    var html = '<div class="page-header"><h2>Laporan Tagihan Komisi Ojek</h2>';
-    html += '<p>Periode: <strong>' + new Date().toLocaleDateString('id-ID') + '</strong></p>';
-    html += '<p>Komisi per order: <strong>Rp ' + komisiPerOrder.toLocaleString('id-ID') + '</strong></p>';
-    html += '<p>Total tagihan bulan ini: <strong style="color:#FF6B00; font-size:20px;">Rp ' + totalKomisi.toLocaleString('id-ID') + '</strong></p></div>';
-
-    if (Object.keys(perOjek).length === 0) {
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada data tagihan bulan ini</h3></div></div>';
-    } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>ID Ojek</th><th>Nama Ojek</th><th>Jumlah Order</th><th>Total Tagihan</th><th>Detail Order</th></tr></thead><tbody>';
-        for (var ojekId in perOjek) {
-            var data = perOjek[ojekId];
-            var namaOjek = 'Ojek ' + ojekId;
-            for (var k = 0; k < dataAkun.length; k++) {
-                if (dataAkun[k].id === ojekId) { namaOjek = dataAkun[k].nama || dataAkun[k].username; break; }
-            }
-            html += '<tr><td>' + ojekId + '</td><td>' + escapeHtml(namaOjek) + '</td><td>' + data.orders.length + ' order</td><td><strong>Rp ' + data.total.toLocaleString('id-ID') + '</strong></td>';
-            html += '<td><button class="button button-primary button-extra-small" onclick="detailTagihanOjek(\'' + ojekId + '\')"><i class="fas fa-eye"></i> Lihat Detail</button></td></tr>';
-        }
-        html += '</tbody></table></div></div>';
-    }
-
-    areaKonten.innerHTML = html;
-}
-
-// ---------- DETAIL TAGIHAN PER OJEK ----------
-function detailTagihanOjek(ojekId) {
-    var dataOrder = getOrderOjek();
-    var orderOjek = dataOrder.filter(function(o) { return o.ojekId === ojekId && (o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI'); });
-    var komisiPerOrder = getFeeOrderOjek();
-
-    var html = '<div class="modal-overlay" id="modalDetailTagihan" style="display:flex; z-index:9999;">';
-    html += '<div class="modal" style="max-width:700px; max-height:80vh; overflow-y:auto;">';
-    html += '<div class="modal-header"><h3>Detail Tagihan Ojek ' + ojekId + '</h3><button class="modal-close" onclick="tutupModalDetailTagihan()">&times;</button></div>';
-    html += '<div class="modal-body"><div class="table-container"><table class="table"><thead><tr><th>ID Order</th><th>Customer</th><th>Total Tagihan</th><th>Tanggal</th><th>Komisi</th></tr></thead><tbody>';
-    var total = 0;
-    for (var i = 0; i < orderOjek.length; i++) {
-        var o = orderOjek[i];
-        total += komisiPerOrder;
-        html += '<tr><td>' + o.id + '</td><td>' + escapeHtml(o.namaCustomer) + '</td><td>Rp ' + o.totalTagihan.toLocaleString('id-ID') + '</td><td>' + new Date(o.createdAt).toLocaleDateString('id-ID') + '</td><td>Rp ' + komisiPerOrder.toLocaleString('id-ID') + '</td></tr>';
-    }
-    html += '<tr style="font-weight:700; background:#f8f9fa;"><td colspan="4" style="text-align:right;">Total Tagihan</td><td style="color:#d32f2f;">Rp ' + total.toLocaleString('id-ID') + '</td></tr>';
-    html += '</tbody></table></div></div>';
-    html += '<div class="modal-footer"><button class="button button-secondary" onclick="tutupModalDetailTagihan()">Tutup</button></div>';
-    html += '</div></div>';
-    var body = document.body;
-    var container = document.createElement('div');
-    container.innerHTML = html;
-    body.appendChild(container);
-}
-
-function tutupModalDetailTagihan() {
-    var modal = document.getElementById('modalDetailTagihan');
-    if (modal) modal.remove();
-}
-
-// ============================================================
-// AKHIR BLOK 8.50
-// ============================================================
-// ============================================================
-// BLOK 8.51 - SISTEM PENAGIHAN & SUSPEN TERPADU (TOKO + OJEK)
-// ============================================================
-
-// ---------- AMBIL NILAI HARGA DARI SETTING ----------
-function getHargaProToko() {
-    return parseFloat(localStorage.getItem('2r_harga_akun_pro')) || 50000;
-}
-function getHargaProOjek() {
-    return parseFloat(localStorage.getItem('2r_harga_ojek_pro')) || 25000;
-}
-function getFeeOrderOjek() {
-    return parseFloat(localStorage.getItem('2r_fee_order_ojek')) || 1000;
-}
-function getHargaPerKmOjek() {
-    return parseFloat(localStorage.getItem('2r_harga_ojek_per_km')) || 2000;
-}
-
-// ---------- HITUNG TAGIHAN TOKO ----------
-function hitungTagihanToko(userId, bulan, tahun) {
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === userId) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) return 0;
-
-    var total = 0;
-    if (userData.isPro) {
-        total += getHargaProToko();
-    }
-    var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-    var produkSaya = produkPublik.filter(function(p) { return p.ownerId === userId; });
-    var jmlProduk = produkSaya.length;
-    var batasDasar = userData.isPro ? 50 : 5;
-    if (jmlProduk > batasDasar) {
-        var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
-        var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
-        var ketemuPaket = false;
-        for (var k = 0; k < keys.length; k++) {
-            var jmlKey = parseInt(keys[k]);
-            if (jmlProduk <= jmlKey) {
-                total += hargaUpload[keys[k]];
-                ketemuPaket = true;
-                break;
-            }
-        }
-        if (!ketemuPaket) {
-            total += hargaUpload[keys[keys.length - 1]];
-        }
-    }
-    return total;
-}
-
-// ---------- HITUNG TAGIHAN OJEK ----------
-function hitungTagihanOjek(userId, bulan, tahun) {
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === userId) { userData = dataAkun[i]; break; }
-    }
-    if (!userData || !userData.isOjekPro) return 0;
-
-    var total = getHargaProOjek();
-    var feePerOrder = getFeeOrderOjek();
-    var dataOrder = getOrderOjek();
-    var orderBulanLalu = dataOrder.filter(function(o) {
-        return o.ojekId === userId &&
-               o.status === 'SEDANG_DIANTAR' &&
-               new Date(o.createdAt).getMonth() === (bulan - 1);
-    });
-    total += orderBulanLalu.length * feePerOrder;
-    return total;
-}
-
-// ---------- BUAT TAGIHAN BULAN INI ----------
-function buatTagihanBulanIni() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    if (!user.id) return;
-
-    var sekarang = new Date();
-    var hariIni = sekarang.getDate();
-    var bulanIni = sekarang.getMonth() + 1;
-    var tahunIni = sekarang.getFullYear();
-
-    if (hariIni < 5) return; // Belum waktunya tagihan
-
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var sudahAda = false;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id &&
-            dataTagihan[i].bulan === bulanIni &&
-            dataTagihan[i].tahun === tahunIni) {
-            sudahAda = true;
-            break;
-        }
-    }
-    if (sudahAda) return;
-
-    var jumlahTagihan = 0;
-    if (user.role === 'toko' || user.role === 'pedagang' || user.role === 'codseller') {
-        jumlahTagihan = hitungTagihanToko(user.id, bulanIni, tahunIni);
-    } else if (user.role === 'ojek') {
-        jumlahTagihan = hitungTagihanOjek(user.id, bulanIni, tahunIni);
-    }
-
-    if (jumlahTagihan > 0) {
-        dataTagihan.push({
-            id: 'TAG-' + Date.now(),
-            akunId: user.id,
-            bulan: bulanIni,
-            tahun: tahunIni,
-            jumlahTagihan: jumlahTagihan,
-            status: 'BELUM_BAYAR'
-        });
-        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-        tampilkanToast('Tagihan bulan ' + bulanIni + '/' + tahunIni + ' telah dibuat: Rp ' + jumlahTagihan.toLocaleString('id-ID'), 'info');
-    }
-}
-
-// ---------- CEK DAN EKSEKUSI SUSPEN ----------
-function cekDanEksekusiSuspen() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    if (!user.id) return;
-
-    var sekarang = new Date();
-    var hariIni = sekarang.getDate();
-    var bulanIni = sekarang.getMonth() + 1;
-    var tahunIni = sekarang.getFullYear();
-
-    if (hariIni < 10) return; // Belum waktunya suspensi
-
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) return;
-
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var tagihanBulanIni = null;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id &&
-            dataTagihan[i].bulan === bulanIni &&
-            dataTagihan[i].tahun === tahunIni) {
-            tagihanBulanIni = dataTagihan[i];
-            break;
-        }
-    }
-
-    if (tagihanBulanIni && tagihanBulanIni.status === 'BELUM_BAYAR') {
-        if (userData.status !== 'SUSPEN') {
-            userData.status = 'SUSPEN';
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === user.id) {
-                    dataAkun[i].status = 'SUSPEN';
-                    break;
-                }
-            }
-            localStorage.setItem('2r_user', JSON.stringify(userData));
-            simpanDataAkun(dataAkun);
-            tampilkanToast('Akun Anda telah di SUSPEN karena tagihan belum dibayar.', 'error');
-            location.reload();
-        }
-    } else {
-        if (userData.status === 'SUSPEN' && tagihanBulanIni && tagihanBulanIni.status === 'LUNAS') {
-            userData.status = 'AKTIF';
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === user.id) {
-                    dataAkun[i].status = 'AKTIF';
-                    break;
-                }
-            }
-            localStorage.setItem('2r_user', JSON.stringify(userData));
-            simpanDataAkun(dataAkun);
-            tampilkanToast('Selamat! Akun Anda telah kembali AKTIF.', 'success');
-            location.reload();
-        }
-    }
-}
-
-// ---------- RENDER STATUS AKUN (GABUNGAN TOKO & OJEK) ----------
-function renderStatusAkunGabungan() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var areaKonten = document.getElementById('mainContent');
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) { tampilkanToast('Akun tidak ditemukan!', 'error'); return; }
-
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
-    tagihanSaya.sort(function(a,b) { return new Date(b.id) - new Date(a.id); });
-
-    var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
-    if (userData.status === 'SUSPEN') {
-        html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
-    }
-    html += '</div>';
-
-    html += '<div class="card"><div class="card-header">Info Akun</div>';
-    html += '<div class="grid-2"><div><strong>ID Akun:</strong> ' + user.id + '</div>';
-    html += '<div><strong>Role:</strong> ' + user.role + '</div>';
-    html += '<div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div>';
-    html += '<div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
-    if (user.role === 'ojek') {
-        html += '<div><strong>Ojek Pro:</strong> ' + (userData.isOjekPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
-    }
-    html += '</div>';
-
-    // Tombol Upgrade ke Pro (Toko) / Ojek Pro
-    if (user.role === 'toko' || user.role === 'pedagang' || user.role === 'codseller') {
-        if (!userData.isPro) {
-            html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
-            html += '  <button class="button button-primary" onclick="upgradeKePro()"><i class="fas fa-crown"></i> Upgrade ke Akun Pro (Rp ' + getHargaProToko().toLocaleString('id-ID') + ')</button>';
-            html += '</div>';
-        }
-    }
-    if (user.role === 'ojek') {
-        if (!userData.isOjekPro) {
-            html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
-            html += '  <button class="button button-primary" onclick="upgradeOjekKePro()"><i class="fas fa-motorcycle"></i> Upgrade ke Ojek Pro (Rp ' + getHargaProOjek().toLocaleString('id-ID') + '/bulan + fee order)</button>';
-            html += '</div>';
-        }
-    }
-    html += '</div>';
-
-    html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
-    if (tagihanSaya.length === 0) {
-        html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
-    } else {
-        html += '<div class="table-container"><table class="table"><thead><tr><th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th></tr></thead><tbody>';
-        for (var i = 0; i < tagihanSaya.length; i++) {
-            var t = tagihanSaya[i];
-            var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
-            html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
-        }
-        html += '</tbody></table></div>';
-    }
-    html += '</div>';
-
-    // Tombol Bayar (jika SUSPEN)
-    if (userData.status === 'SUSPEN') {
-        html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
-        html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
-        var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
-        html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
-        html += '<strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
-        html += '<strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
-        html += '<strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
-        html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
-        html += '</div>';
-    }
-
-    areaKonten.innerHTML = html;
-}
-
-// ---------- UPGRADE KE PRO (TOKO) ----------
-function upgradeKePro() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
-    if (userData.isPro) { tampilkanToast('Anda sudah menjadi Akun Pro!', 'info'); return; }
-
-    if (!confirm('Anda akan melakukan upgrade ke Akun Pro dengan biaya Rp ' + getHargaProToko().toLocaleString('id-ID') + '. Lanjutkan?')) return;
-
-    userData.isPro = true;
-    userData.status = 'AKTIF';
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            dataAkun[i].isPro = true;
-            dataAkun[i].status = 'AKTIF';
-            break;
-        }
-    }
-    simpanDataAkun(dataAkun);
-    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
-    userLogin.isPro = true;
-    userLogin.status = 'AKTIF';
-    localStorage.setItem('2r_user', JSON.stringify(userLogin));
-
-    var sekarang = new Date();
-    var bulanIni = sekarang.getMonth() + 1;
-    var tahunIni = sekarang.getFullYear();
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var sudahAda = false;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
-            sudahAda = true;
-            break;
-        }
-    }
-    if (!sudahAda) {
-        dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: getHargaProToko(), status: 'BELUM_BAYAR' });
-        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-    }
-
-    tampilkanToast('Selamat! Anda kini menjadi Akun PRO.', 'success');
-    renderStatusAkunGabungan();
-}
-
-// ---------- UPGRADE OJEK KE PRO ----------
-function upgradeOjekKePro() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var userData = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) { userData = dataAkun[i]; break; }
-    }
-    if (!userData) { tampilkanToast('Data akun tidak ditemukan!', 'error'); return; }
-    if (userData.isOjekPro) { tampilkanToast('Anda sudah menjadi Ojek Pro!', 'info'); return; }
-
-    if (!confirm('Anda akan upgrade ke Ojek Pro dengan biaya Rp ' + getHargaProOjek().toLocaleString('id-ID') + '/bulan + fee per order. Lanjutkan?')) return;
-
-    userData.isOjekPro = true;
-    userData.status = 'AKTIF';
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            dataAkun[i].isOjekPro = true;
-            dataAkun[i].status = 'AKTIF';
-            break;
-        }
-    }
-    simpanDataAkun(dataAkun);
-    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
-    userLogin.isOjekPro = true;
-    userLogin.status = 'AKTIF';
-    localStorage.setItem('2r_user', JSON.stringify(userLogin));
-
-    var sekarang = new Date();
-    var bulanIni = sekarang.getMonth() + 1;
-    var tahunIni = sekarang.getFullYear();
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    var sudahAda = false;
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
-            sudahAda = true;
-            break;
-        }
-    }
-    if (!sudahAda) {
-        dataTagihan.push({ id: 'TAG-' + Date.now(), akunId: user.id, bulan: bulanIni, tahun: tahunIni, jumlahTagihan: getHargaProOjek(), status: 'BELUM_BAYAR' });
-        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-    }
-
-    tampilkanToast('Selamat! Anda kini menjadi Ojek PRO.', 'success');
-    renderStatusAkunGabungan();
-}
-
-// ---------- KONFIRMASI PEMBAYARAN ----------
-function konfirmasiPembayaran() {
-    if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var dataAkun = getDataAkun();
-    var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
-    for (var i = 0; i < dataTagihan.length; i++) {
-        if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
-            dataTagihan[i].status = 'LUNAS';
-            break;
-        }
-    }
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === user.id) {
-            dataAkun[i].status = 'AKTIF';
-            break;
-        }
-    }
-    localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
-    simpanDataAkun(dataAkun);
-    var userLogin = JSON.parse(localStorage.getItem('2r_user'));
-    userLogin.status = 'AKTIF';
-    localStorage.setItem('2r_user', JSON.stringify(userLogin));
-    tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
-    location.reload();
-}
-
-// ---------- MENU AJUKAN PENGAKTIFAN (HANYA UNTUK SUSPEN) ----------
-function renderAjukanPengaktifan() {
-    var areaKonten = document.getElementById('mainContent');
-    var html = `
-    <div class="page-header">
-        <h2><i class="fas fa-undo-alt"></i> Ajukan Pengaktifan Akun</h2>
-        <p style="color:#d32f2f; font-weight:600;">Akun Anda sedang SUSPEN. Untuk mengaktifkan kembali, silakan bayar tagihan.</p>
-    </div>
-    <div class="card" style="border:2px solid #f44336;">
-        <div class="card-header" style="color:#f44336;">Cara Mengaktifkan Akun</div>
-        <div style="margin-bottom:15px;">
-            <p>1. Lakukan pembayaran tagihan ke rekening berikut:</p>
-            <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
-                <strong>Bank:</strong> BCA<br>
-                <strong>No. Rek:</strong> 1234567890<br>
-                <strong>a.n:</strong> Toko Online 2R
-            </div>
-            <p>2. Setelah transfer, klik tombol di bawah ini.</p>
-        </div>
-        <button class="button button-success" onclick="konfirmasiPembayaran()" style="width:100%;"><i class="fas fa-check"></i> Saya Sudah Bayar</button>
-        <p style="font-size:12px; color:#888; text-align:center; margin-top:10px;">* Sistem akan otomatis mengaktifkan akun jika tagihan terbayar.</p>
-    </div>
-    `;
-    areaKonten.innerHTML = html;
-}
-
-// ============================================================
-// AKHIR BLOK 8.51
-// ============================================================
-// ============================================================
-// BLOK 8.52 - VERIFIKASI PENGAKTIFAN AKUN (UPLOAD BUKTI BAYAR)
-// ============================================================
-
-// ---------- DATA PENGAJUAN ----------
-function getPengajuanAktifasi() {
-    return JSON.parse(localStorage.getItem('2r_pengajuan_aktifasi') || '[]');
-}
-function simpanPengajuanAktifasi(data) {
-    localStorage.setItem('2r_pengajuan_aktifasi', JSON.stringify(data));
-}
-
-// ---------- RENDER FORM AJUKAN PENGAKTIFAN (HALAMAN SUSPEN) ----------
-function renderAjukanPengaktifan() {
-    var areaKonten = document.getElementById('mainContent');
-    var html = `
-    <div class="page-header">
-        <h2><i class="fas fa-undo-alt"></i> Ajukan Pengaktifan Akun</h2>
-        <p style="color:#d32f2f; font-weight:600;">Akun Anda sedang SUSPEN. Untuk mengaktifkan kembali, silakan kirim bukti pembayaran.</p>
-    </div>
-    <div class="card" style="border:2px solid #f44336;">
-        <div class="card-header" style="color:#f44336;">Formulir Pengajuan Aktifasi</div>
-        <div style="margin-bottom:15px;">
-            <p>Isi data berikut dan upload bukti transfer untuk diverifikasi oleh Admin.</p>
-        </div>
-        <div class="grid-2">
-            <div class="form-group">
-                <label>Nama Lengkap</label>
-                <input type="text" id="aktifasiNama" class="form-input" placeholder="Nama lengkap Anda">
-            </div>
-            <div class="form-group">
-                <label>Nomor HP</label>
-                <input type="tel" id="aktifasiHp" class="form-input" placeholder="Nomor HP aktif">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Upload Bukti Pembayaran (Foto/Scan struk transfer)</label>
-            <input type="file" id="aktifasiBukti" accept="image/*" style="display:none;">
-            <button class="button button-primary button-small" onclick="document.getElementById('aktifasiBukti').click();">Pilih File</button>
-            <span id="aktifasiNamaFile" style="font-size:12px; color:#888; margin-left:10px;">Belum ada file</span>
-        </div>
-        <div style="margin-top:10px;">
-            <button class="button button-primary" onclick="prosesAjukanPengaktifan()"><i class="fas fa-paper-plane"></i> Kirim Pengajuan</button>
-        </div>
-        <div id="statusPengajuan" style="margin-top:10px; display:none;"></div>
-    </div>
-    `;
-    areaKonten.innerHTML = html;
-
-    // Event listener untuk upload file
-    setTimeout(function() {
-        var inputFile = document.getElementById('aktifasiBukti');
-        if (inputFile) {
-            inputFile.onchange = function(e) {
-                var file = e.target.files[0];
-                if (file) {
-                    document.getElementById('aktifasiNamaFile').textContent = file.name;
-                    // Simpan file sementara (base64) untuk demo
-                    var reader = new FileReader();
-                    reader.onload = function(ev) {
-                        localStorage.setItem('2r_aktifasi_bukti_temp', ev.target.result);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-        }
-    }, 300);
-}
-
-// ---------- PROSES KIRIM PENGAJUAN ----------
-function prosesAjukanPengaktifan() {
-    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    var nama = document.getElementById('aktifasiNama').value.trim();
-    var hp = document.getElementById('aktifasiHp').value.trim();
-    var bukti = localStorage.getItem('2r_aktifasi_bukti_temp') || '';
-    var statusDiv = document.getElementById('statusPengajuan');
-
-    if (!nama || !hp) {
-        tampilkanToast('Nama dan Nomor HP wajib diisi!', 'warning');
-        return;
-    }
-    if (!bukti) {
-        tampilkanToast('Bukti pembayaran wajib diupload!', 'warning');
-        return;
-    }
-
-    // Cek apakah sudah ada pengajuan yang menunggu untuk user ini
-    var dataPengajuan = getPengajuanAktifasi();
-    var sudahAda = false;
-    for (var i = 0; i < dataPengajuan.length; i++) {
-        if (dataPengajuan[i].userId === user.id && dataPengajuan[i].status === 'MENUNGGU') {
-            sudahAda = true;
-            break;
-        }
-    }
-    if (sudahAda) {
-        tampilkanToast('Anda sudah memiliki pengajuan yang menunggu verifikasi.', 'warning');
-        return;
-    }
-
-    // Simpan pengajuan baru
-    var pengajuan = {
-        id: 'AKT-' + Date.now(),
-        userId: user.id,
-        username: user.username,
-        nama: nama,
-        nomorHp: hp,
-        bukti: bukti,
-        status: 'MENUNGGU',
-        waktu: new Date().toISOString()
-    };
-    dataPengajuan.push(pengajuan);
-    simpanPengajuanAktifasi(dataPengajuan);
-
-    // Bersihkan form dan tampilkan pesan sukses
-    localStorage.removeItem('2r_aktifasi_bukti_temp');
-    document.getElementById('aktifasiNama').value = '';
-    document.getElementById('aktifasiHp').value = '';
-    document.getElementById('aktifasiNamaFile').textContent = 'Belum ada file';
-
-    statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '<i class="fas fa-check-circle" style="color:#4CAF50;"></i> Pengajuan berhasil dikirim! Silakan tunggu verifikasi dari Admin.';
-    tampilkanToast('Pengajuan aktifasi berhasil dikirim ke Admin!', 'success');
-}
-
-// ---------- RENDER HALAMAN VERIFIKASI PENGAJUAN (UNTUK ADMIN) ----------
-function renderVerifikasiPengaktifan() {
-    var role = localStorage.getItem('2r_user_role');
-    if (role !== 'superadmin' && role !== 'staf_admin') {
-        tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
-        return;
-    }
-    var areaKonten = document.getElementById('mainContent');
-    var dataPengajuan = getPengajuanAktifasi();
-    var pengajuanMenunggu = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
-
-    var html = '<div class="page-header"><h2>Verifikasi Pengaktifan Akun</h2><p>Daftar pengajuan aktifasi akun dari user yang SUSPEN.</p></div>';
-
-    if (pengajuanMenunggu.length === 0) {
-        html += '<div class="card"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan menunggu</h3></div></div>';
-    } else {
-        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Username</th><th>Nama</th><th>Nomor HP</th><th>Waktu</th><th>Bukti</th><th>Aksi</th></tr></thead><tbody>';
-        for (var i = 0; i < pengajuanMenunggu.length; i++) {
-            var p = pengajuanMenunggu[i];
-            html += '<tr>';
-            html += '<td>' + (i+1) + '</td>';
-            html += '<td>' + escapeHtml(p.username) + '</td>';
-            html += '<td>' + escapeHtml(p.nama) + '</td>';
-            html += '<td>' + escapeHtml(p.nomorHp) + '</td>';
-            html += '<td>' + new Date(p.waktu).toLocaleString('id-ID') + '</td>';
-            html += '<td><button class="button button-primary button-extra-small" onclick="previewGambar(\'' + p.bukti + '\',\'Bukti Pembayaran\')"><i class="fas fa-eye"></i> Lihat</button></td>';
-            html += '<td>';
-            html += '<button class="button button-success button-extra-small" onclick="setujuiPengaktifan(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui</button>';
-            html += '<button class="button button-danger button-extra-small" onclick="tolakPengaktifan(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
-            html += '</td></tr>';
-        }
-        html += '</tbody></table></div></div>';
-    }
-    areaKonten.innerHTML = html;
-}
-
-// ---------- SETUJUI PENGAJUAN ----------
-function setujuiPengaktifan(idPengajuan) {
-    if (!confirm('Setujui pengajuan ini dan aktifkan akun?')) return;
-
-    var dataPengajuan = getPengajuanAktifasi();
-    var dataAkun = getDataAkun();
-    var targetUser = null;
-    var pengajuan = null;
-
-    for (var i = 0; i < dataPengajuan.length; i++) {
-        if (dataPengajuan[i].id === idPengajuan) {
-            pengajuan = dataPengajuan[i];
-            break;
-        }
-    }
-    if (!pengajuan) {
-        tampilkanToast('Pengajuan tidak ditemukan!', 'error');
-        return;
-    }
-
-    // Aktifkan akun
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === pengajuan.userId) {
-            dataAkun[i].status = 'AKTIF';
-            targetUser = dataAkun[i];
-            break;
-        }
-    }
-    if (!targetUser) {
-        tampilkanToast('Akun target tidak ditemukan!', 'error');
-        return;
-    }
-
-    // Update status pengajuan
-    pengajuan.status = 'DISETUJUI';
-    simpanPengajuanAktifasi(dataPengajuan);
-    simpanDataAkun(dataAkun);
-
-    // Update user yang sedang login jika dia yang diaktifkan
-    var userLogin = JSON.parse(localStorage.getItem('2r_user') || '{}');
-    if (userLogin.id === pengajuan.userId) {
-        userLogin.status = 'AKTIF';
-        localStorage.setItem('2r_user', JSON.stringify(userLogin));
-    }
-
-    tampilkanToast('Akun ' + targetUser.username + ' telah diaktifkan!', 'success');
-    renderVerifikasiPengaktifan();
-}
-
-// ---------- TOLAK PENGAJUAN ----------
-function tolakPengaktifan(idPengajuan) {
-    if (!confirm('Tolak pengajuan ini?')) return;
-
-    var dataPengajuan = getPengajuanAktifasi();
-    for (var i = 0; i < dataPengajuan.length; i++) {
-        if (dataPengajuan[i].id === idPengajuan) {
-            dataPengajuan[i].status = 'DITOLAK';
-            break;
-        }
-    }
-    simpanPengajuanAktifasi(dataPengajuan);
-    tampilkanToast('Pengajuan ditolak.', 'success');
-    renderVerifikasiPengaktifan();
-}
-
-// ---------- TAMBAHKAN NAVIGASI & SIDEBAR ----------
-// Di `buatSidebarHTML`:
-// Untuk SuperAdmin: { halaman: 'verifikasiPengaktifan', icon: 'fa-check-double', label: 'Verifikasi Pengaktifan' }
-// Untuk StafAdmin: { halaman: 'verifikasiPengaktifan', icon: 'fa-check-double', label: 'Verifikasi Pengaktifan' }
-
-// Di `navigasiKeHalaman`:
-// else if (namaHalaman === 'verifikasiPengaktifan') renderVerifikasiPengaktifan();
-
-// ============================================================
-// AKHIR BLOK 8.52
-// ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
