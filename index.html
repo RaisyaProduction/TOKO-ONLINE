@@ -354,9 +354,13 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
     .navbar-user span { font-size:13px; }
     .button-logout { padding:6px 12px; font-size:12px; }
     #menuToggle { display:block; }
-    .sidebar { width:80%; top:60px; bottom:0; z-index:999; position:fixed; left:-100%; transition:left 0.3s; }
+    
+    /* PERBAIKAN CSS SIDEBAR HP */
+    .sidebar { width:80%; top:60px; bottom:0; z-index:999; position:fixed; left:-100%; transition:left 0.3s ease-in-out; }
     .sidebar.open { left:0; }
-    .sidebar-overlay { top:60px; z-index:998; }
+    .sidebar-overlay { top:60px; z-index:998; display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); }
+    .sidebar-overlay.active { display:block; }
+    
     .content { margin-left:0; padding:15px; margin-top:60px; }
     .widget-grid { grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; }
     .widget-card .widget-number { font-size:22px; }
@@ -2690,26 +2694,42 @@ function renderTransferLainnya() {
     });
     // ===== AKHIR BLOK 8.2.5 =====
 
-    // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE =====
+        // ===== BLOK 8.2.6 - SIDEBAR RESPONSIVE (PERBAIKAN) =====
     var tombolMenu = document.getElementById('menuToggle');
     var sidebar = document.querySelector('.sidebar');
     var overlay = document.getElementById('sidebarOverlay');
+    
     if (tombolMenu && sidebar && overlay) {
+        // Klik tombol hamburger: buka/tutup sidebar
         tombolMenu.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (sidebar.classList.contains('open')) { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
-            else { sidebar.classList.add('open'); overlay.classList.add('active'); }
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+            }
         });
+
+        // Klik area gelap di luar sidebar: tutup sidebar
         overlay.addEventListener('click', function() {
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
         });
+
+        // Klik item menu di sidebar: otomatis tutup sidebar di HP
         document.querySelectorAll('.sidebar-menu-item').forEach(function(item) {
             item.addEventListener('click', function() {
-                if (window.innerWidth <= 767) { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+                if (window.innerWidth <= 767) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
             });
         });
     }
+
+    // Saat resize layar dari HP ke PC, reset sidebar agar tidak error
     window.addEventListener('resize', function() {
         if (window.innerWidth > 767) {
             var s = document.querySelector('.sidebar');
