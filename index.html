@@ -11406,7 +11406,7 @@ function renderLihatTokoTerdekat() {
 // AKHIR BLOK 8.59
 // ============================================================
 // ============================================================
-// BLOK 8.60 - JAM & TANGGAL REAL-TIME
+// BLOK 8.60 - JAM & TANGGAL REAL-TIME (SEMUA ROLE)
 // ============================================================
 
 function updateJamTanggal() {
@@ -11426,11 +11426,10 @@ function updateJamTanggal() {
 // Jalankan setiap 1 detik
 setInterval(updateJamTanggal, 1000);
 
-// Panggil sekali saat halaman dimuat
+// Panggil sekali saat halaman dimuat (tunggu DOM siap)
 document.addEventListener('DOMContentLoaded', function() {
     updateJamTanggal();
 });
-
 // ============================================================
 // AKHIR BLOK 8.60
 // ============================================================
