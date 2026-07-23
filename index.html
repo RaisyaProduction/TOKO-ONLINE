@@ -3790,7 +3790,7 @@ function tampilkanDashboard(user) {
 
 <!-- ===== BLOK 8.7 - JS_RENDER_PRODUK_GUDANG & KELOLA PRODUK ===== -->
 <script>
-    // ===== BLOK 8.7.1 - JS_RENDER_MANAJEMEN_STOK_GUDANG =====
+// ===== BLOK 8.7.1 - RENDER MANAJEMEN STOK GUDANG (Dengan Tabel Kasir & Sinkronisasi) =====
 function renderManajemenStokGudang() {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var role = localStorage.getItem('2r_user_role');
@@ -3868,7 +3868,6 @@ function tampilkanTabelStokGudang(dataProduk, role) {
 }
 
 // ===== FUNGSI PENDUKUNG LAINNYA (SAMA SEPERTI SEBELUMNYA, DENGAN PENYESUAIAN STOK) =====
-
 function tampilkanProdukGudang(filter) {
     var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
     var role = localStorage.getItem('2r_user_role');
@@ -4026,354 +4025,181 @@ function scanBarcodeProduk() {
     tampilkanToast('Fitur scan barcode menggunakan kamera sedang dalam pengembangan.', 'info');
 }
 
-// ===== AKHIR BLOK 8.7.1 =====
+// ===== BLOK 8.7.2 - FORM TAMBAH PRODUK (SUDAH ADA DI ATAS) =====
+// ===== BLOK 8.7.3 - SIMPAN PRODUK (SUDAH ADA DI ATAS) =====
+// ===== BLOK 8.7.4 - TABEL PRODUK (SUDAH ADA DI ATAS, DIPAKAI UNTUK KELOLA PRODUK) =====
 
-    // ===== BLOK 8.7.2 - FORM TAMBAH PRODUK =====
-    function renderFormTambahProdukGudang() {
-        var html = '<div class="card"><div class="card-header">Tambah Produk Baru <button class="button button-danger button-small" onclick="tutupFormTambahProdukGudang()"><i class="fas fa-times"></i> Tutup</button></div>';
-        html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="gudangNamaProduk" class="form-input" placeholder="Nama produk"></div>';
-        html += '<div><label class="form-label">Kode Produk (Barcode)</label><div style="display:flex; gap:5px;"><input type="text" id="gudangKodeProduk" class="form-input" placeholder="Scan atau input manual"><button class="button button-primary button-small" onclick="scanBarcodeProduk()"><i class="fas fa-camera"></i> Scan</button></div></div>';
-        html += '<div><label class="form-label">Harga Beli (Modal)</label><input type="number" id="gudangHargaBeli" class="form-input" placeholder="Harga modal"></div>';
-        html += '<div><label class="form-label">Harga Jual</label><input type="number" id="gudangHargaJual" class="form-input" placeholder="Harga jual"></div>';
-        html += '<div><label class="form-label">Jumlah Stok</label><input type="number" id="gudangJumlahStok" class="form-input" placeholder="Jumlah stok"></div>';
-        html += '<div><label class="form-label">Jenis Produk</label><select id="gudangJenis" class="form-input"><option value="Makanan">Makanan</option><option value="Minuman">Minuman</option><option value="Obat-Obatan">Obat-Obatan</option><option value="Pakaian">Pakaian</option><option value="Elektronik">Elektronik</option><option value="Lainnya">Lainnya</option></select></div>';
-        html += '<div><label class="form-label">Satuan</label><select id="gudangSatuan" class="form-input"><option value="Pcs">Pcs</option><option value="Liter">Liter</option><option value="Kg">Kg</option><option value="Box">Box</option><option value="Kardus">Kardus</option><option value="Lusin">Lusin</option></select></div>';
-        html += '<div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="gudangTanggalKadaluarsa" class="form-input"></div>';
-        html += '<div><label class="form-label">Upload Foto Produk</label><input type="file" id="gudangFotoProduk" multiple accept=".jpg,.jpeg,.png" style="display:none;"><button class="button button-primary button-small" onclick="document.getElementById(\'gudangFotoProduk\').click();">Pilih Foto</button><span id="gudangNamaFoto" style="font-size:12px; color:#888; margin-left:10px;">Belum ada foto</span></div></div>';
-        html += '<div class="grid-2" style="margin-top:10px;"><div><label class="form-label">Tanggal Input</label><input type="date" id="gudangTanggalInput" class="form-input"></div>';
-        html += '<div><label class="form-label">Penginput</label><input type="text" id="gudangPenginput" class="form-input" placeholder="Nama penginput"></div></div>';
-        html += '<button class="button button-primary margin-top-10" onclick="simpanProdukGudang()"><i class="fas fa-save"></i> Simpan Produk</button></div>';
-        return html;
+// ===== BLOK 8.7.5 - EDIT PRODUK GUDANG =====
+function renderEditProdukGudang(id) {
+    var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var target = null;
+    for (var i = 0; i < semua.length; i++) {
+        if (semua[i].id === id) { target = semua[i]; break; }
     }
-    function bukaFormTambahProdukGudang() {
-        var form = document.getElementById('formTambahProdukGudang');
-        if (form) { form.classList.remove('hidden'); form.scrollIntoView({ behavior: 'smooth' }); setTimeout(function() { pasangEventListenerFotoGudang(); }, 100); }
+    if (!target) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+    var areaKonten = document.getElementById('mainContent');
+    var html = '<div class="page-header"><h2>Edit Produk Gudang</h2><p>Ubah data produk yang sudah ada.</p></div>';
+    html += '<div class="card"><div class="card-header">Form Edit Produk <button class="button button-danger button-small" onclick="renderKelolaProduk()"><i class="fas fa-times"></i> Batal</button></div>';
+    html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="editGudangNamaProduk" class="form-input" value="' + escapeHtml(target.namaProduk) + '"></div>';
+    html += '<div><label class="form-label">Kode Produk</label><input type="text" id="editGudangKodeProduk" class="form-input" value="' + escapeHtml(target.kodeProduk) + '"></div>';
+    html += '<div><label class="form-label">Harga Beli</label><input type="number" id="editGudangHargaBeli" class="form-input" value="' + target.hargaBeli + '"></div>';
+    html += '<div><label class="form-label">Harga Jual</label><input type="number" id="editGudangHargaJual" class="form-input" value="' + target.hargaJual + '"></div>';
+    html += '<div><label class="form-label">Harga Grosir</label><input type="number" id="editGudangHargaGrosir" class="form-input" value="' + (target.hargaGrosir || 0) + '"></div>';
+    html += '<div><label class="form-label">Minimal Beli Grosir</label><input type="number" id="editGudangMinBeli" class="form-input" value="' + (target.minBeliGrosir || 0) + '"></div>';
+    html += '<div><label class="form-label">Jumlah Stok Fisik</label><input type="number" id="editGudangJumlahStok" class="form-input" value="' + (target.stokFisik || 0) + '"></div>';
+    html += '<div><label class="form-label">Jumlah Stok Publik</label><input type="number" id="editGudangStokPublik" class="form-input" value="' + (target.stokPublik || 0) + '"></div>';
+    html += '<div><label class="form-label">Jenis</label><select id="editGudangJenis" class="form-input">';
+    var jenisList = ['Makanan','Minuman','Obat-Obatan','Pakaian','Elektronik','Lainnya'];
+    for (var i = 0; i < jenisList.length; i++) {
+        var selected = jenisList[i] === target.jenis ? 'selected' : '';
+        html += '<option value="' + jenisList[i] + '" ' + selected + '>' + jenisList[i] + '</option>';
     }
-    function tutupFormTambahProdukGudang() {
-        var form = document.getElementById('formTambahProdukGudang');
-        if (form) form.classList.add('hidden');
+    html += '</select></div><div><label class="form-label">Satuan</label><select id="editGudangSatuan" class="form-input">';
+    var satuanList = ['Pcs','Liter','Kg','Box','Kardus','Lusin'];
+    for (var i = 0; i < satuanList.length; i++) {
+        var selected = satuanList[i] === target.satuan ? 'selected' : '';
+        html += '<option value="' + satuanList[i] + '" ' + selected + '>' + satuanList[i] + '</option>';
     }
-    function pasangEventListenerFotoGudang() {
-        var input = document.getElementById('gudangFotoProduk');
-        if (input) {
-            var listener = function(e) {
-                var file = e.target.files[0];
-                if (file) {
-                    document.getElementById('gudangNamaFoto').textContent = file.name;
-                    var reader = new FileReader();
-                    reader.onload = function(ev) { localStorage.setItem('2r_produk_gudang_foto_temp', ev.target.result); };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.removeEventListener('change', listener);
-            input.addEventListener('change', listener);
-        }
-    }
-    // ===== AKHIR BLOK 8.7.2 =====
+    html += '</select></div><div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="editGudangTanggalKadaluarsa" class="form-input" value="' + target.tanggalKadaluarsa + '"></div>';
+    html += '<div><label class="form-label">Tanggal Input</label><input type="date" id="editGudangTanggalInput" class="form-input" value="' + (target.tanggalInput || '') + '"></div>';
+    html += '<div><label class="form-label">Penginput</label><input type="text" id="editGudangPenginput" class="form-input" value="' + escapeHtml(target.namaPenginput || '') + '"></div>';
+    html += '<div style="grid-column:1/-1;"><label class="form-label">Foto Produk</label>';
+    if (target.fotoProduk && target.fotoProduk.length > 0) {
+        html += '<div style="margin-bottom:10px;"><img src="' + target.fotoProduk[0] + '" style="width:100px;height:100px;object-fit:cover;border-radius:6px;"></div>';
+    } else { html += '<p style="color:#888;font-size:13px;">Belum ada foto</p>'; }
+    html += '<input type="file" id="editGudangFotoProduk" accept=".jpg,.jpeg,.png" style="display:none;">';
+    html += '<button class="button button-primary button-small" onclick="document.getElementById(\'editGudangFotoProduk\').click();">Pilih Foto Baru</button>';
+    html += '<span id="editGudangNamaFoto" style="font-size:12px;color:#888;margin-left:10px;">Kosongkan jika tidak ganti</span></div></div>';
+    html += '<button class="button button-primary margin-top-10" onclick="simpanEditProdukGudang(' + target.id + ')"><i class="fas fa-save"></i> Simpan Perubahan</button></div>';
+    areaKonten.innerHTML = html;
+    setTimeout(function() { pasangEventListenerFotoEdit(); }, 300);
+}
 
-    // ===== BLOK 8.7.3 - SIMPAN PRODUK GUDANG =====
-    function simpanProdukGudang() {
-        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var nama = document.getElementById('gudangNamaProduk').value.trim();
-        var kode = document.getElementById('gudangKodeProduk').value.trim();
-        var hargaBeli = document.getElementById('gudangHargaBeli').value.trim();
-        var hargaJual = document.getElementById('gudangHargaJual').value.trim();
-        var stok = document.getElementById('gudangJumlahStok').value.trim();
-        var jenis = document.getElementById('gudangJenis').value;
-        var satuan = document.getElementById('gudangSatuan').value;
-        var kadaluarsa = document.getElementById('gudangTanggalKadaluarsa').value;
-        var foto = localStorage.getItem('2r_produk_gudang_foto_temp') || '';
-        var tanggalInput = document.getElementById('gudangTanggalInput').value;
-        var penginput = document.getElementById('gudangPenginput').value.trim();
-        if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
-            tampilkanToast('Semua data wajib diisi!', 'warning'); return;
-        }
-        if (parseInt(hargaBeli) <= 0 || parseInt(hargaJual) <= 0 || parseInt(stok) < 0) {
-            tampilkanToast('Harga dan stok harus bernilai positif!', 'warning'); return;
-        }
-        var hariIni = new Date(); hariIni.setHours(0,0,0,0);
-        if (new Date(kadaluarsa) < hariIni) { tampilkanToast('Tanggal kadaluarsa tidak boleh kurang dari hari ini!', 'warning'); return; }
-        var arrayFoto = foto ? [foto] : [];
-        var produkBaru = {
-            id: Date.now(), tokoId: user.id, namaProduk: nama, kodeProduk: kode || '-',
-            hargaBeli: parseInt(hargaBeli), hargaJual: parseInt(hargaJual), jumlahStok: parseInt(stok), stokFisik: parseInt(stok), stokPublik: parseInt(stok)
-            jenis: jenis, satuan: satuan, tanggalKadaluarsa: kadaluarsa, fotoProduk: arrayFoto,
-            tanggalInput: tanggalInput, namaPenginput: penginput, tanggalMasuk: new Date().toISOString(), 
-            status: 'Aktif', totalTerjual: 0
-        };
-        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        semuaProdukGudang.push(produkBaru);
-        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
-        localStorage.removeItem('2r_produk_gudang_foto_temp');
-        document.getElementById('gudangNamaProduk').value = '';
-        document.getElementById('gudangKodeProduk').value = '';
-        document.getElementById('gudangHargaBeli').value = '';
-        document.getElementById('gudangHargaJual').value = '';
-        document.getElementById('gudangJumlahStok').value = '';
-        document.getElementById('gudangTanggalKadaluarsa').value = '';
-        document.getElementById('gudangTanggalInput').value = '';
-        document.getElementById('gudangPenginput').value = '';
-        document.getElementById('gudangNamaFoto').textContent = 'Belum ada foto';
-        tutupFormTambahProdukGudang();
-        renderManajemenStokGudang();
-        tampilkanToast('Produk berhasil ditambahkan ke gudang!', 'success');
-    }
-    // ===== AKHIR BLOK 8.7.3 =====
-
-    // ===== BLOK 8.7.4 - TABEL PRODUK GUDANG =====
-    function tampilkanTabelProdukGudang(dataProduk, filter) {
-        var dataFilter = [];
-        if (filter === 'semua') dataFilter = dataProduk;
-        else if (filter === 'terlaris') {
-            dataFilter = dataProduk.slice().sort(function(a,b) { return b.totalTerjual - a.totalTerjual; }).slice(0,10);
-        } else if (filter === 'tidakLaku') {
-            dataFilter = dataProduk.filter(function(p) { return p.totalTerjual === 0 && p.jumlahStok > 10; });
-        } else if (filter === 'kadaluarsa') {
-            var hariIni = new Date();
-            dataFilter = dataProduk.filter(function(p) {
-                var kad = new Date(p.tanggalKadaluarsa);
-                var selisih = Math.ceil((kad - hariIni) / (1000*60*60*24));
-                return selisih <= 30 && selisih >= 0;
-            });
-        }
-        if (dataFilter.length === 0) return '<div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk</h3></div>';
-        var totalStok = 0, totalBeli = 0, totalJual = 0;
-        for (var i = 0; i < dataFilter.length; i++) {
-            totalStok += dataFilter[i].jumlahStok;
-            totalBeli += dataFilter[i].hargaBeli * dataFilter[i].jumlahStok;
-            totalJual += dataFilter[i].hargaJual * dataFilter[i].jumlahStok;
-        }
-        var totalKeuntungan = totalJual - totalBeli;
-        var html = '<div class="table-container"><table class="table"><thead><tr><th>Nama Produk</th><th>Kode</th><th>Harga Beli</th><th>Harga Jual</th><th>Stok</th><th>Jenis</th><th>Satuan</th><th>Kadaluarsa</th><th>Tanggal Input</th><th>Penginput</th><th>Terjual</th><th>Aksi</th></tr></thead><tbody>';
-        for (var i = 0; i < dataFilter.length; i++) {
-            var p = dataFilter[i];
-            var badge = 'badge-success';
-            var kad = new Date(p.tanggalKadaluarsa);
-            var selisih = Math.ceil((kad - new Date()) / (1000*60*60*24));
-            if (selisih <= 30 && selisih >= 0) badge = 'badge-warning';
-            else if (selisih < 0) badge = 'badge-danger';
-            html += '<tr><td>' + escapeHtml(p.namaProduk) + '</td><td>' + escapeHtml(p.kodeProduk) + '</td><td>Rp ' + p.hargaBeli + '</td><td>Rp ' + p.hargaJual + '</td><td>' + p.jumlahStok + '</td><td>' + escapeHtml(p.jenis) + '</td><td>' + escapeHtml(p.satuan) + '</td><td><span class="badge ' + badge + '">' + p.tanggalKadaluarsa + '</span></td><td>' + (p.tanggalInput || '-') + '</td><td>' + escapeHtml(p.namaPenginput || '-') + '</td><td>' + p.totalTerjual + '</td><td>';
-            html += '<button class="button button-primary button-extra-small" onclick="renderEditProdukGudang(' + p.id + ')"><i class="fas fa-edit"></i> Edit</button>';
-            html += '<button class="button button-danger button-extra-small" onclick="hapusProdukGudang(' + p.id + ')"><i class="fas fa-trash"></i> Hapus</button></td></tr>';
-        }
-        html += '<tr style="background:#f0fdf4; font-weight:700; border-top:3px solid #2e7d32;"><td colspan="2" style="text-align:right;">TOTAL</td><td style="color:#d32f2f;">Rp ' + totalBeli.toLocaleString('id-ID') + '</td><td style="color:#1976d2;">Rp ' + totalJual.toLocaleString('id-ID') + '</td><td>' + totalStok + '</td><td colspan="2"></td><td colspan="2"></td><td></td><td></td><td><span style="color:#2e7d32;">Keuntungan: Rp ' + totalKeuntungan.toLocaleString('id-ID') + '</span></td></tr>';
-        html += '</tbody></table></div>';
-        return html;
-    }
-    function tampilkanProdukGudang(filter) {
-        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var saya = semua.filter(function(p) { return p.tokoId === user.id; });
-        var tabel = document.getElementById('tabelProdukGudang');
-        if (tabel) tabel.innerHTML = tampilkanTabelProdukGudang(saya, filter);
-    }
-    function hapusProdukGudang(id) {
-        if (!confirm('Yakin ingin menghapus produk ini secara permanen?')) return;
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var baru = [];
-        for (var i = 0; i < semua.length; i++) {
-            if (semua[i].id !== id) baru.push(semua[i]);
-        }
-        localStorage.setItem('2r_produk_gudang', JSON.stringify(baru));
-        renderManajemenStokGudang();
-        tampilkanToast('Produk berhasil dihapus!', 'success');
-    }
-    // ===== AKHIR BLOK 8.7.4 =====
-
-    // ===== BLOK 8.7.5 - EDIT PRODUK GUDANG =====
-    function renderEditProdukGudang(id) {
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var target = null;
-        for (var i = 0; i < semua.length; i++) {
-            if (semua[i].id === id) { target = semua[i]; break; }
-        }
-        if (!target) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
-        var areaKonten = document.getElementById('mainContent');
-        var html = '<div class="page-header"><h2>Edit Produk Gudang</h2><p>Ubah data produk yang sudah ada.</p></div>';
-        html += '<div class="card"><div class="card-header">Form Edit Produk <button class="button button-danger button-small" onclick="renderKelolaProduk()"><i class="fas fa-times"></i> Batal</button></div>';
-        html += '<div class="grid-2"><div><label class="form-label">Nama Produk</label><input type="text" id="editGudangNamaProduk" class="form-input" value="' + escapeHtml(target.namaProduk) + '"></div>';
-        html += '<div><label class="form-label">Kode Produk</label><input type="text" id="editGudangKodeProduk" class="form-input" value="' + escapeHtml(target.kodeProduk) + '"></div>';
-        html += '<div><label class="form-label">Harga Beli</label><input type="number" id="editGudangHargaBeli" class="form-input" value="' + target.hargaBeli + '"></div>';
-        html += '<div><label class="form-label">Harga Jual</label><input type="number" id="editGudangHargaJual" class="form-input" value="' + target.hargaJual + '"></div>';
-        html += '<div><label class="form-label">Jumlah Stok</label><input type="number" id="editGudangJumlahStok" class="form-input" value="' + target.jumlahStok + '"></div>';
-        html += '<div><label class="form-label">Jenis</label><select id="editGudangJenis" class="form-input">';
-        var jenisList = ['Makanan','Minuman','Obat-Obatan','Pakaian','Elektronik','Lainnya'];
-        for (var i = 0; i < jenisList.length; i++) {
-            var selected = jenisList[i] === target.jenis ? 'selected' : '';
-            html += '<option value="' + jenisList[i] + '" ' + selected + '>' + jenisList[i] + '</option>';
-        }
-        html += '</select></div><div><label class="form-label">Satuan</label><select id="editGudangSatuan" class="form-input">';
-        var satuanList = ['Pcs','Liter','Kg','Box','Kardus','Lusin'];
-        for (var i = 0; i < satuanList.length; i++) {
-            var selected = satuanList[i] === target.satuan ? 'selected' : '';
-            html += '<option value="' + satuanList[i] + '" ' + selected + '>' + satuanList[i] + '</option>';
-        }
-        html += '</select></div><div><label class="form-label">Tanggal Kadaluarsa</label><input type="date" id="editGudangTanggalKadaluarsa" class="form-input" value="' + target.tanggalKadaluarsa + '"></div>';
-        html += '<div><label class="form-label">Tanggal Input</label><input type="date" id="editGudangTanggalInput" class="form-input" value="' + (target.tanggalInput || '') + '"></div>';
-        html += '<div><label class="form-label">Penginput</label><input type="text" id="editGudangPenginput" class="form-input" value="' + escapeHtml(target.namaPenginput || '') + '"></div>';
-        html += '<div style="grid-column:1/-1;"><label class="form-label">Foto Produk</label>';
-        if (target.fotoProduk && target.fotoProduk.length > 0) {
-            html += '<div style="margin-bottom:10px;"><img src="' + target.fotoProduk[0] + '" style="width:100px;height:100px;object-fit:cover;border-radius:6px;"></div>';
-        } else { html += '<p style="color:#888;font-size:13px;">Belum ada foto</p>'; }
-        html += '<input type="file" id="editGudangFotoProduk" accept=".jpg,.jpeg,.png" style="display:none;">';
-        html += '<button class="button button-primary button-small" onclick="document.getElementById(\'editGudangFotoProduk\').click();">Pilih Foto Baru</button>';
-        html += '<span id="editGudangNamaFoto" style="font-size:12px;color:#888;margin-left:10px;">Kosongkan jika tidak ganti</span></div></div>';
-        html += '<button class="button button-primary margin-top-10" onclick="simpanEditProdukGudang(' + target.id + ')"><i class="fas fa-save"></i> Simpan Perubahan</button></div>';
-        areaKonten.innerHTML = html;
-        setTimeout(function() { pasangEventListenerFotoEdit(); }, 300);
-    }
-    function pasangEventListenerFotoEdit() {
-        var input = document.getElementById('editGudangFotoProduk');
-        if (input) {
-            var listener = function(e) {
-                var file = e.target.files[0];
-                if (file) {
-                    document.getElementById('editGudangNamaFoto').textContent = file.name;
-                    var reader = new FileReader();
-                    reader.onload = function(ev) { localStorage.setItem('2r_edit_produk_gudang_foto_temp', ev.target.result); };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.removeEventListener('change', listener);
-            input.addEventListener('change', listener);
-        }
-    }
-    function simpanEditProdukGudang(id) {
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var index = -1;
-        for (var i = 0; i < semua.length; i++) {
-            if (semua[i].id === id) { index = i; break; }
-        }
-        if (index === -1) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
-        var nama = document.getElementById('editGudangNamaProduk').value.trim();
-        var kode = document.getElementById('editGudangKodeProduk').value.trim();
-        var hargaBeli = document.getElementById('editGudangHargaBeli').value.trim();
-        var hargaJual = document.getElementById('editGudangHargaJual').value.trim();
-        var stok = document.getElementById('editGudangJumlahStok').value.trim();
-        var jenis = document.getElementById('editGudangJenis').value;
-        var satuan = document.getElementById('editGudangSatuan').value;
-        var kadaluarsa = document.getElementById('editGudangTanggalKadaluarsa').value;
-        var fotoBaru = localStorage.getItem('2r_edit_produk_gudang_foto_temp') || '';
-        var tanggalInput = document.getElementById('editGudangTanggalInput').value;
-        var penginput = document.getElementById('editGudangPenginput').value.trim();
-        if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
-            tampilkanToast('Semua data wajib diisi!', 'warning'); return;
-        }
-        semua[index].namaProduk = nama;
-        semua[index].kodeProduk = kode || '-';
-        semua[index].hargaBeli = parseInt(hargaBeli);
-        semua[index].hargaJual = parseInt(hargaJual);
-        semua[index].jumlahStok = parseInt(stok);
-        semua[index].jenis = jenis;
-        semua[index].satuan = satuan;
-        semua[index].tanggalKadaluarsa = kadaluarsa;
-        semua[index].tanggalInput = tanggalInput;
-        semua[index].namaPenginput = penginput;
-        if (fotoBaru) { semua[index].fotoProduk = [fotoBaru]; localStorage.removeItem('2r_edit_produk_gudang_foto_temp'); }
-        localStorage.setItem('2r_produk_gudang', JSON.stringify(semua));
-        renderKelolaProduk();
-        tampilkanToast('Produk berhasil diperbarui!', 'success');
-    }
-    // ===== AKHIR BLOK 8.7.5 =====
-
-    // ===== BLOK 8.7.6 - DOWNLOAD EXCEL =====
-    function downloadExcelStokGudang() {
-        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var produkSaya = semua.filter(function(p) { return p.tokoId === user.id; });
-        if (produkSaya.length === 0) { tampilkanToast('Belum ada produk untuk di-download!', 'warning'); return; }
-        var totalStok = 0, totalBeli = 0, totalJual = 0;
-        for (var i = 0; i < produkSaya.length; i++) {
-            totalStok += produkSaya[i].jumlahStok;
-            totalBeli += produkSaya[i].hargaBeli * produkSaya[i].jumlahStok;
-            totalJual += produkSaya[i].hargaJual * produkSaya[i].jumlahStok;
-        }
-        var totalKeuntungan = totalJual - totalBeli;
-        var csv = "Nama Produk;Kode Produk;Harga Beli;Harga Jual;Stok;Jenis;Satuan;Tanggal Kadaluarsa;Tanggal Input;Penginput;Total Terjual\n";
-        for (var i = 0; i < produkSaya.length; i++) {
-            var p = produkSaya[i];
-            csv += '"' + p.namaProduk + '";"' + p.kodeProduk + '";' + p.hargaBeli + ';' + p.hargaJual + ';' + p.jumlahStok + ';"' + p.jenis + '";"' + p.satuan + '";"' + p.tanggalKadaluarsa + '";"' + (p.tanggalInput || '-') + '";"' + (p.namaPenginput || '-') + '";' + p.totalTerjual + '\n';
-        }
-        csv += ';TOTAL;' + totalBeli + ';' + totalJual + ';' + totalStok + ';;;;;;' + totalKeuntungan + '\n';
-        var blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        var link = document.createElement('a');
-        var url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = 'Laporan_Stok_Gudang_' + new Date().toISOString().slice(0,10) + '.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        tampilkanToast('Data berhasil didownload sebagai CSV/Excel!', 'success');
-    }
-    // ===== AKHIR BLOK 8.7.6 =====
-
-    // ===== BLOK 8.7.7 - KELOLA PRODUK =====
-    function renderKelolaProduk() {
-        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var areaKonten = document.getElementById('mainContent');
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var saya = semua.filter(function(p) { return p.tokoId === user.id; });
-        var html = '<div class="page-header"><h2>Kelola Produk</h2><p>Daftar produk yang tersimpan di gudang Anda. (Foto, Nama, Harga, Stok)</p></div>';
-        if (saya.length === 0) {
-            html += '<div class="card"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3><p>Silakan tambahkan produk baru melalui menu Manajemen Stok Gudang.</p></div></div>';
-        } else {
-            html += '<div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">';
-            html += '<button class="button button-primary button-small" onclick="tampilkanProdukKelola(\'semua\')">Semua</button>';
-            html += '<button class="button button-success button-small" onclick="tampilkanProdukKelola(\'terlaris\')">Terlaris</button>';
-            html += '<button class="button button-warning button-small" onclick="tampilkanProdukKelola(\'tidakLaku\')">Tidak Laku</button>';
-            html += '<button class="button button-danger button-small" onclick="tampilkanProdukKelola(\'kadaluarsa\')">Mendekati Kadaluarsa</button></div>';
-            html += '<div id="gridProdukKelola">' + tampilkanGridProdukKelola(saya, 'semua') + '</div>';
-        }
-        areaKonten.innerHTML = html;
-    }
-    function tampilkanProdukKelola(filter) {
-        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
-        var saya = semua.filter(function(p) { return p.tokoId === user.id; });
-        var grid = document.getElementById('gridProdukKelola');
-        if (grid) grid.innerHTML = tampilkanGridProdukKelola(saya, filter);
-    }
-    function tampilkanGridProdukKelola(dataProduk, filter) {
-        var dataFilter = [];
-        if (filter === 'semua') dataFilter = dataProduk;
-        else if (filter === 'terlaris') {
-            dataFilter = dataProduk.slice().sort(function(a,b) { return b.totalTerjual - a.totalTerjual; }).slice(0,10);
-        } else if (filter === 'tidakLaku') {
-            dataFilter = dataProduk.filter(function(p) { return p.totalTerjual === 0 && p.jumlahStok > 10; });
-        } else if (filter === 'kadaluarsa') {
-            var hariIni = new Date();
-            dataFilter = dataProduk.filter(function(p) {
-                var kad = new Date(p.tanggalKadaluarsa);
-                var selisih = Math.ceil((kad - hariIni) / (1000*60*60*24));
-                return selisih <= 30 && selisih >= 0;
-            });
-        }
-        if (dataFilter.length === 0) return '<div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk</h3></div>';
-        var html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:20px; padding:5px;">';
-        for (var i = 0; i < dataFilter.length; i++) {
-            var p = dataFilter[i];
-            var fotoHtml = '';
-            if (p.fotoProduk && p.fotoProduk.length > 0) {
-                fotoHtml = '<img src="' + p.fotoProduk[0] + '" style="width:100%; height:180px; object-fit:cover; border-radius:8px; margin-bottom:10px;">';
-            } else {
-                fotoHtml = '<div style="width:100%; height:180px; background:#f0f0f0; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; margin-bottom:10px;"><i class="fas fa-image" style="font-size:40px;"></i></div>';
+function pasangEventListenerFotoEdit() {
+    var input = document.getElementById('editGudangFotoProduk');
+    if (input) {
+        var listener = function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                document.getElementById('editGudangNamaFoto').textContent = file.name;
+                var reader = new FileReader();
+                reader.onload = function(ev) { localStorage.setItem('2r_edit_produk_gudang_foto_temp', ev.target.result); };
+                reader.readAsDataURL(file);
             }
-            html += '<div style="border:1px solid #eee; border-radius:10px; padding:15px; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:space-between;">';
-            html += '<div>' + fotoHtml + '<h4 style="font-size:15px; font-weight:600; margin:0 0 5px 0; color:#333; text-align:center;">' + escapeHtml(p.namaProduk) + '</h4>';
-            html += '<p style="font-size:14px; font-weight:600; color:#FF6B00; margin:0 0 3px 0; text-align:center;">Rp ' + p.hargaJual + '</p>';
-            html += '<p style="font-size:13px; color:#888; margin:0; text-align:center;">Stok: ' + p.jumlahStok + ' ' + escapeHtml(p.satuan) + '</p></div>';
-            html += '<div style="display:flex; gap:8px; margin-top:15px; border-top:1px solid #f5f5f5; padding-top:12px;">';
-            html += '<button class="button button-primary button-small" style="flex:1;" onclick="renderEditProdukGudang(' + p.id + ')"><i class="fas fa-edit"></i> Edit</button>';
-            html += '<button class="button button-danger button-small" style="flex:1;" onclick="hapusProdukGudang(' + p.id + ')"><i class="fas fa-trash"></i> Hapus</button></div></div>';
-        }
-        html += '</div>';
-        return html;
+        };
+        input.removeEventListener('change', listener);
+        input.addEventListener('change', listener);
     }
-    // ===== AKHIR BLOK 8.7.7 =====
-</script>
-<!-- ===== AKHIR BLOK 8.7 ===== -->
+}
 
+function simpanEditProdukGudang(id) {
+    var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var index = -1;
+    for (var i = 0; i < semua.length; i++) {
+        if (semua[i].id === id) { index = i; break; }
+    }
+    if (index === -1) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+    var nama = document.getElementById('editGudangNamaProduk').value.trim();
+    var kode = document.getElementById('editGudangKodeProduk').value.trim();
+    var hargaBeli = document.getElementById('editGudangHargaBeli').value.trim();
+    var hargaJual = document.getElementById('editGudangHargaJual').value.trim();
+    var hargaGrosir = document.getElementById('editGudangHargaGrosir').value.trim();
+    var minBeli = document.getElementById('editGudangMinBeli').value.trim();
+    var stokFisik = document.getElementById('editGudangJumlahStok').value.trim();
+    var stokPublik = document.getElementById('editGudangStokPublik').value.trim();
+    var jenis = document.getElementById('editGudangJenis').value;
+    var satuan = document.getElementById('editGudangSatuan').value;
+    var kadaluarsa = document.getElementById('editGudangTanggalKadaluarsa').value;
+    var fotoBaru = localStorage.getItem('2r_edit_produk_gudang_foto_temp') || '';
+    var tanggalInput = document.getElementById('editGudangTanggalInput').value;
+    var penginput = document.getElementById('editGudangPenginput').value.trim();
+    if (!nama || !hargaBeli || !hargaJual || !stokFisik || !stokPublik || !kadaluarsa || !tanggalInput || !penginput) {
+        tampilkanToast('Semua data wajib diisi!', 'warning'); return;
+    }
+    semua[index].namaProduk = nama;
+    semua[index].kodeProduk = kode || '-';
+    semua[index].hargaBeli = parseInt(hargaBeli);
+    semua[index].hargaJual = parseInt(hargaJual);
+    semua[index].hargaGrosir = parseInt(hargaGrosir) || 0;
+    semua[index].minBeliGrosir = parseInt(minBeli) || 0;
+    semua[index].stokFisik = parseInt(stokFisik);
+    semua[index].stokPublik = parseInt(stokPublik);
+    semua[index].jenis = jenis;
+    semua[index].satuan = satuan;
+    semua[index].tanggalKadaluarsa = kadaluarsa;
+    semua[index].tanggalInput = tanggalInput;
+    semua[index].namaPenginput = penginput;
+    if (fotoBaru) { semua[index].fotoProduk = [fotoBaru]; localStorage.removeItem('2r_edit_produk_gudang_foto_temp'); }
+    localStorage.setItem('2r_produk_gudang', JSON.stringify(semua));
+    renderKelolaProduk();
+    tampilkanToast('Produk berhasil diperbarui!', 'success');
+}
+
+// ===== BLOK 8.7.7 - KELOLA PRODUK (Grid Produk) =====
+function renderKelolaProduk() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var saya = semua.filter(function(p) { return p.tokoId === user.id; });
+    var html = '<div class="page-header"><h2>Kelola Produk</h2><p>Daftar produk yang tersimpan di gudang Anda. (Foto, Nama, Harga, Stok)</p></div>';
+    if (saya.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3><p>Silakan tambahkan produk baru melalui menu Manajemen Stok Gudang.</p></div></div>';
+    } else {
+        html += '<div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">';
+        html += '<button class="button button-primary button-small" onclick="tampilkanProdukKelola(\'semua\')">Semua</button>';
+        html += '<button class="button button-success button-small" onclick="tampilkanProdukKelola(\'terlaris\')">Terlaris</button>';
+        html += '<button class="button button-warning button-small" onclick="tampilkanProdukKelola(\'tidakLaku\')">Tidak Laku</button>';
+        html += '<button class="button button-danger button-small" onclick="tampilkanProdukKelola(\'kadaluarsa\')">Mendekati Kadaluarsa</button></div>';
+        html += '<div id="gridProdukKelola">' + tampilkanGridProdukKelola(saya, 'semua') + '</div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+function tampilkanProdukKelola(filter) {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var semua = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+    var saya = semua.filter(function(p) { return p.tokoId === user.id; });
+    var grid = document.getElementById('gridProdukKelola');
+    if (grid) grid.innerHTML = tampilkanGridProdukKelola(saya, filter);
+}
+
+function tampilkanGridProdukKelola(dataProduk, filter) {
+    var dataFilter = [];
+    if (filter === 'semua') dataFilter = dataProduk;
+    else if (filter === 'terlaris') {
+        dataFilter = dataProduk.slice().sort(function(a,b) { return b.totalTerjual - a.totalTerjual; }).slice(0,10);
+    } else if (filter === 'tidakLaku') {
+        dataFilter = dataProduk.filter(function(p) { return p.totalTerjual === 0 && p.stokFisik > 10; });
+    } else if (filter === 'kadaluarsa') {
+        var hariIni = new Date();
+        dataFilter = dataProduk.filter(function(p) {
+            var kad = new Date(p.tanggalKadaluarsa);
+            var selisih = Math.ceil((kad - hariIni) / (1000*60*60*24));
+            return selisih <= 30 && selisih >= 0;
+        });
+    }
+    if (dataFilter.length === 0) return '<div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk</h3></div>';
+    var html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:20px; padding:5px;">';
+    for (var i = 0; i < dataFilter.length; i++) {
+        var p = dataFilter[i];
+        var fotoHtml = '';
+        if (p.fotoProduk && p.fotoProduk.length > 0) {
+            fotoHtml = '<img src="' + p.fotoProduk[0] + '" style="width:100%; height:180px; object-fit:cover; border-radius:8px; margin-bottom:10px;">';
+        } else {
+            fotoHtml = '<div style="width:100%; height:180px; background:#f0f0f0; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; margin-bottom:10px;"><i class="fas fa-image" style="font-size:40px;"></i></div>';
+        }
+        html += '<div style="border:1px solid #eee; border-radius:10px; padding:15px; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:space-between;">';
+        html += '<div>' + fotoHtml + '<h4 style="font-size:15px; font-weight:600; margin:0 0 5px 0; color:#333; text-align:center;">' + escapeHtml(p.namaProduk) + '</h4>';
+        html += '<p style="font-size:14px; font-weight:600; color:#FF6B00; margin:0 0 3px 0; text-align:center;">Rp ' + p.hargaJual + '</p>';
+        html += '<p style="font-size:13px; color:#888; margin:0; text-align:center;">Stok Fisik: ' + p.stokFisik + ' ' + escapeHtml(p.satuan) + '</p></div>';
+        html += '<div style="display:flex; gap:8px; margin-top:15px; border-top:1px solid #f5f5f5; padding-top:12px;">';
+        html += '<button class="button button-primary button-small" style="flex:1;" onclick="renderEditProdukGudang(' + p.id + ')"><i class="fas fa-edit"></i> Edit</button>';
+        html += '<button class="button button-danger button-small" style="flex:1;" onclick="hapusProdukGudang(' + p.id + ')"><i class="fas fa-trash"></i> Hapus</button></div></div>';
+    }
+    html += '</div>';
+    return html;
+}
+// ===== AKHIR BLOK 8.7 =====
 <!-- ===== BLOK 8.8 - JS_RENDER_UPLOAD_PRODUK_PUBLIK ===== -->
 <script>
     // ===== BLOK 8.8.1 - RENDER UPLOAD PRODUK PUBLIK =====
