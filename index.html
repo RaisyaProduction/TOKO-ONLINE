@@ -2775,26 +2775,33 @@ function toggleForm(tipe) {
     });
     // ===== AKHIR BLOK 8.2.3 =====
 
-    // ===== BLOK 8.2.4 - LUPA PASSWORD =====
-    document.getElementById('tombolLupaPassword').addEventListener('click', async function() {
-        var username = document.getElementById('loginUsername').value.trim();
-        if (!username) { tampilkanToast('Masukkan username terlebih dahulu!', 'warning'); return; }
-        var dataAkun = getDataAkun();
-        var user = null;
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
-        }
-        if (!user) { tampilkanToast('Username tidak ditemukan!', 'error'); return; }
-        var newPassword = Math.random().toString(36).slice(-8);
-        var hash = await hashPassword(newPassword);
-        user.password = hash;
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].username === username) { dataAkun[i].password = hash; break; }
-        }
-        simpanDataAkun(dataAkun);
-        tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
-    });
-    // ===== AKHIR BLOK 8.2.4 =====
+    // ===== BLOK 8.2.4 - LUPA PASSWORD (DENGAN PENGECUALIAN SUPERADMIN) =====
+document.getElementById('tombolLupaPassword').addEventListener('click', async function() {
+    var username = document.getElementById('loginUsername').value.trim();
+    if (!username) { tampilkanToast('Masukkan username terlebih dahulu!', 'warning'); return; }
+    
+    // 🔒 Cegah reset password untuk SuperAdmin
+    if (username === 'admin') {
+        tampilkanToast('SuperAdmin tidak dapat mereset password melalui form ini. Hubungi pengelola sistem.', 'error');
+        return;
+    }
+
+    var dataAkun = getDataAkun();
+    var user = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
+    }
+    if (!user) { tampilkanToast('Username tidak ditemukan!', 'error'); return; }
+    
+    var newPassword = Math.random().toString(36).slice(-8);
+    var hash = await hashPassword(newPassword);
+    user.password = hash;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].username === username) { dataAkun[i].password = hash; break; }
+    }
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
+});
 
     // ===== BLOK 8.2.5 - LOGOUT =====
     document.getElementById('buttonLogout').addEventListener('click', function() {
