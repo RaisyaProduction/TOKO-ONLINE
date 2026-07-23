@@ -3018,61 +3018,68 @@ function toggleForm(tipe) {
 // ===== AKHIR BLOK 8.2.1 =====
 
    // ===== BLOK 8.2.2 - LOGIN SUBMIT (GABUNGAN USER + KASIR) =====
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    var username = document.getElementById('loginUsername').value.trim();
-    var password = document.getElementById('loginPassword').value.trim();
-    var errorBox = document.getElementById('authenticationError');
-    var errorText = document.getElementById('authenticationErrorText');
-    
-    // Sembunyikan error lama
-    errorBox.style.display = 'none';
+var loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var username = document.getElementById('loginUsername').value.trim();
+        var password = document.getElementById('loginPassword').value.trim();
+        var errorBox = document.getElementById('authenticationError');
+        var errorText = document.getElementById('authenticationErrorText');
+        
+        // Sembunyikan error lama
+        if (errorBox) errorBox.style.display = 'none';
 
-    // --- 1. Coba Login Sebagai User Biasa (Akun dari 2r_akun) ---
-    var dataAkun = getDataAkun();
-    var user = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
-    }
-
-    if (user) {
-        await migrasiPasswordJikaPerlu(username, password);
-        dataAkun = getDataAkun();
+        // --- 1. Coba Login Sebagai User Biasa (Akun dari 2r_akun) ---
+        var dataAkun = getDataAkun();
+        var user = null;
         for (var i = 0; i < dataAkun.length; i++) {
             if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
         }
-        var cocok = await verifikasiPassword(password, user.password);
-        if (cocok) {
-            if (user.status !== 'AKTIF' && user.role !== 'superadmin') {
-                errorBox.style.display = 'block';
-                errorText.textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
-                return;
+
+        if (user) {
+            await migrasiPasswordJikaPerlu(username, password);
+            dataAkun = getDataAkun();
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].username === username) { user = dataAkun[i]; break; }
             }
-            localStorage.setItem('2r_user', JSON.stringify(user));
-            localStorage.setItem('2r_user_role', user.role);
-            tampilkanDashboard(user);
+            var cocok = await verifikasiPassword(password, user.password);
+            if (cocok) {
+                if (user.status !== 'AKTIF' && user.role !== 'superadmin') {
+                    if (errorBox) {
+                        errorBox.style.display = 'block';
+                        errorText.textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
+                    }
+                    return;
+                }
+                localStorage.setItem('2r_user', JSON.stringify(user));
+                localStorage.setItem('2r_user_role', user.role);
+                tampilkanDashboard(user);
+                return; // Login berhasil, stop di sini.
+            }
+        }
+
+        // --- 2. Jika Gagal, Coba Login Sebagai Kasir (Akun dari 2r_kasir) ---
+        var kasir = await validasiLoginKasir(username, password);
+        if (kasir && kasir.status === 'Aktif') {
+            // Simpan mode kasir
+            localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
+            // Simpan role asli (agar bisa kembali ke toko saat logout)
+            localStorage.setItem('2r_user_original_role', 'toko'); 
+            localStorage.setItem('2r_user_role', 'kasir');
+            
+            tampilkanToast('Login sebagai kasir berhasil!', 'success');
+            tampilkanDashboardKasir(kasir);
             return; // Login berhasil, stop di sini.
         }
-    }
 
-    // --- 2. Jika Gagal, Coba Login Sebagai Kasir (Akun dari 2r_kasir) ---
-    var kasir = await validasiLoginKasir(username, password);
-    if (kasir && kasir.status === 'Aktif') {
-        // Simpan mode kasir
-        localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
-        // Simpan role asli (agar bisa kembali ke toko saat logout)
-        localStorage.setItem('2r_user_original_role', 'toko'); 
-        localStorage.setItem('2r_user_role', 'kasir');
-        
-        tampilkanToast('Login sebagai kasir berhasil!', 'success');
-        tampilkanDashboardKasir(kasir);
-        return; // Login berhasil, stop di sini.
-    }
-
-    // --- 3. Jika Semua Gagal, Tampilkan Error ---
-    errorBox.style.display = 'block';
-    errorText.textContent = 'Username atau password salah!';
-});
+        // --- 3. Jika Semua Gagal, Tampilkan Error ---
+        if (errorBox) {
+            errorBox.style.display = 'block';
+            errorText.textContent = 'Username atau password salah!';
+        }
+    });
+}
 // ===== AKHIR BLOK 8.2.2 =====
 
     // ===== BLOK 8.2.3 - REGISTER SUBMIT =====
