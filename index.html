@@ -2097,48 +2097,53 @@ function hapusKTPUmum() {
 
 <!-- ===== BLOK 7.6 - JS_RENDER_KELOLA_AKUN ===== -->
 <script>
-    // ===== BLOK 7.6.1 - RENDER KELOLA AKUN =====
-    function renderKelolaAkun() {
-        var role = localStorage.getItem('2r_user_role');
-        if (role !== 'superadmin' && role !== 'staf_admin') {
-            tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
-            return;
-        }
-        var dataAkun = getDataAkun();
-        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
-        var areaKonten = document.getElementById('mainContent');
-        var html = '<div class="page-header"><h2>Kelola Semua Akun</h2><p>';
-        if (role === 'superadmin') html += 'Anda dapat mengaktifkan, menonaktifkan (suspen), atau menghapus akun secara permanen. (Akun sendiri tidak dapat diubah.)';
-        else html += 'Anda dapat mengaktifkan, menonaktifkan, atau mengajukan penghapusan akun ke SuperAdmin.';
-        html += '</p></div><div class="card">';
-        if (dataAkun.length === 0) {
-            html += '<div class="empty-state"><i class="fas fa-users-slash"></i><h3>Belum ada akun</h3></div>';
-        } else {
-            html += '<div class="table-container"><table class="table"><thead><tr><th>Nomor</th><th>ID</th><th>Role</th><th>Username</th><th>Nama</th><th>Status</th><th>Batas Produk</th><th>Aksi</th></tr></thead><tbody>';
-            for (var i = 0; i < dataAkun.length; i++) {
-                var a = dataAkun[i];
-                var isSelf = (a.id === user.id);
-                var badge = a.status === 'AKTIF' ? 'badge-success' : (a.status === 'NONAKTIF (Menunggu Verifikasi)' ? 'badge-warning' : 'badge-danger');
-                var teks = a.status === 'AKTIF' ? 'AKTIF' : (a.status === 'NONAKTIF (Menunggu Verifikasi)' ? 'Menunggu' : 'Nonaktif');
-                html += '<tr><td>' + (i+1) + '</td><td>' + a.id + '</td><td>' + a.role + '</td><td>' + a.username + '</td><td>' + a.nama + '</td><td><span class="badge ' + badge + '">' + teks + '</span></td>';
-                html += '<td>' + (a.maksProdukPublik || 5) + '</td>';
-                html += '<td><div style="display:flex;gap:5px;">';
-                if (isSelf) {
-                    html += '<span style="color:#888; font-size:12px;">Akun sendiri</span>';
-                } else {
-                    if (a.status !== 'AKTIF') html += '<button class="button button-success button-extra-small" onclick="aktifkanAkun(\'' + a.id + '\')">Aktifkan</button>';
-                    else html += '<button class="button button-warning button-extra-small" onclick="nonaktifkanAkun(\'' + a.id + '\')">Nonaktifkan (Suspen)</button>';
-                    if (role === 'superadmin') html += '<button class="button button-danger button-extra-small" onclick="hapusAkun(\'' + a.id + '\')">Hapus</button>';
-                    else if (role === 'staf_admin') html += '<button class="button button-danger button-extra-small" style="background:#FF9800;" onclick="ajukanHapusAkunStaf(\'' + a.id + '\')">Ajukan Hapus</button>';
-                }
-                html += '</div></td></tr>';
-            }
-            html += '</tbody></table></div>';
-        }
-        html += '</div>';
-        areaKonten.innerHTML = html;
+    // ===== BLOK 7.6.1 - RENDER KELOLA AKUN (LENGKAP) =====
+function renderKelolaAkun() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+        return;
     }
-    // ===== AKHIR BLOK 7.6.1 =====
+    var dataAkun = getDataAkun();
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+    var html = '<div class="page-header"><h2>Kelola Semua Akun</h2><p>';
+    if (role === 'superadmin') html += 'Anda dapat mengaktifkan, menonaktifkan (suspen), mereset password, atau menghapus akun secara permanen. (Akun sendiri tidak dapat diubah.)';
+    else html += 'Anda dapat mengaktifkan, menonaktifkan, atau mengajukan penghapusan akun ke SuperAdmin.';
+    html += '</p></div><div class="card">';
+    if (dataAkun.length === 0) {
+        html += '<div class="empty-state"><i class="fas fa-users-slash"></i><h3>Belum ada akun</h3></div>';
+    } else {
+        html += '<div class="table-container"><table class="table"><thead><tr><th>Nomor</th><th>ID</th><th>Role</th><th>Username</th><th>Nama</th><th>Status</th><th>Batas Produk</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            var isSelf = (a.id === user.id);
+            var badge = a.status === 'AKTIF' ? 'badge-success' : (a.status === 'NONAKTIF (Menunggu Verifikasi)' ? 'badge-warning' : 'badge-danger');
+            var teks = a.status === 'AKTIF' ? 'AKTIF' : (a.status === 'NONAKTIF (Menunggu Verifikasi)' ? 'Menunggu' : 'Nonaktif');
+            html += '<tr><td>' + (i+1) + '</td><td>' + a.id + '</td><td>' + a.role + '</td><td>' + a.username + '</td><td>' + a.nama + '</td><td><span class="badge ' + badge + '">' + teks + '</span></td>';
+            html += '<td>' + (a.maksProdukPublik || 5) + '</td>';
+            html += '<td><div style="display:flex;gap:5px;">';
+            if (isSelf) {
+                html += '<span style="color:#888; font-size:12px;">Akun sendiri</span>';
+            } else {
+                if (a.status !== 'AKTIF') html += '<button class="button button-success button-extra-small" onclick="aktifkanAkun(\'' + a.id + '\')">Aktifkan</button>';
+                else html += '<button class="button button-warning button-extra-small" onclick="nonaktifkanAkun(\'' + a.id + '\')">Nonaktifkan (Suspen)</button>';
+                
+                // --- TAMBAHAN: TOMBOL RESET PASSWORD ---
+                html += '<button class="button button-primary button-extra-small" onclick="resetPasswordUser(\'' + a.id + '\')"><i class="fas fa-key"></i> Reset Pass</button>';
+                // -------------------------------------------------
+                
+                if (role === 'superadmin') html += '<button class="button button-danger button-extra-small" onclick="hapusAkun(\'' + a.id + '\')">Hapus</button>';
+                else if (role === 'staf_admin') html += '<button class="button button-danger button-extra-small" style="background:#FF9800;" onclick="ajukanHapusAkunStaf(\'' + a.id + '\')">Ajukan Hapus</button>';
+            }
+            html += '</div></td></tr>';
+        }
+        html += '</tbody></table></div>';
+    }
+    html += '</div>';
+    areaKonten.innerHTML = html;
+}
+// ===== AKHIR BLOK 7.6.1 =====
 
     // ===== BLOK 7.6.2 - FUNGSI AKTIFKAN, NONAKTIFKAN, HAPUS =====
     function aktifkanAkun(id) {
@@ -2202,6 +2207,25 @@ function hapusKTPUmum() {
         tampilkanToast('Pengajuan penghapusan akun telah dikirim ke SuperAdmin!', 'success');
     }
     // ===== AKHIR BLOK 7.6.2 =====
+    // ===== BLOK 7.6.3 - RESET PASSWORD USER LAIN =====
+async function resetPasswordUser(id) {
+    if (!confirm('Yakin ingin mereset password akun ini menjadi "123456"? User akan dipaksa login ulang.')) return;
+    
+    var dataAkun = getDataAkun();
+    var index = -1;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === id) { index = i; break; }
+    }
+    if (index === -1) { tampilkanToast('Akun tidak ditemukan!', 'error'); return; }
+    
+    var newPassword = '123456';
+    var hash = await hashPassword(newPassword);
+    dataAkun[index].password = hash;
+    simpanDataAkun(dataAkun);
+    tampilkanToast('Password akun ' + dataAkun[index].username + ' berhasil direset! Password baru: ' + newPassword, 'success');
+    renderKelolaAkun();
+}
+// ===== AKHIR BLOK 7.6.3 =====
 </script>
 <!-- ===== AKHIR BLOK 7.6 ===== -->
 <!-- ===== AKHIR BAGIAN 7 ===== -->
