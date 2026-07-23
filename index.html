@@ -798,6 +798,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
+                    { halaman: 'riwayatOrderOjekAdmin', icon: 'fa-history', label: 'Riwayat Ojek' }
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
@@ -1213,6 +1214,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'pengajuanBukaAkun') renderPengajuanBukaAkun();
     else if (namaHalaman === 'resetCleanup') renderResetCleanup();
     else if (namaHalaman === 'notepad') renderNotepad();
+    else if (namaHalaman === 'riwayatOrderOjekAdmin') renderRiwayatOrderOjekAdmin();
     
     
     // --- TAMBAHAN BARU AGAR TRANSAKSI BERFUNGSI ---
@@ -9495,6 +9497,237 @@ function renderHalamanTransaksi() {
 }
 
 // ===== AKHIR BLOK 8.46 =====
+// ============================================================
+// BLOK 8.52 - RIWAYAT ORDER OJEK (SUPERADMIN)
+// ============================================================
+
+function renderRiwayatOrderOjekAdmin() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var dataOrder = getOrderOjek();
+    var dataAkun = getDataAkun();
+
+    // Filter order yang bisa ditagih (sedang diantar atau selesai)
+    var orderTagihan = dataOrder.filter(function(o) {
+        return o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI';
+    });
+
+    // Sorting: terbaru di atas
+    orderTagihan.sort(function(a, b) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    // --- Bangun HTML ---
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-history" style="color:#FF6B00;"></i> Riwayat Order Ojek</h2>
+        <p>Daftar semua order ojek yang telah selesai atau sedang diantar. Digunakan sebagai bukti penagihan fee.</p>
+    </div>
+    <div class="card">
+        <div class="card-header">Daftar Order</div>
+        <!-- Filter sederhana (opsional) -->
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:15px;">
+            <div>
+                <label style="font-size:12px; font-weight:600;">Filter Status:</label>
+                <select id="filterStatusOjekAdmin" class="form-input" style="width:150px;" onchange="filterRiwayatOjekAdmin()">
+                    <option value="semua">Semua</option>
+                    <option value="SEDANG_DIANTAR">Sedang Diantar</option>
+                    <option value="SELESAI">Selesai</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:600;">Cari ID Ojek:</label>
+                <input type="text" id="searchOjekAdmin" class="form-input" placeholder="Ketik ID Ojek..." style="width:200px;" oninput="filterRiwayatOjekAdmin()">
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+                <span style="font-size:13px; color:#888;">Total: <strong id="totalOrderOjekAdmin">${orderTagihan.length}</strong> order</span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table" id="tableRiwayatOjekAdmin">
+                <thead>
+                    <tr>
+                        <th>ID Order</th>
+                        <th>ID Toko</th>
+                        <th>Customer</th>
+                        <th>ID Ojek</th>
+                        <th>Total Tagihan</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyRiwayatOjekAdmin">
+    `;
+
+    if (orderTagihan.length === 0) {
+        html += `<tr><td colspan="8" style="text-align:center; padding:30px; color:#888;">Belum ada order ojek yang selesai atau sedang diantar.</td></tr>`;
+    } else {
+        for (var i = 0; i < orderTagihan.length; i++) {
+            var o = orderTagihan[i];
+            var namaToko = o.tokoId;
+            var namaOjek = o.ojekId || '-';
+            // Cari nama toko dan ojek dari dataAkun
+            for (var k = 0; k < dataAkun.length; k++) {
+                if (dataAkun[k].id === o.tokoId) namaToko = dataAkun[k].nama || dataAkun[k].username;
+                if (dataAkun[k].id === o.ojekId) namaOjek = dataAkun[k].nama || dataAkun[k].username;
+            }
+            var badgeStatus = o.status === 'SELESAI' ? 'badge-success' : 'badge-warning';
+            var teksStatus = o.status === 'SELESAI' ? 'Selesai' : 'Sedang Diantar';
+
+            html += `
+            <tr>
+                <td><strong>${o.id}</strong></td>
+                <td>${escapeHtml(namaToko)}</td>
+                <td>${escapeHtml(o.namaCustomer)}</td>
+                <td>${escapeHtml(namaOjek)}</td>
+                <td>Rp ${o.totalTagihan.toLocaleString('id-ID')}</td>
+                <td><span class="badge ${badgeStatus}">${teksStatus}</span></td>
+                <td>${new Date(o.createdAt).toLocaleDateString('id-ID')}</td>
+                <td>
+                    <button class="button button-primary button-extra-small" onclick="detailOrderOjekAdmin('${o.id}')"><i class="fas fa-eye"></i> Detail</button>
+                </td>
+            </tr>
+            `;
+        }
+    }
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+    </div>
+    `;
+
+    areaKonten.innerHTML = html;
+}
+
+// --- Fungsi detail order untuk SuperAdmin ---
+function detailOrderOjekAdmin(idOrder) {
+    var dataOrder = getOrderOjek();
+    var order = null;
+    for (var i = 0; i < dataOrder.length; i++) {
+        if (dataOrder[i].id === idOrder) {
+            order = dataOrder[i];
+            break;
+        }
+    }
+    if (!order) {
+        tampilkanToast('Order tidak ditemukan!', 'error');
+        return;
+    }
+
+    var html = `
+    <div class="modal-overlay" id="modalDetailOrderAdmin" style="display:flex; z-index:9999;">
+        <div class="modal" style="max-width:600px; max-height:80vh; overflow-y:auto;">
+            <div class="modal-header">
+                <h3>Detail Order: ${order.id}</h3>
+                <button class="modal-close" onclick="tutupModalDetailOrderAdmin()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="grid-2">
+                    <div><strong>ID Toko:</strong> ${order.tokoId}</div>
+                    <div><strong>ID Ojek:</strong> ${order.ojekId || '-'}</div>
+                    <div><strong>Customer:</strong> ${escapeHtml(order.namaCustomer)}</div>
+                    <div><strong>Alamat Tujuan:</strong> ${escapeHtml(order.alamatTujuan)}</div>
+                    <div><strong>Total Barang:</strong> Rp ${order.totalBarang.toLocaleString('id-ID')}</div>
+                    <div><strong>Jarak:</strong> ${order.jarak} Km</div>
+                    <div><strong>Ongkir:</strong> Rp ${order.ongkir.toLocaleString('id-ID')}</div>
+                    <div><strong>Total Tagihan:</strong> <strong style="color:#FF6B00;">Rp ${order.totalTagihan.toLocaleString('id-ID')}</strong></div>
+                    <div><strong>Status:</strong> <span class="badge ${order.status === 'SELESAI' ? 'badge-success' : 'badge-warning'}">${order.status}</span></div>
+                    <div><strong>Tanggal Order:</strong> ${new Date(order.createdAt).toLocaleString('id-ID')}</div>
+                    ${order.catatan ? `<div style="grid-column:1/-1;"><strong>Catatan:</strong> ${escapeHtml(order.catatan)}</div>` : ''}
+                </div>
+                <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                    <p style="font-size:13px; color:#888;">* Komisi fee per order untuk ojek ini: <strong>Rp ${getFeeOrderOjek().toLocaleString('id-ID')}</strong></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button button-secondary" onclick="tutupModalDetailOrderAdmin()">Tutup</button>
+            </div>
+        </div>
+    </div>
+    `;
+    var body = document.body;
+    var container = document.createElement('div');
+    container.innerHTML = html;
+    body.appendChild(container);
+}
+
+function tutupModalDetailOrderAdmin() {
+    var modal = document.getElementById('modalDetailOrderAdmin');
+    if (modal) modal.remove();
+}
+
+// --- Fungsi filter (dipanggil dari dropdown/input) ---
+function filterRiwayatOjekAdmin() {
+    var filterStatus = document.getElementById('filterStatusOjekAdmin').value;
+    var searchOjek = document.getElementById('searchOjekAdmin').value.toLowerCase().trim();
+    var dataOrder = getOrderOjek();
+    var dataAkun = getDataAkun();
+
+    var filtered = dataOrder.filter(function(o) {
+        return o.status === 'SEDANG_DIANTAR' || o.status === 'SELESAI';
+    });
+
+    if (filterStatus !== 'semua') {
+        filtered = filtered.filter(function(o) { return o.status === filterStatus; });
+    }
+
+    if (searchOjek !== '') {
+        filtered = filtered.filter(function(o) {
+            return (o.ojekId && o.ojekId.toLowerCase().includes(searchOjek));
+        });
+    }
+
+    filtered.sort(function(a, b) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    document.getElementById('totalOrderOjekAdmin').textContent = filtered.length;
+
+    var tbody = document.getElementById('tbodyRiwayatOjekAdmin');
+    var html = '';
+    if (filtered.length === 0) {
+        html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#888;">Tidak ada order yang cocok dengan filter.</td></tr>`;
+    } else {
+        for (var i = 0; i < filtered.length; i++) {
+            var o = filtered[i];
+            var namaToko = o.tokoId;
+            var namaOjek = o.ojekId || '-';
+            for (var k = 0; k < dataAkun.length; k++) {
+                if (dataAkun[k].id === o.tokoId) namaToko = dataAkun[k].nama || dataAkun[k].username;
+                if (dataAkun[k].id === o.ojekId) namaOjek = dataAkun[k].nama || dataAkun[k].username;
+            }
+            var badgeStatus = o.status === 'SELESAI' ? 'badge-success' : 'badge-warning';
+            var teksStatus = o.status === 'SELESAI' ? 'Selesai' : 'Sedang Diantar';
+            html += `
+            <tr>
+                <td><strong>${o.id}</strong></td>
+                <td>${escapeHtml(namaToko)}</td>
+                <td>${escapeHtml(o.namaCustomer)}</td>
+                <td>${escapeHtml(namaOjek)}</td>
+                <td>Rp ${o.totalTagihan.toLocaleString('id-ID')}</td>
+                <td><span class="badge ${badgeStatus}">${teksStatus}</span></td>
+                <td>${new Date(o.createdAt).toLocaleDateString('id-ID')}</td>
+                <td>
+                    <button class="button button-primary button-extra-small" onclick="detailOrderOjekAdmin('${o.id}')"><i class="fas fa-eye"></i> Detail</button>
+                </td>
+            </tr>
+            `;
+        }
+    }
+    tbody.innerHTML = html;
+}
+
+// ============================================================
+// AKHIR BLOK 8.52
+// ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
