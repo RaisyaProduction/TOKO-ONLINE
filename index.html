@@ -838,7 +838,8 @@ function buatSidebarHTML(role) {
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
                     { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' },
-                    { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' }
+                    { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' },
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             }
         ],
@@ -856,7 +857,8 @@ function buatSidebarHTML(role) {
                     { halaman: 'keranjang', icon: 'fa-shopping-cart', label: 'Keranjang' },
                     { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
-                    { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }
+                    { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
             {
@@ -892,6 +894,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
             {
@@ -944,6 +947,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
             {
@@ -996,6 +1000,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
                 ]
             },
             {
@@ -1272,6 +1277,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
     else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
     else if (namaHalaman === 'reviewPengajuanAktivasi') renderReviewPengajuan();
+    else if (namaHalaman === 'katalogProduk') renderSemuaProduk();
     else renderPlaceholder(namaHalaman);
 }
 // ============================================================
@@ -10923,6 +10929,160 @@ function ambilLokasiPengajuan() {
 
 // ============================================================
 // AKHIR BLOK 8.56
+// ============================================================
+// ============================================================
+// BLOK 8.57 - RENDER KATALOG PRODUK (SEMUA PRODUK DARI SEMUA TOKO)
+// ============================================================
+
+function renderSemuaProduk() {
+    var areaKonten = document.getElementById('mainContent');
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    // --- Filter dan Pencarian ---
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-store-alt" style="color:#FF6B00;"></i> Katalog Produk</h2>
+        <p>Semua produk dari Toko, Pedagang Pasar, dan COD Seller.</p>
+    </div>
+    <div class="card">
+        <div class="card-header">Filter & Cari</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+            <div style="flex:1; min-width:200px;">
+                <input type="text" id="searchKatalog" class="form-input" placeholder="Cari nama produk..." oninput="filterKatalog()">
+            </div>
+            <div>
+                <select id="filterKategoriKatalog" class="form-input" style="width:150px;" onchange="filterKatalog()">
+                    <option value="">Semua Kategori</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Makanan">Makanan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            <div>
+                <select id="filterRoleKatalog" class="form-input" style="width:200px;" onchange="filterKatalog()">
+                    <option value="">Semua Penjual</option>
+                    <option value="toko">Toko</option>
+                    <option value="pedagang">Pedagang Pasar</option>
+                    <option value="codseller">COD Seller</option>
+                </select>
+            </div>
+            <div style="display:flex; align-items:center;">
+                <span style="font-size:13px; color:#888;">Total: <strong id="totalKatalog">${semuaProduk.length}</strong> produk</span>
+            </div>
+        </div>
+    </div>
+    `;
+
+    // --- Grid Produk ---
+    html += '<div id="gridKatalog" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; padding:5px;">';
+
+    if (semuaProduk.length === 0) {
+        html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3></div></div>';
+    } else {
+        for (var i = 0; i < semuaProduk.length; i++) {
+            var p = semuaProduk[i];
+            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+
+            // Cari nama pemilik
+            var pemilik = null;
+            for (var j = 0; j < dataAkun.length; j++) {
+                if (dataAkun[j].id === p.ownerId) {
+                    pemilik = dataAkun[j];
+                    break;
+                }
+            }
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+
+            html += `
+            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <img src="${gambar}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
+                    <h4 style="font-size:15px; margin:5px 0;">${escapeHtml(p.judul)}</h4>
+                    <p style="color:#FF6B00; font-weight:600;">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <p style="font-size:12px; color:#888;">${escapeHtml(p.kategori)}</p>
+                    <p style="font-size:12px; color:#555;">Dari: ${escapeHtml(namaPemilik)}</p>
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="button button-primary button-small" onclick="tambahKeKeranjang('${p.id}', '${escapeHtml(p.judul)}', ${p.harga})"><i class="fas fa-cart-plus"></i> Beli</button>
+                </div>
+            </div>
+            `;
+        }
+    }
+    html += '</div>';
+
+    areaKonten.innerHTML = html;
+}
+
+// --- Fungsi Filter (dipanggil dari input/select) ---
+function filterKatalog() {
+    var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
+    var kategori = document.getElementById('filterKategoriKatalog').value;
+    var role = document.getElementById('filterRoleKatalog').value;
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    var filtered = semuaProduk.filter(function(p) {
+        // Filter nama produk
+        if (search && !p.judul.toLowerCase().includes(search)) return false;
+        // Filter kategori
+        if (kategori && p.kategori !== kategori) return false;
+        // Filter role penjual
+        if (role) {
+            var pemilik = null;
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === p.ownerId) {
+                    pemilik = dataAkun[i];
+                    break;
+                }
+            }
+            if (!pemilik || pemilik.role !== role) return false;
+        }
+        return true;
+    });
+
+    document.getElementById('totalKatalog').textContent = filtered.length;
+
+    var grid = document.getElementById('gridKatalog');
+    var html = '';
+    if (filtered.length === 0) {
+        html = '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk yang cocok</h3></div></div>';
+    } else {
+        for (var i = 0; i < filtered.length; i++) {
+            var p = filtered[i];
+            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+            var pemilik = null;
+            for (var j = 0; j < dataAkun.length; j++) {
+                if (dataAkun[j].id === p.ownerId) {
+                    pemilik = dataAkun[j];
+                    break;
+                }
+            }
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            html += `
+            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <img src="${gambar}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
+                    <h4 style="font-size:15px; margin:5px 0;">${escapeHtml(p.judul)}</h4>
+                    <p style="color:#FF6B00; font-weight:600;">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <p style="font-size:12px; color:#888;">${escapeHtml(p.kategori)}</p>
+                    <p style="font-size:12px; color:#555;">Dari: ${escapeHtml(namaPemilik)}</p>
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="button button-primary button-small" onclick="tambahKeKeranjang('${p.id}', '${escapeHtml(p.judul)}', ${p.harga})"><i class="fas fa-cart-plus"></i> Beli</button>
+                </div>
+            </div>
+            `;
+        }
+    }
+    grid.innerHTML = html;
+}
+
+// ============================================================
+// AKHIR BLOK 8.57
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
