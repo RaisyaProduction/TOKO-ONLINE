@@ -801,6 +801,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
                     { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
                     { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
+                    { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' }
                     { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' }
                 ]
             }
@@ -1040,6 +1041,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
                     { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
                     { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                    { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' }
                     { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
                     { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
                 ]
@@ -1236,6 +1238,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'orderAntarMasuk') renderOrderAntarMasuk();
     else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
     else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
+    else if (namaHalaman === 'reviewPengajuanAktivasi') renderReviewPengajuan();
     // -----------------------------
     else renderPlaceholder(namaHalaman);
 }
@@ -10444,6 +10447,314 @@ function filterRiwayatOjekAdmin() {
 
 // ============================================================
 // AKHIR BLOK 8.52
+// ============================================================
+// ============================================================
+// BLOK 8.53 - DATA PENGAJUAN AKTIVASI
+// ============================================================
+
+// --- Ambil & simpan data pengajuan ---
+function getPengajuanAktivasi() {
+    return JSON.parse(localStorage.getItem('2r_pengajuan_aktivasi') || '[]');
+}
+
+function simpanPengajuanAktivasi(data) {
+    localStorage.setItem('2r_pengajuan_aktivasi', JSON.stringify(data));
+}
+
+// --- Buat pengajuan baru (dari user SUSPEN) ---
+function buatPengajuanAktivasi(userId, nama, nomorHp, keterangan, buktiGambar) {
+    var data = getPengajuanAktivasi();
+    var pengajuan = {
+        id: 'PENGAJUAN-' + Date.now(),
+        userId: userId,
+        nama: nama,
+        nomorHp: nomorHp,
+        keterangan: keterangan,
+        buktiGambar: buktiGambar, // base64
+        status: 'MENUNGGU',
+        komentar: '',
+        waktu: new Date().toISOString()
+    };
+    data.push(pengajuan);
+    simpanPengajuanAktivasi(data);
+    // Kirim notifikasi ke Staf Admin & SuperAdmin
+    kirimNotifikasiAdmin('Pengajuan Aktivasi Baru', 'User ' + nama + ' mengajukan aktivasi akun.');
+    return pengajuan;
+}
+
+// --- Kirim notifikasi ke semua admin (staf + super) ---
+function kirimNotifikasiAdmin(judul, pesan) {
+    var dataAkun = getDataAkun();
+    var adminIds = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'superadmin' || a.role === 'staf_admin') {
+            adminIds.push(a.id);
+        }
+    }
+    for (var j = 0; j < adminIds.length; j++) {
+        simpanNotifikasi(adminIds[j], judul, pesan, 'info');
+    }
+}
+
+// --- Update status pengajuan (SuperAdmin) ---
+function updateStatusPengajuan(id, statusBaru, komentar) {
+    var data = getPengajuanAktivasi();
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].id === id) {
+            data[i].status = statusBaru;
+            if (komentar) data[i].komentar = komentar;
+            break;
+        }
+    }
+    simpanPengajuanAktivasi(data);
+}
+
+// --- Hapus pengajuan (opsional) ---
+function hapusPengajuanAktivasi(id) {
+    var data = getPengajuanAktivasi();
+    var baru = data.filter(function(p) { return p.id !== id; });
+    simpanPengajuanAktivasi(baru);
+}
+
+// ============================================================
+// AKHIR BLOK 8.53
+// ============================================================
+// ============================================================
+// BLOK 8.54 - RENDER UPLOAD BUKTI BAYAR (UNTUK USER SUSPEN)
+// ============================================================
+
+function renderAjukanPengaktifan() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var areaKonten = document.getElementById('mainContent');
+
+    // Cek apakah user sudah pernah mengajukan dan masih menunggu
+    var dataPengajuan = getPengajuanAktivasi();
+    var pengajuanSaya = null;
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].userId === user.id && dataPengajuan[i].status === 'MENUNGGU') {
+            pengajuanSaya = dataPengajuan[i];
+            break;
+        }
+    }
+
+    // Jika sudah ada pengajuan menunggu, tampilkan status
+    if (pengajuanSaya) {
+        var html = `
+        <div class="page-header">
+            <h2><i class="fas fa-hourglass-half"></i> Status Pengajuan</h2>
+            <p style="color:#FF6B00; font-weight:600;">Pengajuan Anda sedang diproses admin.</p>
+        </div>
+        <div class="card">
+            <div class="card-header">Detail Pengajuan</div>
+            <div class="grid-2">
+                <div><strong>Nama:</strong> ${escapeHtml(pengajuanSaya.nama)}</div>
+                <div><strong>Nomor HP:</strong> ${escapeHtml(pengajuanSaya.nomorHp)}</div>
+                <div><strong>Keterangan:</strong> ${escapeHtml(pengajuanSaya.keterangan)}</div>
+                <div><strong>Status:</strong> <span class="badge badge-warning">Menunggu</span></div>
+                <div style="grid-column:1/-1;"><strong>Bukti Pembayaran:</strong><br>
+                    <img src="${pengajuanSaya.buktiGambar}" style="max-width:200px; max-height:200px; border:1px solid #ddd; border-radius:8px; cursor:pointer;" onclick="previewGambar('${pengajuanSaya.buktiGambar}', 'Bukti Pembayaran')">
+                </div>
+            </div>
+            <div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                <p style="font-size:13px; color:#888;">* Admin akan memverifikasi pembayaran Anda. Jika disetujui, akun akan aktif kembali.</p>
+            </div>
+        </div>
+        `;
+        areaKonten.innerHTML = html;
+        return;
+    }
+
+    // Form pengajuan baru
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-upload"></i> Ajukan Aktivasi Akun</h2>
+        <p style="color:#d32f2f; font-weight:600;">Akun Anda SUSPEN. Silakan unggah bukti pembayaran tagihan.</p>
+    </div>
+    <div class="card">
+        <div class="card-header">Form Pengajuan</div>
+        <div class="form-group">
+            <label>Nama Lengkap</label>
+            <input type="text" id="pengajuanNama" class="form-input" value="${escapeHtml(user.nama || '')}" placeholder="Nama Anda">
+        </div>
+        <div class="form-group">
+            <label>Nomor HP</label>
+            <input type="tel" id="pengajuanNomorHp" class="form-input" value="${escapeHtml(user.nomorHp || '')}" placeholder="Nomor HP aktif">
+        </div>
+        <div class="form-group">
+            <label>Keterangan (opsional)</label>
+            <textarea id="pengajuanKeterangan" class="form-input" rows="3" placeholder="Misal: Sudah transfer ke rekening ..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Upload Bukti Pembayaran (foto struk transfer)</label>
+            <div class="upload-area" id="uploadBuktiContainer">
+                <i class="fas fa-cloud-upload-alt" style="font-size:40px; color:#ddd;"></i>
+                <p style="margin:5px 0;">Klik untuk pilih gambar</p>
+                <input type="file" id="inputBuktiBayar" accept=".jpg,.jpeg,.png" style="display:none;">
+                <div id="previewBukti" style="margin-top:10px;"></div>
+            </div>
+        </div>
+        <button class="button button-primary" onclick="prosesAjukanAktivasi()"><i class="fas fa-paper-plane"></i> Kirim Pengajuan</button>
+    </div>
+    `;
+    areaKonten.innerHTML = html;
+
+    // Event listener upload
+    setTimeout(function() {
+        var uploadArea = document.getElementById('uploadBuktiContainer');
+        var inputFile = document.getElementById('inputBuktiBayar');
+        if (uploadArea && inputFile) {
+            uploadArea.onclick = function() { inputFile.click(); };
+            inputFile.onchange = function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        document.getElementById('previewBukti').innerHTML = '<img src="' + ev.target.result + '" class="preview-image" style="max-width:200px; max-height:200px; border-radius:8px;">';
+                        localStorage.setItem('2r_bukti_temp', ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+        }
+    }, 100);
+}
+
+// --- Proses kirim pengajuan ---
+function prosesAjukanAktivasi() {
+    var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+    var nama = document.getElementById('pengajuanNama').value.trim();
+    var nomorHp = document.getElementById('pengajuanNomorHp').value.trim();
+    var keterangan = document.getElementById('pengajuanKeterangan').value.trim();
+    var bukti = localStorage.getItem('2r_bukti_temp');
+
+    if (!nama || !nomorHp) {
+        tampilkanToast('Nama dan Nomor HP wajib diisi!', 'warning');
+        return;
+    }
+    if (!bukti) {
+        tampilkanToast('Upload bukti pembayaran terlebih dahulu!', 'warning');
+        return;
+    }
+
+    // Simpan pengajuan
+    buatPengajuanAktivasi(user.id, nama, nomorHp, keterangan, bukti);
+    localStorage.removeItem('2r_bukti_temp');
+    tampilkanToast('Pengajuan berhasil dikirim! Admin akan memverifikasi.', 'success');
+    renderAjukanPengaktifan(); // refresh ke status
+}
+
+// ============================================================
+// AKHIR BLOK 8.54
+// ============================================================
+// ============================================================
+// BLOK 8.55 - REVIEW PENGAJUAN AKTIVASI (ADMIN)
+// ============================================================
+
+function renderReviewPengajuan() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin' && role !== 'staf_admin') {
+        tampilkanToast('Anda tidak memiliki akses!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var dataPengajuan = getPengajuanAktivasi();
+    // Urutkan dari yang terbaru
+    dataPengajuan.sort(function(a,b) { return new Date(b.waktu) - new Date(a.waktu); });
+
+    var html = '<div class="page-header"><h2>Review Pengajuan Aktivasi</h2><p>Daftar pengajuan aktivasi akun dari user yang SUSPEN.</p></div>';
+
+    if (dataPengajuan.length === 0) {
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div></div>';
+    } else {
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr><th>No</th><th>User</th><th>Nomor HP</th><th>Keterangan</th><th>Status</th><th>Komentar</th><th>Waktu</th><th>Aksi</th></tr></thead><tbody>';
+        for (var i = 0; i < dataPengajuan.length; i++) {
+            var p = dataPengajuan[i];
+            var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
+            var aksi = '';
+            if (p.status === 'MENUNGGU') {
+                if (role === 'superadmin') {
+                    aksi = `
+                        <button class="button button-success button-extra-small" onclick="setujuiPengajuanAktivasi('${p.id}')"><i class="fas fa-check"></i> Setujui & Aktifkan</button>
+                        <button class="button button-danger button-extra-small" onclick="tolakPengajuanAktivasi('${p.id}')"><i class="fas fa-times"></i> Tolak</button>
+                    `;
+                } else {
+                    // Staf admin hanya bisa komentar
+                    aksi = `
+                        <input type="text" id="komentarStaf_${i}" class="form-input" placeholder="Tulis komentar..." style="width:150px; display:inline-block;">
+                        <button class="button button-primary button-extra-small" onclick="kirimKomentarStaf('${p.id}', ${i})"><i class="fas fa-comment"></i> Kirim</button>
+                    `;
+                }
+            } else {
+                aksi = '<span style="color:#888;">Selesai</span>';
+            }
+            html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.nomorHp) + '</td><td>' + escapeHtml(p.keterangan) + '</td><td><span class="badge ' + badge + '">' + p.status + '</span></td><td>' + escapeHtml(p.komentar || '-') + '</td><td>' + new Date(p.waktu).toLocaleString('id-ID') + '</td><td>' + aksi + '</td></tr>';
+        }
+        html += '</tbody></table></div></div>';
+    }
+    areaKonten.innerHTML = html;
+}
+
+// --- SuperAdmin: Setujui & Aktifkan ---
+function setujuiPengajuanAktivasi(id) {
+    if (!confirm('Setujui pengajuan ini dan aktifkan akun?')) return;
+    var dataPengajuan = getPengajuanAktivasi();
+    var targetUserId = null;
+    for (var i = 0; i < dataPengajuan.length; i++) {
+        if (dataPengajuan[i].id === id) {
+            targetUserId = dataPengajuan[i].userId;
+            break;
+        }
+    }
+    if (!targetUserId) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
+
+    // Update status pengajuan
+    updateStatusPengajuan(id, 'DISETUJUI', 'Disetujui oleh SuperAdmin');
+
+    // Aktifkan akun user
+    var dataAkun = getDataAkun();
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === targetUserId) {
+            dataAkun[i].status = 'AKTIF';
+            // Jika user adalah toko/ojek, set flag pro? (opsional)
+            break;
+        }
+    }
+    simpanDataAkun(dataAkun);
+
+    // Kirim notifikasi ke user
+    var user = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === targetUserId) { user = dataAkun[i]; break; }
+    }
+    if (user) {
+        simpanNotifikasi(targetUserId, 'Akun Diaktifkan', 'Pengajuan aktivasi Anda telah disetujui. Akun Anda kembali AKTIF.', 'success');
+        tampilkanToast('Pengajuan disetujui! Akun user telah diaktifkan.', 'success');
+    }
+    renderReviewPengajuan();
+}
+
+// --- SuperAdmin: Tolak ---
+function tolakPengajuanAktivasi(id) {
+    var alasan = prompt('Alasan penolakan (opsional):');
+    if (alasan === null) return;
+    alasan = alasan.trim() || 'Tidak ada alasan';
+    updateStatusPengajuan(id, 'DITOLAK', alasan);
+    tampilkanToast('Pengajuan ditolak.', 'success');
+    renderReviewPengajuan();
+}
+
+// --- Staf Admin: Kirim komentar ---
+function kirimKomentarStaf(id, index) {
+    var komentar = document.getElementById('komentarStaf_' + index).value.trim();
+    if (!komentar) { tampilkanToast('Tulis komentar terlebih dahulu!', 'warning'); return; }
+    updateStatusPengajuan(id, 'MENUNGGU', komentar);
+    tampilkanToast('Komentar terkirim!', 'success');
+    renderReviewPengajuan();
+}
+
+// ============================================================
+// AKHIR BLOK 8.55
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
