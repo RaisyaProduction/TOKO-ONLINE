@@ -796,6 +796,15 @@ function buatSidebarHTML(role) {
             { judul: 'Transaksi', items: [ { halaman: 'daftarBelanja', icon: 'fa-clipboard-list', label: 'Daftar Belanja' }, { halaman: 'riwayatBelanja', icon: 'fa-history', label: 'Riwayat Belanja' }, { halaman: 'pembayaran', icon: 'fa-credit-card', label: 'Pembayaran' }, { halaman: 'ulasanRating', icon: 'fa-star', label: 'Ulasan & Rating' } ] },
             { judul: 'Lainnya', items: [ { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }, { halaman: 'notifikasi', icon: 'fa-bell', label: 'Notifikasi' }, { halaman: 'hapusAkun', icon: 'fa-trash-alt', label: 'Hapus Akun' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' } ] }
         ],
+
+        // === KASIR (HANYA UNTUK TRANSAKSI & CEK STOK) ===
+        'kasir': [
+            { judul: 'Menu Kasir', items: [
+                { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
+                { halaman: 'cekStokKasir', icon: 'fa-boxes', label: 'Cek Stok Gudang' },
+                { halaman: 'cekLogStokKasir', icon: 'fa-history', label: 'Cek Log Stok' }
+            ] }
+        ],
         // === TOKO (FREE DEFAULT) ===
         'toko': [
             { judul: 'Menu Utama', items: [ { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' }, { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' }, { halaman: 'chat', icon: 'fa-comments', label: 'Chat' }, { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }, { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' }, { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' }, { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' }, { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' } ] },
@@ -826,7 +835,11 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                    if (paket.includes('paket2')) {
+                    base.push(
+                        { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' }
+                    );
+                }
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
@@ -859,7 +872,11 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                    if (paket.includes('paket2')) {
+                    base.push(
+                        { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' }
+                    );
+                }
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
@@ -892,7 +909,11 @@ function buatSidebarHTML(role) {
                             );
                         }
                     }
-                    if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                        if (paket.includes('paket2')) {
+                    base.push(
+                        { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' }
+                    );
+                }
                     if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
                     return base;
                 })()
