@@ -3093,6 +3093,268 @@
 <!-- ========================================================== -->
 <!-- AKHIR BAGIAN 38                                            -->
 <!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 39 - BLOK 8.2.3: JS: EVENT LOGIN SUBMIT             -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.3 - EVENT LOGIN SUBMIT                           */
+    /* ========================================================== */
+    
+    // -------- AMBIL ELEMEN FORM LOGIN --------
+    var loginForm = document.getElementById('loginForm');
+    
+    // -------- PASANG EVENT LISTENER --------
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            // -------- CEgah reload halaman --------
+            e.preventDefault();
+            
+            // -------- AMBIL INPUT USERNAME & PASSWORD --------
+            var username = document.getElementById('loginUsername').value.trim();
+            var password = document.getElementById('loginPassword').value.trim();
+            
+            // -------- AMBIL ELEMEN ERROR --------
+            var errorBox = document.getElementById('authenticationError');
+            var errorText = document.getElementById('authenticationErrorText');
+            
+            // -------- SEMBUNYIKAN ERROR SEBELUMNYA --------
+            if (errorBox) {
+                errorBox.style.display = 'none';
+            }
+
+            // ==========================================================
+            // BAGIAN 1: COBA LOGIN SEBAGAI USER BIASA
+            // ==========================================================
+            
+            // -------- AMBIL DATA SEMUA AKUN --------
+            var dataAkun = getDataAkun();
+            var user = null;
+            
+            // -------- CARI USER DENGAN USERNAME YANG SESUAI --------
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].username === username) {
+                    user = dataAkun[i];
+                    break;
+                }
+            }
+            
+            // -------- JIKA USER DITEMUKAN --------
+            if (user) {
+                // -------- MIGRASI PASSWORD JIKA PERLU --------
+                await migrasiPasswordJikaPerlu(username, password);
+                
+                // -------- AMBIL ULANG DATA AKUN (SETELAH MIGRASI) --------
+                dataAkun = getDataAkun();
+                for (var i = 0; i < dataAkun.length; i++) {
+                    if (dataAkun[i].username === username) {
+                        user = dataAkun[i];
+                        break;
+                    }
+                }
+                
+                // -------- VERIFIKASI PASSWORD --------
+                var cocok = await verifikasiPassword(password, user.password);
+                
+                if (cocok) {
+                    // -------- CEK STATUS AKUN --------
+                    if (user.status !== 'AKTIF' && user.role !== 'superadmin') {
+                        if (errorBox) {
+                            errorBox.style.display = 'block';
+                            errorText.textContent = 'Akun belum aktif. Menunggu verifikasi admin.';
+                        }
+                        return;
+                    }
+                    
+                    // -------- SIMPAN DATA USER KE SESSION --------
+                    localStorage.setItem('2r_user', JSON.stringify(user));
+                    localStorage.setItem('2r_user_role', user.role);
+                    
+                    // -------- TAMPILKAN DASHBOARD --------
+                    tampilkanDashboard(user);
+                    return;
+                }
+            }
+
+            // ==========================================================
+            // BAGIAN 2: COBA LOGIN SEBAGAI KASIR
+            // ==========================================================
+            
+            // -------- VALIDASI LOGIN KASIR --------
+            var kasir = await validasiLoginKasir(username, password);
+            if (kasir) {
+                if (kasir.status === 'Aktif') {
+                    // -------- SIMPAN DATA KASIR KE SESSION --------
+                    localStorage.setItem('2r_mode_kasir', JSON.stringify(kasir));
+                    localStorage.setItem('2r_user_original_role', 'toko');
+                    localStorage.setItem('2r_user_role', 'kasir');
+                    
+                    tampilkanToast('Login sebagai kasir berhasil!', 'success');
+                    tampilkanDashboardKasir(kasir);
+                    return;
+                } else {
+                    if (errorBox) {
+                        errorBox.style.display = 'block';
+                        errorText.textContent = 'Kasir tidak aktif!';
+                    }
+                    return;
+                }
+            }
+
+            // ==========================================================
+            // BAGIAN 3: JIKA SEMUA GAGAL
+            // ==========================================================
+            
+            if (errorBox) {
+                errorBox.style.display = 'block';
+                errorText.textContent = 'Username atau password salah!';
+            }
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.3                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 39                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 40 - BLOK 8.2.4: JS: EVENT REGISTER SUBMIT          -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.4 - EVENT REGISTER SUBMIT                        */
+    /* ========================================================== */
+    
+    // -------- AMBIL ELEMEN FORM REGISTER --------
+    var registerForm = document.getElementById('registerForm');
+    
+    // -------- PASANG EVENT LISTENER --------
+    if (registerForm) {
+        registerForm.addEventListener('submit', async function(e) {
+            // -------- CEgah reload halaman --------
+            e.preventDefault();
+            
+            // -------- AMBIL INPUT DARI FORM --------
+            var role = document.getElementById('registerRole').value;
+            var username = document.getElementById('registerUsername').value.trim();
+            var password = document.getElementById('registerPassword').value.trim();
+            var nama = document.getElementById('registerNama').value.trim();
+            
+            // ==========================================================
+            // BAGIAN 1: VALIDASI INPUT
+            // ==========================================================
+            
+            // -------- CEK APAKAH SEMUA DATA TERISI --------
+            if (!role || !username || !password || !nama) {
+                tampilkanToast('Data belum lengkap!', 'warning');
+                return;
+            }
+            
+            // -------- CEK MINIMAL KARAKTER USERNAME --------
+            if (username.length < 4) {
+                tampilkanToast('Username minimal 4 karakter!', 'warning');
+                return;
+            }
+            
+            // -------- CEK MINIMAL KARAKTER PASSWORD --------
+            if (password.length < 6) {
+                tampilkanToast('Password minimal 6 karakter!', 'warning');
+                return;
+            }
+            
+            // ==========================================================
+            // BAGIAN 2: CEK KETERSEDIAAN USERNAME
+            // ==========================================================
+            
+            // -------- AMBIL DATA SEMUA AKUN --------
+            var dataAkun = getDataAkun();
+            
+            // -------- CEK APAKAH USERNAME SUDAH DIGUNAKAN --------
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].username === username) {
+                    tampilkanToast('Username sudah digunakan!', 'error');
+                    return;
+                }
+            }
+            
+            // ==========================================================
+            // BAGIAN 3: TENTUKAN STATUS AKUN
+            // ==========================================================
+            
+            // Akun toko dan ojek membutuhkan verifikasi admin, yang lain langsung aktif
+            var status = (role === 'toko' || role === 'ojek') ? 'NONAKTIF (Menunggu Verifikasi)' : 'AKTIF';
+            
+            // ==========================================================
+            // BAGIAN 4: HASH PASSWORD
+            // ==========================================================
+            
+            var hash = await hashPassword(password);
+            
+            // ==========================================================
+            // BAGIAN 5: BUAT OBJEK AKUN BARU
+            // ==========================================================
+            
+            var akunBaru = {
+                id: generateId(role),              // ID otomatis berdasarkan role
+                role: role,                        // Role yang dipilih
+                username: username,                // Username
+                password: hash,                    // Password yang sudah di-hash
+                nama: nama,                        // Nama lengkap
+                email: '',                         // Belum diisi saat register
+                nomorHp: '',                       // Belum diisi saat register
+                alamat: '',                        // Belum diisi saat register
+                namaBank: '',                      // Belum diisi saat register
+                nomorRekening: '',                 // Belum diisi saat register
+                pemilikRekening: '',               // Belum diisi saat register
+                ktp: '',                           // Belum diupload saat register
+                status: status,                    // Status akun (AKTIF atau menunggu verifikasi)
+                // -------- TAMBAHAN LOKASI (dari form register) --------
+                latitude: document.getElementById('registerLat').value || '',
+                longitude: document.getElementById('registerLng').value || '',
+                alamatLokasi: document.getElementById('registerLokasi').value || '',
+                // ---------------------------------------------------------
+                waktuRegistrasi: new Date().toISOString()
+            };
+            
+            // ==========================================================
+            // BAGIAN 6: SIMPAN AKUN BARU
+            // ==========================================================
+            
+            dataAkun.push(akunBaru);
+            simpanDataAkun(dataAkun);
+            
+            // ==========================================================
+            // BAGIAN 7: KOSONGKAN FORM & BERI NOTIFIKASI
+            // ==========================================================
+            
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerNama').value = '';
+            document.getElementById('registerLokasi').value = '';
+            document.getElementById('registerLat').value = '';
+            document.getElementById('registerLng').value = '';
+            
+            // Tampilkan notifikasi sukses
+            tampilkanToast('Akun berhasil dibuat! ID: ' + akunBaru.id + '\nStatus: ' + status, 'success');
+            
+            // -------- KEMBALIKAN KE FORM LOGIN --------
+            toggleForm('login');
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.4                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 40                                            -->
+<!-- ========================================================== -->
 
 </body>
 </html>
