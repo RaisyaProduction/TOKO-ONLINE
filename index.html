@@ -12236,76 +12236,107 @@ document.addEventListener('DOMContentLoaded', function() {
 // AKHIR BLOK 8.60
 // ============================================================
     // ============================================================
-// BLOK 8.61 - DETEKSI ALAMAT OTOMATIS & UPDATE LOKASI
 // ============================================================
-
-function deteksiDanSimpanLokasi(userId, callback) {
-    if (!navigator.geolocation) {
-        if (callback) callback('Browser tidak mendukung geolokasi.');
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (VERSI LANDING PAGE HP)
+// ============================================================
+function tampilkanDashboard(user) {
+    if (!user || !user.nama) {
+        localStorage.removeItem('2r_user');
+        localStorage.removeItem('2r_user_role');
+        location.reload();
         return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-        function(pos) {
-            var lat = pos.coords.latitude;
-            var lng = pos.coords.longitude;
-
-            // Coba reverse geocoding ke alamat
-            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    var alamat = data.display_name || 'Lokasi tidak diketahui';
-
-                    // Simpan ke data akun
-                    var dataAkun = getDataAkun();
-                    for (var i = 0; i < dataAkun.length; i++) {
-                        if (dataAkun[i].id === userId) {
-                            dataAkun[i].latitude = lat;
-                            dataAkun[i].longitude = lng;
-                            dataAkun[i].alamatLokasi = alamat;
-                            dataAkun[i].lastUpdateLokasi = new Date().toISOString();
-                            break;
-                        }
-                    }
-                    simpanDataAkun(dataAkun);
-
-                    // Jika user yang sedang login, update juga di session
-                    var userLogin = JSON.parse(localStorage.getItem('2r_user') || '{}');
-                    if (userLogin.id === userId) {
-                        userLogin.latitude = lat;
-                        userLogin.longitude = lng;
-                        userLogin.alamatLokasi = alamat;
-                        localStorage.setItem('2r_user', JSON.stringify(userLogin));
-                    }
-
-                    tampilkanToast('Lokasi terbaru Anda telah diperbarui!', 'success');
-                    if (callback) callback(null, { lat: lat, lng: lng, alamat: alamat });
-                })
-                .catch(function() {
-                    // Jika reverse geocoding gagal, tetap simpan koordinat
-                    var dataAkun = getDataAkun();
-                    for (var i = 0; i < dataAkun.length; i++) {
-                        if (dataAkun[i].id === userId) {
-                            dataAkun[i].latitude = lat;
-                            dataAkun[i].longitude = lng;
-                            dataAkun[i].alamatLokasi = 'Lat: ' + lat + ', Lng: ' + lng;
-                            dataAkun[i].lastUpdateLokasi = new Date().toISOString();
-                            break;
-                        }
-                    }
-                    simpanDataAkun(dataAkun);
-                    tampilkanToast('Lokasi diperbarui (tanpa alamat).', 'info');
-                    if (callback) callback(null, { lat: lat, lng: lng, alamat: null });
-                });
-        },
-        function(err) {
-            tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
-            if (callback) callback('Gagal: ' + err.message);
+    var dataAkun = getDataAkun();
+    var userData = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) {
+            userData = dataAkun[i];
+            break;
         }
-    );
+    }
+
+    // --- PENANGANAN AKUN SUSPEN ---
+    if (userData && userData.status === 'SUSPEN') {
+        document.getElementById('pageAuthentication').style.display = 'none';
+        document.getElementById('pageDashboard').style.display = 'block';
+        document.getElementById('userNama').textContent = user.nama;
+        document.getElementById('roleBadge').textContent = user.role + ' (SUSPEN)';
+
+        var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
+        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
+        document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
+        document.getElementById('mainContent').innerHTML = '';
+        renderStatusAkun();
+        return;
+    }
+
+    // --- SISTEM NORMAL ---
+    document.getElementById('pageAuthentication').style.display = 'none';
+    document.getElementById('pageDashboard').style.display = 'block';
+    document.getElementById('userNama').textContent = user.nama;
+
+    var daftarRole = {
+        superadmin: 'SuperAdmin', 
+        customer: 'Customer', 
+        toko: 'Toko', 
+        ojek: 'Ojek',
+        pedagang: 'Pedagang Pasar', 
+        staf_admin: 'Staf Admin', 
+        customer_service: 'Customer Service',
+        staf_owner_toko: 'Staf Owner Toko', 
+        staf_owner_ojek: 'Staf Owner Ojek', 
+        sponsor: 'Sponsor'
+    };
+    document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
+
+    // --- LOAD SIDEBAR SESUAI ROLE ---
+    document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
+    setupNavigasiSidebar();
+
+    // --- SETUP FOTO PROFIL ---
+    var avatar = document.getElementById('userAvatar');
+    var placeholder = document.getElementById('userAvatarPlaceholder');
+    if (avatar && placeholder) {
+        if (user.fotoProfil) {
+            avatar.src = user.fotoProfil;
+            avatar.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else {
+            avatar.style.display = 'none';
+            placeholder.style.display = 'block';
+        }
+    }
+
+    // --- DETEKSI LOKASI OTOMATIS ---
+    if (user.role !== 'superadmin' && typeof deteksiDanSimpanLokasi === 'function') {
+        deteksiDanSimpanLokasi(user.id, function(err) {});
+    }
+
+    // --- INISIALISASI SISTEM TAGIHAN ---
+    if (typeof inisialisasiSistemTagihan === 'function') {
+        inisialisasiSistemTagihan();
+    }
+
+    // ============================================
+    // HALAMAN DEFAULT: LANDING PAGE ORANYE
+    // ============================================
+    var areaKonten = document.getElementById('mainContent');
+    
+    // Reset style agar tampilan HP fullscreen tanpa margin sidebar
+    areaKonten.style.marginLeft = '0';
+    areaKonten.style.padding = '0';
+    areaKonten.style.background = '#e65c00'; // Background oranye
+
+    // Panggil Landing Page
+    if (typeof renderDashboardHome === 'function') {
+        renderDashboardHome();
+    } else {
+        areaKonten.innerHTML = '<p style="color:white; padding:20px;">Halaman Utama belum siap. Pastikan BLOK 8.66 sudah ditambahkan.</p>';
+    }
 }
 // ============================================================
-// AKHIR BLOK 8.61
+// AKHIR BLOK 8.6.1
 // ============================================================
 // ============================================================
 // BLOK 8.63 - PENATAAN PRODUK (SuperAdmin)
