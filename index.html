@@ -941,13 +941,108 @@
 <!-- AKHIR BAGIAN 10                                            -->
 <!-- ========================================================== -->
 <!-- ========================================================== -->
-<!-- BAGIAN 11 - BLOK 2.1.3: HTML FORM LOGIN                    -->
+<!-- BAGIAN 11 - BLOK 2.1.3 & BAGIAN 12 - BLOK 2.1.4: LOGIN & REGISTER -->
 <!-- ========================================================== -->
+
 <div id="pageAuthentication" class="page-content hidden">
-    ... (hanya loginForm) ...
+    <div class="authentication-wrapper">
+        <div class="authentication-box">
+
+            <!-- ===== LOGO & JUDUL ===== -->
+            <div class="authentication-logo">
+                <i class="fas fa-store-alt"></i>
+                <h1>Toko Online <span style="color:#FF6B00;">2R</span></h1>
+                <button onclick="kembaliKeLanding()" style="background:none; border:none; color:#FF6B00; cursor:pointer; font-size:14px; margin-top:5px;">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </button>
+            </div>
+            <!-- ===== AKHIR LOGO ===== -->
+
+            <!-- ===== AREA ERROR ===== -->
+            <div class="authentication-error" id="authenticationError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="authenticationErrorText"></span>
+            </div>
+            <!-- ===== AKHIR AREA ERROR ===== -->
+
+            <!-- ===== BLOK 2.1.3 - FORM LOGIN ===== -->
+            <form class="authentication-form" id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="loginUsername" placeholder="Masukkan username" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="Masukkan password" required>
+                    </div>
+                </div>
+                <button type="submit" class="button-submit">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+                <div style="text-align:right; margin-top:5px;">
+                    <a id="tombolLupaPassword" style="color:#FF6B00; cursor:pointer; font-size:13px; font-weight:600;">Lupa Password?</a>
+                </div>
+                <div class="authentication-footer">
+                    Belum punya akun? <a onclick="toggleForm('register')">Daftar di sini</a>
+                </div>
+            </form>
+            <!-- ===== AKHIR BLOK 2.1.3 ===== -->
+
+            <!-- ===== BLOK 2.1.4 - FORM REGISTER ===== -->
+            <form class="authentication-form hidden-form" id="registerForm">
+                <div class="form-group">
+                    <label>Pilih Role</label>
+                    <div class="input-group">
+                        <i class="fas fa-user-tag"></i>
+                        <select id="registerRole">
+                            <option value="customer">Customer</option>
+                            <option value="toko">Toko</option>
+                            <option value="ojek">Ojek</option>
+                            <option value="pedagang">Pedagang Pasar</option>
+                            <option value="codseller">COD Seller</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="registerUsername" placeholder="Buat username" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="registerPassword" placeholder="Buat password" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="registerNama" placeholder="Nama lengkap Anda" required>
+                    </div>
+                </div>
+                <button type="submit" class="button-submit">
+                    <i class="fas fa-user-plus"></i> Daftar
+                </button>
+                <div class="authentication-footer">
+                    Sudah punya akun? <a onclick="toggleForm('login')">Login di sini</a>
+                </div>
+            </form>
+            <!-- ===== AKHIR BLOK 2.1.4 ===== -->
+
+        </div>
+    </div>
 </div>
 <!-- ========================================================== -->
-<!-- AKHIR BAGIAN 11                                            -->
+<!-- AKHIR BAGIAN 11 & 12                                        -->
 <!-- ========================================================== -->
 
 <div id="pageAuthentication" class="page-content hidden">
