@@ -4060,7 +4060,8 @@ function renderPapanInformasi() {
 <!-- ===== BLOK 8.6 - JS_INIT_UTAMA (DOMContentLoaded) ===== -->
 <script>
 // ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (HALAMAN DEFAULT = KATALOG)
+// ============================================================
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (DEFAULT KATALOG - FINAL)
 // ============================================================
 function tampilkanDashboard(user) {
     if (!user || !user.nama) {
@@ -4126,14 +4127,26 @@ function tampilkanDashboard(user) {
     // --- DETEKSI LOKASI OTOMATIS ---
     if (user.role !== 'superadmin' && typeof deteksiDanSimpanLokasi === 'function') {
         deteksiDanSimpanLokasi(user.id, function(err) {
-            // Abaikan error lokasi, aplikasi tetap jalan
+            // Abaikan error lokasi
         });
     }
 
     inisialisasiSistemTagihan();
 
-    // === HALAMAN DEFAULT SETELAH LOGIN ===
-    navigasiKeHalaman('katalogProduk');
+    // --- HALAMAN DEFAULT: LANGSUNG RENDER KATALOG PRODUK ---
+    // Cek apakah fungsi renderSemuaProduk ada
+    if (typeof renderSemuaProduk === 'function') {
+        renderSemuaProduk(); // Langsung render ke mainContent
+    } else {
+        // Jika fungsi belum ada, tampilkan placeholder
+        document.getElementById('mainContent').innerHTML = `
+        <div class="card" style="padding:50px; text-align:center;">
+            <i class="fas fa-boxes" style="font-size:60px; color:#ddd;"></i>
+            <h3>Katalog Produk Belum Siap</h3>
+            <p style="color:#888;">Fungsi renderSemuaProduk belum didefinisikan. Pastikan BLOK 8.57 sudah ditempel.</p>
+        </div>
+        `;
+    }
 }
 // ============================================================
 // AKHIR BLOK 8.6.1
