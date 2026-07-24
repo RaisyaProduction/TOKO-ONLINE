@@ -23,12 +23,13 @@
         <div class="authentication-box">
             
             <!-- ===== BLOK 2.1.1 - LOGO & JUDUL ===== -->
-            <div class="authentication-logo">
-                <i class="fas fa-store-alt"></i>
-                <h1>Toko Online <span style="color:#FF6B00;">2R</span></h1>
-                <p>Platform Belanja & Layanan Serba Ada</p>
-            </div>
-            <!-- ===== AKHIR BLOK 2.1.1 ===== -->
+<div class="authentication-logo">
+    <i class="fas fa-store-alt" id="defaultLoginIcon" style="font-size:45px; color:var(--primary); margin-bottom:10px;"></i>
+    <img id="customLoginLogo" src="" style="display:none; max-height:80px; margin-bottom:10px; object-fit:contain;">
+    <h1 id="appNameLogin">Toko Online <span id="appSubNameLogin" style="color:#FF6B00;">2R</span></h1>
+    <p>Platform Belanja & Layanan Serba Ada</p>
+</div>
+<!-- ===== AKHIR BLOK 2.1.1 ===== -->
 
             <!-- ===== BLOK 2.1.2 - AREA PESAN ERROR ===== -->
             <div class="authentication-error" id="authenticationError">
@@ -187,11 +188,16 @@
 <!-- ===== BLOK 2.2 - HTML_DASHBOARD_UTAMA ===== -->
 <div id="pageDashboard" class="page-dashboard">
     
-<!-- ===== BLOK 2.2.1 - NAVBAR (LENGKAP DENGAN JAM) ===== -->
+<!-- ===== BLOK 2.2.1 - NAVBAR (LENGKAP DENGAN JAM & BRANDING) ===== -->
 <nav class="navbar">
     <div class="navbar-brand">
         <button id="menuToggle"><i class="fas fa-bars"></i></button>
-        <i class="fas fa-store-alt"></i> Toko Online 2R
+        
+        <!-- Logo Navbar untuk Branding -->
+        <i class="fas fa-store-alt" id="defaultNavIcon" style="color:var(--primary);"></i>
+        <img id="customNavLogo" src="" style="display:none; max-height:40px; vertical-align:middle; margin-right:8px; object-fit:contain;">
+        
+        <span id="appNameNav">Toko Online 2R</span>
     </div>
     <div class="navbar-user">
         <!-- Jam & Tanggal -->
@@ -845,6 +851,7 @@ function buatSidebarHTML(role) {
                     { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' },
                     { halaman: 'manajemenKatalog', icon: 'fa-tools', label: 'Manajemen Katalog' },
                     { halaman: 'penataanProduk', icon: 'fa-edit', label: 'Penataan Produk' }
+                    { halaman: 'pengaturanBranding', icon: 'fa-paint-brush', label: 'Pengaturan Logo & Branding' }
                 ]
             }
         ],
@@ -1286,6 +1293,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'katalogProduk') renderSemuaProduk();
     else if (namaHalaman === 'manajemenKatalog') renderManajemenKatalog();
     else if (namaHalaman === 'penataanProduk') renderPenataanProduk();
+    else if (namaHalaman === 'pengaturanBranding') renderPengaturanBranding();
     else renderPlaceholder(namaHalaman);
 }
 // ============================================================
@@ -12322,6 +12330,169 @@ function resetUrutanProduk() {
 }
 // ============================================================
 // AKHIR BLOK 8.63
+// ============================================================
+// ============================================================
+// BLOK 8.64 - PENGATURAN BRANDING (SuperAdmin)
+// ============================================================
+
+// --- Fungsi Render Halaman Pengaturan ---
+function renderPengaturanBranding() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var branding = JSON.parse(localStorage.getItem('2r_branding') || '{"nama":"Toko Online 2R","subNama":"2R","logo":""}');
+
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-paint-brush" style="color:#FF6B00;"></i> Pengaturan Logo & Branding</h2>
+        <p>Unggah logo kustom Anda dan ganti nama toko untuk tampilan aplikasi (Login & Navbar).</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Logo Aplikasi</div>
+        <div class="grid-2">
+            <div>
+                <label class="form-label">Upload Logo Baru</label>
+                <input type="file" id="inputBrandingLogo" accept=".jpg,.jpeg,.png,.svg" style="display:none;">
+                <button class="button button-primary button-small" onclick="document.getElementById('inputBrandingLogo').click();"><i class="fas fa-upload"></i> Pilih Gambar</button>
+                <span style="font-size:12px; color:#888; margin-left:10px;">Format: JPG/PNG/SVG (Maks 2MB)</span>
+                
+                <div style="margin-top:15px;">
+                    <strong>Preview Logo Saat Ini:</strong><br>
+                    <div style="background:#f8f9fa; padding:15px; border:2px dashed #ddd; border-radius:8px; text-align:center; min-height:80px; display:flex; align-items:center; justify-content:center;">
+                        ${branding.logo ? `<img src="${branding.logo}" style="max-height:80px; object-fit:contain;">` : '<span style="color:#888;">Belum ada logo custom (akan menggunakan ikon default)</span>'}
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; justify-content:flex-end;">
+                <button class="button button-danger" onclick="hapusBrandingLogo()"><i class="fas fa-trash"></i> Hapus Logo Custom</button>
+                <span style="font-size:12px; color:#888;">* Menghapus akan mengembalikan ke ikon toko default.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Nama Aplikasi</div>
+        <div class="grid-2">
+            <div>
+                <label class="form-label">Nama Utama (Toko Online)</label>
+                <input type="text" id="editBrandingNama" class="form-input" value="${escapeHtml(branding.nama)}" placeholder="Toko Online 2R">
+            </div>
+            <div>
+                <label class="form-label">Sub Nama / Tagline (2R)</label>
+                <input type="text" id="editBrandingSubNama" class="form-input" value="${escapeHtml(branding.subNama)}" placeholder="2R">
+            </div>
+        </div>
+        <button class="button button-primary margin-top-10" onclick="simpanBranding()"><i class="fas fa-save"></i> Simpan Perubahan</button>
+    </div>
+    `;
+
+    areaKonten.innerHTML = html;
+
+    // Event listener untuk upload gambar (dengan kompresi)
+    setTimeout(function() {
+        var inputLogo = document.getElementById('inputBrandingLogo');
+        if (inputLogo) {
+            inputLogo.onchange = async function(e) {
+                var file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) {
+                    tampilkanToast('Ukuran gambar maksimal 2MB!', 'error');
+                    return;
+                }
+                tampilkanToast('Sedang mengompres gambar...', 'info');
+                var base64 = await compressImage(file, 300, 0.7);
+                localStorage.setItem('2r_branding_temp_logo', base64);
+                tampilkanToast('Gambar siap disimpan! Klik tombol Simpan Perubahan.', 'success');
+                renderPengaturanBranding();
+            };
+        }
+    }, 200);
+}
+
+// --- Fungsi Simpan Branding ---
+function simpanBranding() {
+    var nama = document.getElementById('editBrandingNama').value.trim();
+    var subNama = document.getElementById('editBrandingSubNama').value.trim();
+    var logo = localStorage.getItem('2r_branding_temp_logo') || '';
+
+    if (!nama) { tampilkanToast('Nama aplikasi wajib diisi!', 'warning'); return; }
+
+    var branding = {
+        nama: nama,
+        subNama: subNama || '2R',
+        logo: logo
+    };
+    localStorage.setItem('2r_branding', JSON.stringify(branding));
+    localStorage.removeItem('2r_branding_temp_logo');
+
+    // Update UI secara langsung
+    updateBrandingUI();
+
+    tampilkanToast('Branding berhasil diperbarui!', 'success');
+    renderPengaturanBranding();
+}
+
+// --- Fungsi Hapus Logo ---
+function hapusBrandingLogo() {
+    if (!confirm('Yakin ingin menghapus logo custom?')) return;
+    var branding = JSON.parse(localStorage.getItem('2r_branding') || '{"nama":"Toko Online 2R","subNama":"2R","logo":""}');
+    branding.logo = '';
+    localStorage.setItem('2r_branding', JSON.stringify(branding));
+    localStorage.removeItem('2r_branding_temp_logo');
+    updateBrandingUI();
+    renderPengaturanBranding();
+    tampilkanToast('Logo berhasil dihapus, kembali ke ikon default.', 'success');
+}
+
+// --- Fungsi Update UI (Dipanggil saat Login / Render Dashboard) ---
+function updateBrandingUI() {
+    var branding = JSON.parse(localStorage.getItem('2r_branding') || '{"nama":"Toko Online 2R","subNama":"2R","logo":""}');
+    
+    // Ambil elemen
+    var defaultLoginIcon = document.getElementById('defaultLoginIcon');
+    var customLoginLogo = document.getElementById('customLoginLogo');
+    var appNameLogin = document.getElementById('appNameLogin');
+    var appSubNameLogin = document.getElementById('appSubNameLogin');
+
+    var defaultNavIcon = document.getElementById('defaultNavIcon');
+    var customNavLogo = document.getElementById('customNavLogo');
+    var appNameNav = document.getElementById('appNameNav');
+
+    // --- Update Nama Teks (Login & Navbar) ---
+    if (appNameLogin) appNameLogin.innerHTML = branding.nama;
+    if (appSubNameLogin) appSubNameLogin.textContent = branding.subNama;
+    if (appNameNav) appNameNav.textContent = branding.nama + ' ' + branding.subNama;
+
+    // --- Update Logo (Login Page) ---
+    if (branding.logo) {
+        if (defaultLoginIcon) defaultLoginIcon.style.display = 'none';
+        if (customLoginLogo) {
+            customLoginLogo.src = branding.logo;
+            customLoginLogo.style.display = 'inline-block';
+        }
+    } else {
+        if (defaultLoginIcon) defaultLoginIcon.style.display = 'inline-block';
+        if (customLoginLogo) customLoginLogo.style.display = 'none';
+    }
+
+    // --- Update Logo (Navbar Dashboard) ---
+    if (branding.logo) {
+        if (defaultNavIcon) defaultNavIcon.style.display = 'none';
+        if (customNavLogo) {
+            customNavLogo.src = branding.logo;
+            customNavLogo.style.display = 'inline-block';
+        }
+    } else {
+        if (defaultNavIcon) defaultNavIcon.style.display = 'inline-block';
+        if (customNavLogo) customNavLogo.style.display = 'none';
+    }
+}
+// ============================================================
+// AKHIR BLOK 8.64
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
