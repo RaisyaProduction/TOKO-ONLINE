@@ -11617,6 +11617,95 @@ function filterKatalog() {
 // ============================================================
 // AKHIR BLOK 8.57
 // ============================================================
+function filterKatalog() {
+    var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
+    var kategori = document.getElementById('filterKategoriKatalog').value;
+    var role = document.getElementById('filterRoleKatalog').value;
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    // --- AMBIL PENGATURAN (Agar urutan tetap berlaku saat filter) ---
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    var fitur = pengaturan.fitur || [];
+
+    // --- FILTER DATA ---
+    var filtered = semuaProduk.filter(function(p) {
+        if (search && !p.judul.toLowerCase().includes(search)) return false;
+        if (kategori && p.kategori !== kategori) return false;
+        if (role) {
+            var pemilik = null;
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === p.ownerId) {
+                    pemilik = dataAkun[i];
+                    break;
+                }
+            }
+            if (!pemilik || pemilik.role !== role) return false;
+        }
+        return true;
+    });
+
+    // --- URUTKAN HASIL FILTER SESUAI PENGATURAN ---
+    if (pengaturan.urutan && pengaturan.urutan.length > 0) {
+        var urutanTersimpan = pengaturan.urutan;
+        filtered.sort(function(a, b) {
+            var posisiA = urutanTersimpan.indexOf(a.id);
+            var posisiB = urutanTersimpan.indexOf(b.id);
+            if (posisiA === -1) posisiA = 9999;
+            if (posisiB === -1) posisiB = 9999;
+            return posisiA - posisiB;
+        });
+    }
+
+    document.getElementById('totalKatalog').textContent = filtered.length;
+
+    var grid = document.getElementById('gridKatalog');
+    var html = '';
+    if (filtered.length === 0) {
+        html = '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk yang cocok</h3></div></div>';
+    } else {
+        var ukuran = pengaturan.ukuran || 'sedang';
+        var styleUkuran = '';
+        if (ukuran === 'kecil') styleUkuran = 'max-height:150px;';
+        else if (ukuran === 'besar') styleUkuran = 'max-height:350px;';
+        else styleUkuran = 'max-height:250px;';
+
+        for (var i = 0; i < filtered.length; i++) {
+            var p = filtered[i];
+            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+            var pemilik = null;
+            for (var j = 0; j < dataAkun.length; j++) {
+                if (dataAkun[j].id === p.ownerId) {
+                    pemilik = dataAkun[j];
+                    break;
+                }
+            }
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var badgeUnggulan = fitur.includes(p.id) ? '<span class="badge badge-success" style="position:absolute; top:5px; right:5px;">⭐ Unggulan</span>' : '';
+
+            html += `
+            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+                ${badgeUnggulan}
+                <div>
+                    <img src="${gambar}" style="width:100%; ${styleUkuran} object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
+                    <h4 style="font-size:15px; margin:5px 0;">${escapeHtml(p.judul)}</h4>
+                    <p style="color:#FF6B00; font-weight:600;">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <p style="font-size:12px; color:#888;">${escapeHtml(p.kategori)}</p>
+                    <p style="font-size:12px; color:#555;">Dari: ${escapeHtml(namaPemilik)}</p>
+                </div>
+                <div style="margin-top:10px;">
+                    <button class="button button-primary button-small" onclick="tambahKeKeranjang('${p.id}', '${escapeHtml(p.judul)}', ${p.harga})"><i class="fas fa-cart-plus"></i> Beli</button>
+                </div>
+            </div>
+            `;
+        }
+    }
+    grid.innerHTML = html;
+}
+// ============================================================
+// AKHIR BLOK 8.57
+// ============================================================
 // ============================================================
 // BLOK 8.58 - INISIALISASI DATA DEMO LENGKAP
 // ============================================================
