@@ -4064,7 +4064,7 @@ function renderPapanInformasi() {
 <script>
 // ============================================================
 // ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (DEFAULT KATALOG)
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (VERSI LENGKAP - DEFAULT KATALOG)
 // ============================================================
 function tampilkanDashboard(user) {
     if (!user || !user.nama) {
@@ -4083,7 +4083,7 @@ function tampilkanDashboard(user) {
         }
     }
 
-    // --- PENANGANAN AKUN SUSPEN ---
+    // --- PENANGANAN AKUN SUSPEN (Jika status akun SUSPEN, alihkan ke halaman bayar tagihan) ---
     if (userData && userData.status === 'SUSPEN') {
         document.getElementById('pageAuthentication').style.display = 'none';
         document.getElementById('pageDashboard').style.display = 'block';
@@ -4091,18 +4091,19 @@ function tampilkanDashboard(user) {
         document.getElementById('roleBadge').textContent = user.role + ' (SUSPEN)';
 
         var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
-        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Ajukan Pengaktifan</span></div>';
+        menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
         document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
         document.getElementById('mainContent').innerHTML = '';
-        renderAjukanPengaktifan();
+        renderStatusAkun(); // Tampilkan menu status akun untuk pembayaran
         return;
     }
 
-    // --- SISTEM NORMAL ---
+    // --- SISTEM NORMAL (Jika akun AKTIF) ---
     document.getElementById('pageAuthentication').style.display = 'none';
     document.getElementById('pageDashboard').style.display = 'block';
     document.getElementById('userNama').textContent = user.nama;
 
+    // --- SETUP ROLE & NAVBAR ---
     var daftarRole = {
         superadmin: 'SuperAdmin', customer: 'Customer', toko: 'Toko', ojek: 'Ojek',
         pedagang: 'Pedagang Pasar', staf_admin: 'Staf Admin', customer_service: 'Customer Service',
@@ -4110,10 +4111,11 @@ function tampilkanDashboard(user) {
     };
     document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
 
+    // --- LOAD SIDEBAR SESUAI ROLE ---
     document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
     setupNavigasiSidebar();
 
-    // --- FITUR FOTO PROFIL ---
+    // --- SETUP FOTO PROFIL ---
     var avatar = document.getElementById('userAvatar');
     var placeholder = document.getElementById('userAvatarPlaceholder');
     if (avatar && placeholder) {
@@ -4127,21 +4129,25 @@ function tampilkanDashboard(user) {
         }
     }
 
-    // --- DETEKSI LOKASI OTOMATIS ---
+    // --- DETEKSI LOKASI OTOMATIS (Untuk Customer & Penjual) ---
     if (user.role !== 'superadmin' && typeof deteksiDanSimpanLokasi === 'function') {
         deteksiDanSimpanLokasi(user.id, function(err) {
-            // Abaikan error lokasi
+            // Abaikan error jika lokasi gagal diambil
         });
     }
 
-    inisialisasiSistemTagihan();
+    // --- INISIALISASI SISTEM TAGIHAN (Cek tagihan bulanan) ---
+    if (typeof inisialisasiSistemTagihan === 'function') {
+        inisialisasiSistemTagihan();
+    }
 
-    // --- HALAMAN DEFAULT: KATALOG PRODUK UNTUK SEMUA ROLE ---
-    // Pastikan fungsi renderSemuaProduk tersedia
+    // ============================================
+    // HALAMAN DEFAULT: KATALOG PRODUK UNTUK SEMUA ROLE
+    // ============================================
     if (typeof renderSemuaProduk === 'function') {
-        renderSemuaProduk(); // Tampilkan katalog
+        renderSemuaProduk(); // Panggil fungsi Katalog Produk
     } else {
-        // Jika fungsi belum ada, tampilkan placeholder
+        // Fallback jika fungsi katalog belum didefinisikan
         document.getElementById('mainContent').innerHTML = `
         <div class="card" style="padding:50px; text-align:center;">
             <i class="fas fa-boxes" style="font-size:60px; color:#ddd;"></i>
@@ -11408,7 +11414,7 @@ function ambilLokasiPengajuan() {
 // ============================================================
 // ============================================================
 // ============================================================
-// BLOK 8.57 - RENDER KATALOG PRODUK (DENGAN PENGATURAN URUTAN, UKURAN, UNGGULAN)
+// BLOK 8.57 - RENDER KATALOG PRODUK (LENGKAP DENGAN PENGATURAN)
 // ============================================================
 
 function renderSemuaProduk() {
@@ -11416,24 +11422,26 @@ function renderSemuaProduk() {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
-    // --- Ambil pengaturan katalog ---
+    // --- 1. AMBIL PENGATURAN DARI LOCALSTORAGE (Simpanan dari Menu Penataan Produk) ---
     var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
     var ukuran = pengaturan.ukuran || 'sedang';
     var fitur = pengaturan.fitur || [];
 
-    // Urutkan produk sesuai urutan yang disimpan (jika ada)
+    // --- 2. URUTKAN PRODUK BERDASARKAN URUTAN YANG TERSIMPAN ---
     if (pengaturan.urutan && pengaturan.urutan.length > 0) {
+        var urutanTersimpan = pengaturan.urutan;
         semuaProduk.sort(function(a, b) {
-            var idxA = pengaturan.urutan.indexOf(a.id);
-            var idxB = pengaturan.urutan.indexOf(b.id);
-            if (idxA === -1) idxA = 9999;
-            if (idxB === -1) idxB = 9999;
-            return idxA - idxB;
+            // Jika ID produk tidak ada di daftar urutan, anggap posisinya di akhir (9999)
+            var posisiA = urutanTersimpan.indexOf(a.id);
+            var posisiB = urutanTersimpan.indexOf(b.id);
+            if (posisiA === -1) posisiA = 9999;
+            if (posisiB === -1) posisiB = 9999;
+            return posisiA - posisiB;
         });
     }
-    // --- Selesai pengaturan ---
+    // --- SELESAI PENGURUTAN ---
 
-    // --- HTML Filter ---
+    // --- 3. BANGUN HTML FILTER ---
     var html = `
     <div class="page-header">
         <h2><i class="fas fa-store-alt" style="color:#FF6B00;"></i> Katalog Produk</h2>
@@ -11469,33 +11477,28 @@ function renderSemuaProduk() {
     </div>
     `;
 
-    // --- Grid Produk ---
+    // --- 4. BANGUN GRID PRODUK ---
     html += '<div id="gridKatalog" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; padding:5px;">';
 
     if (semuaProduk.length === 0) {
         html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3></div></div>';
     } else {
+        // Tentukan style gambar berdasarkan ukuran yang dipilih
+        var styleUkuran = '';
+        if (ukuran === 'kecil') styleUkuran = 'max-height:150px;';
+        else if (ukuran === 'besar') styleUkuran = 'max-height:350px;';
+        else styleUkuran = 'max-height:250px;';
+
         for (var i = 0; i < semuaProduk.length; i++) {
             var p = semuaProduk[i];
             var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
-
-            // Cari nama pemilik
             var pemilik = null;
             for (var j = 0; j < dataAkun.length; j++) {
-                if (dataAkun[j].id === p.ownerId) {
-                    pemilik = dataAkun[j];
-                    break;
-                }
+                if (dataAkun[j].id === p.ownerId) { pemilik = dataAkun[j]; break; }
             }
             var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
-
-            // --- Terapkan ukuran gambar ---
-            var styleUkuran = '';
-            if (ukuran === 'kecil') styleUkuran = 'max-height:150px;';
-            else if (ukuran === 'besar') styleUkuran = 'max-height:350px;';
-            else styleUkuran = 'max-height:250px;';
-
-            // --- Badge unggulan ---
+            
+            // Logic untuk badge unggulan
             var badgeUnggulan = fitur.includes(p.id) ? '<span class="badge badge-success" style="position:absolute; top:5px; right:5px;">⭐ Unggulan</span>' : '';
 
             html += `
@@ -11520,7 +11523,11 @@ function renderSemuaProduk() {
     areaKonten.innerHTML = html;
 }
 
-// --- Fungsi Filter (dipanggil dari input/select) ---
+
+// ============================================================
+// FUNGSI FILTER DAN PENCARIAN KATALOG (Bagian dari BLOK 8.57)
+// ============================================================
+
 function filterKatalog() {
     var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
     var kategori = document.getElementById('filterKategoriKatalog').value;
@@ -11529,11 +11536,11 @@ function filterKatalog() {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
-    // --- Ambil pengaturan untuk urutan (agar filter tetap mempertahankan urutan) ---
+    // --- AMBIL PENGATURAN (Agar urutan tetap berlaku saat filter) ---
     var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
     var fitur = pengaturan.fitur || [];
 
-    // Filter produk
+    // --- FILTER DATA ---
     var filtered = semuaProduk.filter(function(p) {
         if (search && !p.judul.toLowerCase().includes(search)) return false;
         if (kategori && p.kategori !== kategori) return false;
@@ -11550,14 +11557,15 @@ function filterKatalog() {
         return true;
     });
 
-    // Urutkan hasil filter sesuai urutan yang disimpan
+    // --- URUTKAN HASIL FILTER SESUAI PENGATURAN ---
     if (pengaturan.urutan && pengaturan.urutan.length > 0) {
+        var urutanTersimpan = pengaturan.urutan;
         filtered.sort(function(a, b) {
-            var idxA = pengaturan.urutan.indexOf(a.id);
-            var idxB = pengaturan.urutan.indexOf(b.id);
-            if (idxA === -1) idxA = 9999;
-            if (idxB === -1) idxB = 9999;
-            return idxA - idxB;
+            var posisiA = urutanTersimpan.indexOf(a.id);
+            var posisiB = urutanTersimpan.indexOf(b.id);
+            if (posisiA === -1) posisiA = 9999;
+            if (posisiB === -1) posisiB = 9999;
+            return posisiA - posisiB;
         });
     }
 
@@ -11606,7 +11614,6 @@ function filterKatalog() {
     }
     grid.innerHTML = html;
 }
-
 // ============================================================
 // AKHIR BLOK 8.57
 // ============================================================
