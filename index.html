@@ -720,38 +720,71 @@ body { font-family:'Poppins', sans-serif; background:var(--bg); min-height:100vh
 
 <!-- ===== BLOK 5.4 - JS_INIT_SUPERADMIN ===== -->
 <script>
-    // ===== BLOK 5.4.1 - INISIALISASI SUPERADMIN =====
-    async function inisialisasiSuperAdmin() {
-        var dataAkun = getDataAkun();
-        var sudahAda = false;
-        for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].role === 'superadmin') {
-                sudahAda = true;
-                break;
-            }
+// ============================================================
+// BLOK 5.4.1 - INISIALISASI SUPERADMIN (LENGKAP DENGAN DEMO)
+// ============================================================
+async function inisialisasiSuperAdmin() {
+    var dataAkun = getDataAkun();
+    var sudahAda = false;
+    var sudahDemo = false;
+
+    // Cek apakah akun admin asli dan demo sudah ada
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].role === 'superadmin' && dataAkun[i].username === 'admin') {
+            sudahAda = true;
         }
-        if (!sudahAda) {
-            var passwordHash = await hashPassword('admin123');
-            var superAdminBaru = {
-                id: 'SA-001',
-                role: 'superadmin',
-                username: 'admin',
-                password: passwordHash,
-                nama: 'SuperAdmin',
-                email: 'admin@2r.com',
-                nomorHp: '081234567890',
-                alamat: 'Kantor Pusat',
-                namaBank: '',
-                nomorRekening: '',
-                pemilikRekening: '',
-                status: 'AKTIF',
-                waktuRegistrasi: new Date().toISOString()
-            };
-            dataAkun.push(superAdminBaru);
-            simpanDataAkun(dataAkun);
+        if (dataAkun[i].username === 'demo_admin') {
+            sudahDemo = true;
         }
     }
-    // ===== AKHIR BLOK 5.4.1 =====
+
+    // --- 1. Buat akun SuperAdmin asli (jika belum ada) ---
+    if (!sudahAda) {
+        var passwordHash = await hashPassword('admin123');
+        var superAdminBaru = {
+            id: 'SA-001',
+            role: 'superadmin',
+            username: 'admin',
+            password: passwordHash,
+            nama: 'SuperAdmin',
+            email: 'admin@2r.com',
+            nomorHp: '081234567890',
+            alamat: 'Kantor Pusat',
+            namaBank: '',
+            nomorRekening: '',
+            pemilikRekening: '',
+            status: 'AKTIF',
+            waktuRegistrasi: new Date().toISOString()
+        };
+        dataAkun.push(superAdminBaru);
+    }
+
+    // --- 2. Buat akun Demo khusus untuk mobile (jika belum ada) ---
+    if (!sudahDemo) {
+        var demoAkun = {
+            id: 'SA-DEMO',
+            role: 'superadmin',
+            username: 'demo_admin',
+            password: 'demo123',   // Plain text – agar bisa login di HP tanpa hash
+            nama: 'Demo SuperAdmin',
+            email: 'demo@2r.com',
+            nomorHp: '081234567899',
+            alamat: 'Kantor Demo',
+            namaBank: '',
+            nomorRekening: '',
+            pemilikRekening: '',
+            status: 'AKTIF',
+            waktuRegistrasi: new Date().toISOString()
+        };
+        dataAkun.push(demoAkun);
+    }
+
+    // Simpan semua akun ke localStorage
+    simpanDataAkun(dataAkun);
+}
+// ============================================================
+// AKHIR BLOK 5.4.1
+// ============================================================
 
     // ===== BLOK 5.4.2 - GENERATE ID OTOMATIS =====
     function generateId(role) {
