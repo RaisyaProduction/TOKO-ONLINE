@@ -179,6 +179,125 @@
     <div class="authentication-footer">Sudah punya akun? <a onclick="toggleForm('login')">Login di sini</a></div>
 </form>
 <!-- ===== AKHIR BLOK 2.1.5 ===== -->
+<!-- ===== BLOK 2.1.6 - HTML LANDING PAGE PROMOSI ===== -->
+<div id="pageLanding" class="page-content" style="display:flex; flex-direction:column; min-height:100vh; background:#f8f9fa; padding-bottom:80px;">
+    
+    <!-- HEADER BRAND -->
+    <div style="background:white; padding:20px 20px; box-shadow:0 2px 10px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-store-alt" style="font-size:24px; color:#FF6B00;"></i>
+            <h1 style="font-size:20px; font-weight:700; color:#333; margin:0;">Toko Online <span style="color:#FF6B00;">2R</span></h1>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="button button-primary button-small" onclick="toggleForm('login')"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <button class="button button-warning button-small" onclick="toggleForm('register')"><i class="fas fa-user-plus"></i> Daftar</button>
+        </div>
+    </div>
+
+    <!-- PROMO BANNER UTAMA -->
+    <div style="background:linear-gradient(135deg, #FF6B00, #ff8c33); margin:15px 15px; border-radius:16px; padding:20px 15px; color:white;">
+        <h2 style="font-size:20px; margin:0; font-weight:700;">🚀 Toko Online 2R</h2>
+        <p style="margin:5px 0 15px 0; opacity:0.9; font-size:14px;">Platform Belanja & Layanan Serba Ada</p>
+        <button class="button button-warning button-small" onclick="toggleForm('register')" style="background:white; color:#FF6B00; font-weight:700;">Daftar Sekarang</button>
+    </div>
+
+    <!-- SECTION 1: STATISTIK COUNTER -->
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; padding:0 15px; margin-bottom:20px;">
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+            <i class="fas fa-store" style="font-size:28px; color:#FF6B00;"></i>
+            <div id="statToko" style="font-size:22px; font-weight:700; color:#333;">0</div>
+            <div style="font-size:12px; color:#888;">Toko Terdaftar</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+            <i class="fas fa-motorcycle" style="font-size:28px; color:#4CAF50;"></i>
+            <div id="statOjek" style="font-size:22px; font-weight:700; color:#333;">0</div>
+            <div style="font-size:12px; color:#888;">Ojek Terdaftar</div>
+        </div>
+        <div style="background:white; border-radius:12px; padding:15px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+            <i class="fas fa-users" style="font-size:28px; color:#2196F3;"></i>
+            <div id="statCustomer" style="font-size:22px; font-weight:700; color:#333;">0</div>
+            <div style="font-size:12px; color:#888;">Customer Aktif</div>
+        </div>
+    </div>
+
+    <!-- SECTION 2: PREVIEW TOKO TERDEKAT -->
+    <div style="padding:0 15px; margin-bottom:20px;">
+        <h3 style="font-size:16px; font-weight:600; color:#333; margin:0 0 10px 0;"><i class="fas fa-store" style="color:#FF6B00;"></i> Toko Terdekat</h3>
+        <div id="previewTokoTerdekat" style="display:grid; grid-template-columns:1fr; gap:10px;">
+            <!-- Akan diisi oleh JavaScript -->
+            <div style="text-align:center; color:#888; padding:20px;">Memuat data toko...</div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: PREVIEW OJEK TERDEKAT -->
+    <div style="padding:0 15px; margin-bottom:20px;">
+        <h3 style="font-size:16px; font-weight:600; color:#333; margin:0 0 10px 0;"><i class="fas fa-motorcycle" style="color:#4CAF50;"></i> Ojek Online Terdekat</h3>
+        <div id="previewOjekTerdekat" style="display:grid; grid-template-columns:1fr; gap:10px;">
+            <!-- Akan diisi oleh JavaScript -->
+        </div>
+    </div>
+
+    <!-- SECTION 4: GRID PRODUK UNGGULAN (PUBLIK) -->
+    <div style="padding:0 15px; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3 style="font-size:16px; font-weight:600; color:#333; margin:0;"><i class="fas fa-box" style="color:#FF6B00;"></i> Produk Unggulan</h3>
+            <span style="font-size:12px; color:#888;">Klik produk → Daftar dulu</span>
+        </div>
+        <div id="previewProdukUnggulan" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;">
+            <!-- Akan diisi oleh JavaScript -->
+        </div>
+        <!-- Kolom Pencarian Sederhana -->
+        <div style="margin-top:15px; display:flex; gap:10px;">
+            <input type="text" id="searchProdukPublic" class="form-input" placeholder="Cari produk..." style="flex:1;">
+            <button class="button button-primary button-small" onclick="filterProdukPublic()">Cari</button>
+        </div>
+    </div>
+
+    <!-- SECTION 5: BANNER PROMO KELEBIHAN BERGABUNG -->
+    <div style="padding:0 15px; margin-bottom:20px;">
+        <div style="background:#fff3e0; border:2px solid #FF6B00; border-radius:12px; padding:20px; text-align:center;">
+            <h3 style="font-size:18px; color:#FF6B00; margin:0 0 15px 0;">🔥 Kelebihan Bergabung</h3>
+            <div style="display:grid; grid-template-columns:1fr; gap:10px; text-align:left;">
+                <div style="background:white; padding:10px; border-radius:8px;"><i class="fas fa-comments" style="color:#FF6B00;"></i> Bisa Chat Antar User</div>
+                <div style="background:white; padding:10px; border-radius:8px;"><i class="fas fa-box-open" style="color:#FF6B00;"></i> Bisa Pesan Antar Ambil Produk</div>
+                <div style="background:white; padding:10px; border-radius:8px;"><i class="fas fa-motorcycle" style="color:#FF6B00;"></i> Bisa Pesan Antar Jemput Ojek</div>
+            </div>
+            <button class="button button-primary" onclick="toggleForm('register')" style="width:100%; margin-top:15px;">Yuk, Daftar Sekarang!</button>
+        </div>
+    </div>
+
+    <!-- SECTION 6: 3 SLOT CARD IKLAN -->
+    <div style="padding:0 15px; margin-bottom:20px;">
+        <h3 style="font-size:16px; font-weight:600; color:#333; margin:0 0 10px 0;">📢 Iklan Sponsor</h3>
+        <div id="slotIklan" style="display:grid; grid-template-columns:1fr; gap:10px;">
+            <!-- Slot 1 -->
+            <div style="background:white; border-radius:12px; padding:15px; text-align:center; border:1px solid #eee; min-height:80px; display:flex; align-items:center; justify-content:center; color:#aaa;">
+                <i class="fas fa-ad"></i> Slot Iklan 1 (Kosong)
+            </div>
+            <!-- Slot 2 -->
+            <div style="background:white; border-radius:12px; padding:15px; text-align:center; border:1px solid #eee; min-height:80px; display:flex; align-items:center; justify-content:center; color:#aaa;">
+                <i class="fas fa-ad"></i> Slot Iklan 2 (Kosong)
+            </div>
+            <!-- Slot 3 -->
+            <div style="background:white; border-radius:12px; padding:15px; text-align:center; border:1px solid #eee; min-height:80px; display:flex; align-items:center; justify-content:center; color:#aaa;">
+                <i class="fas fa-ad"></i> Slot Iklan 3 (Kosong)
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 7: TOMBOL CHAT CS -->
+    <div style="padding:0 15px; margin-bottom:20px;">
+        <button onclick="navigasiKeHalaman('chat')" style="width:100%; background:#2196F3; color:white; border:none; padding:15px; border-radius:12px; font-weight:600; font-size:16px; box-shadow:0 4px 10px rgba(33,150,243,0.3);">
+            <i class="fas fa-comment-dots"></i> Hubungi Customer Service
+        </button>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center; padding:10px; color:#888; font-size:12px; margin-top:10px;">
+        &copy; 2026 Toko Online 2R. All Rights Reserved.
+    </div>
+</div>
+<!-- ===== AKHIR BLOK 2.1.6 ===== -->
         </div>
     </div>
 </div>
@@ -3410,13 +3529,14 @@ function renderTransferLainnya() {
 // ===== AKHIR BLOK 8.1.3 =====
 
     // ============================================================
-// BLOK 8.14 - JS_CRUD_FOTO_PROFIL_GLOBAL (UNTUK SEMUA ROLE)
+// ============================================================
+// BLOK 8.14 - JS_CRUD_FOTO_PROFIL_GLOBAL DAN FOTO SAMPUL
 // ============================================================
 
-// --- 1. Fungsi Global untuk Menyimpan Foto Profil ---
+// --- 1. Fungsi Global Menyimpan Foto Profil (Untuk Semua Role) ---
 function simpanFotoProfilGlobal() {
     var foto = localStorage.getItem('2r_foto_profil_temp');
-    if (!foto) { tampilkanToast('Upload foto terlebih dahulu!', 'warning'); return; }
+    if (!foto) { tampilkanToast('Upload foto profil terlebih dahulu!', 'warning'); return; }
 
     var user = JSON.parse(localStorage.getItem('2r_user'));
     var dataAkun = getDataAkun();
@@ -3433,7 +3553,6 @@ function simpanFotoProfilGlobal() {
     simpanDataAkun(dataAkun);
     localStorage.removeItem('2r_foto_profil_temp');
 
-    // Update Avatar di Navbar secara langsung
     var avatar = document.getElementById('userAvatar');
     var placeholder = document.getElementById('userAvatarPlaceholder');
     if (avatar && placeholder) {
@@ -3443,25 +3562,72 @@ function simpanFotoProfilGlobal() {
     }
 
     tampilkanToast('Foto profil berhasil disimpan!', 'success');
-    // Refresh halaman profil agar preview gambar di card terupdate
-    renderProfil(); 
+    renderProfil();
 }
 
-// --- 2. Helper untuk Memasang Event Listener Upload (Bisa dipanggil di setiap render profil) ---
+// --- 2. Helper untuk memasang event listener Upload Foto Profil ---
 function pasangUploadFotoProfil(containerId, inputId, previewId) {
     var container = document.getElementById(containerId);
     var input = document.getElementById(inputId);
     var preview = document.getElementById(previewId);
 
     if (container && input && preview) {
-        container.onclick = function() { input.click(); };
+        container.onclick = function() {
+            input.click();
+        };
         input.onchange = async function(e) {
             var file = e.target.files[0];
             if (file) {
                 preview.innerHTML = '<p>Mengompres...</p>';
-                var compressed = await compressImage(file, 200, 0.7);
-                preview.innerHTML = '<img src="' + compressed + '" class="preview-image" style="max-width:150px; max-height:150px; border-radius:50%; object-fit:cover;">';
+                var compressed = await compressImage(file, 300, 0.7);
+                preview.innerHTML = '<img src="' + compressed + '" class="preview-image" style="max-width:150px; max-height:150px; border-radius:50%; object-fit:cover; border:4px solid white;">';
                 localStorage.setItem('2r_foto_profil_temp', compressed);
+            }
+        };
+    }
+}
+
+// --- 3. Fungsi Global Menyimpan Foto Sampul (Cover) ---
+function simpanFotoSampulGlobal() {
+    var foto = localStorage.getItem('2r_cover_temp');
+    if (!foto) { tampilkanToast('Upload foto sampul terlebih dahulu!', 'warning'); return; }
+
+    var user = JSON.parse(localStorage.getItem('2r_user'));
+    var dataAkun = getDataAkun();
+
+    user.fotoSampul = foto;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { 
+            dataAkun[i].fotoSampul = foto; 
+            break; 
+        }
+    }
+
+    localStorage.setItem('2r_user', JSON.stringify(user));
+    simpanDataAkun(dataAkun);
+    localStorage.removeItem('2r_cover_temp');
+
+    tampilkanToast('Foto sampul berhasil disimpan!', 'success');
+    renderProfil();
+}
+
+// --- 4. Helper untuk memasang event listener Upload Foto Sampul ---
+function pasangUploadFotoSampul(containerId, inputId, previewId) {
+    var container = document.getElementById(containerId);
+    var input = document.getElementById(inputId);
+    var preview = document.getElementById(previewId);
+
+    if (container && input && preview) {
+        container.onclick = function() {
+            input.click();
+        };
+        input.onchange = async function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                preview.innerHTML = '<p>Mengompres...</p>';
+                var compressed = await compressImage(file, 800, 0.7);
+                preview.innerHTML = '<img src="' + compressed + '" class="preview-image" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;">';
+                localStorage.setItem('2r_cover_temp', compressed);
             }
         };
     }
@@ -3473,26 +3639,30 @@ function pasangUploadFotoProfil(containerId, inputId, previewId) {
 <!-- ===== AKHIR BLOK 8.1 ===== -->
 <!-- ===== BLOK 8.2 - JS_EVENT_AUTH, LOGOUT, SIDEBAR ===== -->
 <script>
-    // ===== BLOK 8.2.1 - TOGGLE FORM (VERSI LENGKAP) =====
+// ===== BLOK 8.2.1 - TOGGLE FORM (VERSI LENGKAP DENGAN LANDING PAGE) =====
 function toggleForm(tipe) {
     var error = document.getElementById('authenticationError');
     if (error) error.style.display = 'none';
     var login = document.getElementById('loginForm');
     var register = document.getElementById('registerForm');
     var pengajuan = document.getElementById('pengajuanBukaAkunForm');
-    
+    var landing = document.getElementById('pageLanding');
+
+    // Sembunyikan Semua
+    if (landing) landing.classList.remove('page-content');
+    if (login) login.classList.add('hidden-form');
+    if (register) register.classList.add('hidden-form');
+    if (pengajuan) pengajuan.classList.add('hidden-form');
+
+    // Tampilkan sesuai pilihan
     if (tipe === 'register') {
-        login.classList.add('hidden-form');
-        register.classList.remove('hidden-form');
-        if (pengajuan) pengajuan.classList.add('hidden-form');
+        if (register) register.classList.remove('hidden-form');
     } else if (tipe === 'pengajuanBukaAkun') {
-        login.classList.add('hidden-form');
-        register.classList.add('hidden-form');
         if (pengajuan) pengajuan.classList.remove('hidden-form');
+    } else if (tipe === 'landing') {
+        if (landing) landing.classList.add('page-content');
     } else { // login
-        register.classList.add('hidden-form');
-        if (pengajuan) pengajuan.classList.add('hidden-form');
-        login.classList.remove('hidden-form');
+        if (login) login.classList.remove('hidden-form');
     }
 }
 // ===== AKHIR BLOK 8.2.1 =====
@@ -4514,469 +4684,6 @@ function tampilkanDashboard(user) {
 }
 // ============================================================
 // AKHIR BLOK 8.6.1
-// ============================================================
-// ============================================================
-// BLOK 8.62 - MANAJEMEN KATALOG PRODUK (SUPERADMIN)
-// ============================================================
-
-function renderManajemenKatalog() {
-    var role = localStorage.getItem('2r_user_role');
-    if (role !== 'superadmin') {
-        tampilkanToast('Hanya SuperAdmin!', 'error');
-        return;
-    }
-    var areaKonten = document.getElementById('mainContent');
-    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-    var dataAkun = getDataAkun();
-
-    // --- STATISTIK ---
-    var totalProduk = semuaProduk.length;
-    var totalToko = 0;
-    for (var i = 0; i < dataAkun.length; i++) {
-        var a = dataAkun[i];
-        if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
-            totalToko++;
-        }
-    }
-
-    var html = `
-    <div class="page-header">
-        <h2><i class="fas fa-crown" style="color:#FF6B00;"></i> Manajemen Katalog (SuperAdmin)</h2>
-        <p>Kelola semua produk dari Toko, Pedagang, dan COD Seller.</p>
-    </div>
-    <div class="widget-grid">
-        <div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-boxes"></i></div><div class="widget-number">${totalProduk}</div><div class="widget-label">Total Produk</div></div>
-        <div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-store"></i></div><div class="widget-number">${totalToko}</div><div class="widget-label">Total Penjual</div></div>
-    </div>
-    `;
-
-    // --- FILTER ---
-    html += `
-    <div class="card">
-        <div class="card-header">Filter & Pencarian</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
-            <div style="flex:1; min-width:200px;">
-                <input type="text" id="adminSearchProduk" class="form-input" placeholder="Cari nama produk..." oninput="filterKatalogAdmin()">
-            </div>
-            <div>
-                <select id="adminFilterKategori" class="form-input" style="width:150px;" onchange="filterKatalogAdmin()">
-                    <option value="">Semua Kategori</option>
-                    <option value="Fashion">Fashion</option>
-                    <option value="Elektronik">Elektronik</option>
-                    <option value="Makanan">Makanan</option>
-                    <option value="Lainnya">Lainnya</option>
-                </select>
-            </div>
-            <div>
-                <select id="adminFilterRole" class="form-input" style="width:200px;" onchange="filterKatalogAdmin()">
-                    <option value="">Semua Penjual</option>
-                    <option value="toko">Toko</option>
-                    <option value="pedagang">Pedagang Pasar</option>
-                    <option value="codseller">COD Seller</option>
-                </select>
-            </div>
-            <div>
-                <select id="adminSortBy" class="form-input" style="width:150px;" onchange="filterKatalogAdmin()">
-                    <option value="nama-asc">Nama (A-Z)</option>
-                    <option value="nama-desc">Nama (Z-A)</option>
-                    <option value="harga-asc">Harga (Terendah)</option>
-                    <option value="harga-desc">Harga (Tertinggi)</option>
-                    <option value="terbaru">Terbaru</option>
-                </select>
-            </div>
-            <div style="display:flex; align-items:center;">
-                <span style="font-size:13px; color:#888;">Total: <strong id="adminTotalProduk">${totalProduk}</strong> produk</span>
-            </div>
-        </div>
-    </div>
-    `;
-
-    // --- TABEL PRODUK ---
-    html += `
-    <div class="card">
-        <div class="table-container">
-            <table class="table" id="adminTabelProduk">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Gambar</th>
-                        <th>Nama Produk</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th>Penjual</th>
-                        <th>Role</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTbodyProduk">
-    `;
-
-    if (semuaProduk.length === 0) {
-        html += `<tr><td colspan="8" style="text-align:center; padding:30px; color:#888;">Belum ada produk.</td></tr>`;
-    } else {
-        for (var i = 0; i < semuaProduk.length; i++) {
-            var p = semuaProduk[i];
-            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
-            var pemilik = null;
-            for (var j = 0; j < dataAkun.length; j++) {
-                if (dataAkun[j].id === p.ownerId) {
-                    pemilik = dataAkun[j];
-                    break;
-                }
-            }
-            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
-            var rolePenjual = pemilik ? pemilik.role : '-';
-            html += `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${gambar ? `<img src="${gambar}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer;" onclick="previewGambar('${gambar}', '${escapeHtml(p.judul)}')">` : '-'}</td>
-                <td><strong>${escapeHtml(p.judul)}</strong></td>
-                <td>${escapeHtml(p.kategori)}</td>
-                <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
-                <td>${escapeHtml(namaPenjual)}</td>
-                <td>${rolePenjual}</td>
-                <td>
-                    <button class="button button-info button-extra-small" style="background:#17a2b8; color:white;" onclick="detailProdukAdmin('${p.id}')"><i class="fas fa-eye"></i></button>
-                    <button class="button button-danger button-extra-small" onclick="hapusProdukAdmin('${p.id}')"><i class="fas fa-trash"></i> Hapus</button>
-                </td>
-            </tr>
-            `;
-        }
-    }
-
-    html += `
-                </tbody>
-            </table>
-        </div>
-    </div>
-    `;
-
-    areaKonten.innerHTML = html;
-}
-
-// --- Filter & Sortir Admin ---
-function filterKatalogAdmin() {
-    var search = document.getElementById('adminSearchProduk').value.toLowerCase().trim();
-    var kategori = document.getElementById('adminFilterKategori').value;
-    var role = document.getElementById('adminFilterRole').value;
-    var sort = document.getElementById('adminSortBy').value;
-
-    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-    var dataAkun = getDataAkun();
-
-    var filtered = semuaProduk.filter(function(p) {
-        if (search && !p.judul.toLowerCase().includes(search)) return false;
-        if (kategori && p.kategori !== kategori) return false;
-        if (role) {
-            var pemilik = null;
-            for (var i = 0; i < dataAkun.length; i++) {
-                if (dataAkun[i].id === p.ownerId) {
-                    pemilik = dataAkun[i];
-                    break;
-                }
-            }
-            if (!pemilik || pemilik.role !== role) return false;
-        }
-        return true;
-    });
-
-    if (sort === 'nama-asc') filtered.sort(function(a,b) { return a.judul.localeCompare(b.judul); });
-    else if (sort === 'nama-desc') filtered.sort(function(a,b) { return b.judul.localeCompare(a.judul); });
-    else if (sort === 'harga-asc') filtered.sort(function(a,b) { return a.harga - b.harga; });
-    else if (sort === 'harga-desc') filtered.sort(function(a,b) { return b.harga - a.harga; });
-    else if (sort === 'terbaru') filtered.sort(function(a,b) { return new Date(b.tanggalUpload) - new Date(a.tanggalUpload); });
-
-    document.getElementById('adminTotalProduk').textContent = filtered.length;
-    var tbody = document.getElementById('adminTbodyProduk');
-    var html = '';
-    if (filtered.length === 0) {
-        html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#888;">Tidak ada produk yang cocok.</td></tr>`;
-    } else {
-        for (var i = 0; i < filtered.length; i++) {
-            var p = filtered[i];
-            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
-            var pemilik = null;
-            for (var j = 0; j < dataAkun.length; j++) {
-                if (dataAkun[j].id === p.ownerId) {
-                    pemilik = dataAkun[j];
-                    break;
-                }
-            }
-            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
-            var rolePenjual = pemilik ? pemilik.role : '-';
-            html += `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${gambar ? `<img src="${gambar}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">` : '-'}</td>
-                <td><strong>${escapeHtml(p.judul)}</strong></td>
-                <td>${escapeHtml(p.kategori)}</td>
-                <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
-                <td>${escapeHtml(namaPenjual)}</td>
-                <td>${rolePenjual}</td>
-                <td>
-                    <button class="button button-info button-extra-small" style="background:#17a2b8; color:white;" onclick="detailProdukAdmin('${p.id}')"><i class="fas fa-eye"></i></button>
-                    <button class="button button-danger button-extra-small" onclick="hapusProdukAdmin('${p.id}')"><i class="fas fa-trash"></i> Hapus</button>
-                </td>
-            </tr>
-            `;
-        }
-    }
-    tbody.innerHTML = html;
-}
-
-// --- Detail Produk (Modal) ---
-function detailProdukAdmin(id) {
-    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-    var p = null;
-    for (var i = 0; i < semuaProduk.length; i++) {
-        if (semuaProduk[i].id === id) { p = semuaProduk[i]; break; }
-    }
-    if (!p) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
-
-    var dataAkun = getDataAkun();
-    var pemilik = null;
-    for (var i = 0; i < dataAkun.length; i++) {
-        if (dataAkun[i].id === p.ownerId) { pemilik = dataAkun[i]; break; }
-    }
-    var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
-    var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
-
-    var html = `
-    <div class="modal-overlay" id="modalDetailProdukAdmin" style="display:flex; z-index:9999;">
-        <div class="modal" style="max-width:500px;">
-            <div class="modal-header">
-                <h3>Detail Produk</h3>
-                <button class="modal-close" onclick="tutupModalDetailProdukAdmin()">&times;</button>
-            </div>
-            <div class="modal-body">
-                ${gambar ? `<img src="${gambar}" style="width:100%; max-height:200px; object-fit:contain; border-radius:8px; margin-bottom:10px;">` : ''}
-                <div class="grid-2">
-                    <div><strong>Judul:</strong> ${escapeHtml(p.judul)}</div>
-                    <div><strong>Kategori:</strong> ${escapeHtml(p.kategori)}</div>
-                    <div><strong>Harga:</strong> Rp ${p.harga.toLocaleString('id-ID')}</div>
-                    <div><strong>Penjual:</strong> ${escapeHtml(namaPenjual)}</div>
-                    <div style="grid-column:1/-1;"><strong>Deskripsi:</strong><br>${escapeHtml(p.deskripsi)}</div>
-                    <div style="grid-column:1/-1;"><strong>ID Penjual:</strong> ${p.ownerId}</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="button button-secondary" onclick="tutupModalDetailProdukAdmin()">Tutup</button>
-            </div>
-        </div>
-    </div>
-    `;
-    var body = document.body;
-    var container = document.createElement('div');
-    container.innerHTML = html;
-    body.appendChild(container);
-}
-
-function tutupModalDetailProdukAdmin() {
-    var modal = document.getElementById('modalDetailProdukAdmin');
-    if (modal) modal.remove();
-}
-
-// --- Hapus Produk ---
-function hapusProdukAdmin(id) {
-    if (!confirm('Yakin ingin menghapus produk ini dari katalog?')) return;
-    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-    var baru = semuaProduk.filter(function(p) { return p.id !== id; });
-    localStorage.setItem('2r_produk_publik', JSON.stringify(baru));
-    tampilkanToast('Produk berhasil dihapus!', 'success');
-    renderManajemenKatalog();
-}
-
-// ============================================================
-// AKHIR BLOK 8.62
-// ============================================================
-// ============================================================
-// BLOK 8.63 - PENATAAN PRODUK (SuperAdmin)
-// ============================================================
-
-function renderPenataanProduk() {
-    var role = localStorage.getItem('2r_user_role');
-    if (role !== 'superadmin') {
-        tampilkanToast('Hanya SuperAdmin!', 'error');
-        return;
-    }
-    var areaKonten = document.getElementById('mainContent');
-    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
-    var dataAkun = getDataAkun();
-
-    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
-
-    var html = `
-    <div class="page-header">
-        <h2><i class="fas fa-cogs" style="color:#FF6B00;"></i> Penataan Produk (Katalog)</h2>
-        <p>Atur urutan tampilan, ukuran gambar, dan tandai produk unggulan.</p>
-    </div>
-    <div class="card">
-        <div class="card-header">Pengaturan Umum</div>
-        <div class="grid-2">
-            <div><label class="form-label">Ukuran Gambar</label>
-                <select id="ukuranGambar" class="form-input" onchange="simpanPengaturanKatalog()">
-                    <option value="kecil" ${pengaturan.ukuran === 'kecil' ? 'selected' : ''}>Kecil (150px)</option>
-                    <option value="sedang" ${pengaturan.ukuran === 'sedang' ? 'selected' : ''}>Sedang (250px)</option>
-                    <option value="besar" ${pengaturan.ukuran === 'besar' ? 'selected' : ''}>Besar (350px)</option>
-                </select>
-            </div>
-            <div style="display:flex; align-items:flex-end;">
-                <button class="button button-primary" onclick="simpanPengaturanKatalog()"><i class="fas fa-save"></i> Simpan Pengaturan</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header">Urutan & Fitur Produk</div>
-        <p style="font-size:13px; color:#888;">Seret atau gunakan tombol panah untuk mengatur urutan. Centang untuk menjadikan produk "Unggulan".</p>
-        <div class="table-container">
-            <table class="table" id="tabelPenataan">
-                <thead>
-                    <tr>
-                        <th style="width:40px;">No</th>
-                        <th>Produk</th>
-                        <th>Penjual</th>
-                        <th style="text-align:center;">Unggulan</th>
-                        <th style="text-align:center;">Aksi Urutan</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-    var daftarUrut = (pengaturan.urutan && pengaturan.urutan.length > 0) ? pengaturan.urutan : semuaProduk.map(function(p) { return p.id; });
-    var produkTersedia = [];
-    for (var i = 0; i < daftarUrut.length; i++) {
-        var id = daftarUrut[i];
-        var produk = null;
-        for (var j = 0; j < semuaProduk.length; j++) {
-            if (semuaProduk[j].id === id) { produk = semuaProduk[j]; break; }
-        }
-        if (produk) produkTersedia.push(produk);
-    }
-    for (var i = 0; i < semuaProduk.length; i++) {
-        var p = semuaProduk[i];
-        if (daftarUrut.indexOf(p.id) === -1) {
-            produkTersedia.push(p);
-        }
-    }
-
-    if (produkTersedia.length === 0) {
-        html += `<tr><td colspan="5" style="text-align:center; padding:30px; color:#888;">Belum ada produk.</td></tr>`;
-    } else {
-        for (var i = 0; i < produkTersedia.length; i++) {
-            var p = produkTersedia[i];
-            var pemilik = null;
-            for (var k = 0; k < dataAkun.length; k++) {
-                if (dataAkun[k].id === p.ownerId) { pemilik = dataAkun[k]; break; }
-            }
-            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
-            var isUnggulan = (pengaturan.fitur && pengaturan.fitur.indexOf(p.id) !== -1) ? 'checked' : '';
-            var isFirst = (i === 0);
-            var isLast = (i === produkTersedia.length - 1);
-
-            html += `
-            <tr>
-                <td>${i+1}</td>
-                <td><strong>${escapeHtml(p.judul)}</strong></td>
-                <td>${escapeHtml(namaPenjual)}</td>
-                <td style="text-align:center;">
-                    <input type="checkbox" class="chk-unggulan" data-id="${p.id}" ${isUnggulan} onchange="simpanUnggulan()">
-                </td>
-                <td style="text-align:center; white-space:nowrap;">
-                    <button class="button button-primary button-extra-small" onclick="pindahProduk(${i}, -1)" ${isFirst ? 'disabled' : ''}><i class="fas fa-arrow-up"></i></button>
-                    <button class="button button-primary button-extra-small" onclick="pindahProduk(${i}, 1)" ${isLast ? 'disabled' : ''}><i class="fas fa-arrow-down"></i></button>
-                </td>
-            </tr>
-            `;
-        }
-    }
-
-    html += `
-                </tbody>
-            </table>
-        </div>
-        <div style="margin-top:10px; text-align:right;">
-            <button class="button button-success" onclick="simpanUrutanProduk()"><i class="fas fa-save"></i> Simpan Urutan & Unggulan</button>
-            <button class="button button-danger" onclick="resetUrutanProduk()"><i class="fas fa-undo"></i> Reset ke Default</button>
-        </div>
-    </div>
-    `;
-
-    areaKonten.innerHTML = html;
-}
-
-function simpanPengaturanKatalog() {
-    var ukuran = document.getElementById('ukuranGambar').value;
-    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
-    pengaturan.ukuran = ukuran;
-    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
-    tampilkanToast('Pengaturan ukuran disimpan!', 'success');
-}
-
-function simpanUnggulan() {
-    var checkboxes = document.querySelectorAll('.chk-unggulan');
-    var fitur = [];
-    checkboxes.forEach(function(cb) {
-        if (cb.checked) {
-            fitur.push(cb.getAttribute('data-id'));
-        }
-    });
-    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
-    pengaturan.fitur = fitur;
-    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
-    tampilkanToast('Produk unggulan diperbarui!', 'success');
-}
-
-function pindahProduk(index, arah) {
-    var tbody = document.querySelector('#tabelPenataan tbody');
-    var rows = tbody.querySelectorAll('tr');
-    if (rows.length <= 1) return;
-    var newIndex = index + arah;
-    if (newIndex < 0 || newIndex >= rows.length) return;
-    tbody.insertBefore(rows[newIndex], rows[index]);
-    var allRows = tbody.querySelectorAll('tr');
-    for (var i = 0; i < allRows.length; i++) {
-        var td = allRows[i].querySelector('td:first-child');
-        if (td) td.textContent = i + 1;
-    }
-    updateArrowButtons();
-}
-
-function updateArrowButtons() {
-    var rows = document.querySelectorAll('#tabelPenataan tbody tr');
-    rows.forEach(function(row, idx) {
-        var btns = row.querySelectorAll('button');
-        if (btns.length === 2) {
-            btns[0].disabled = (idx === 0);
-            btns[1].disabled = (idx === rows.length - 1);
-        }
-    });
-}
-
-function simpanUrutanProduk() {
-    var rows = document.querySelectorAll('#tabelPenataan tbody tr');
-    var urutan = [];
-    rows.forEach(function(row) {
-        var cb = row.querySelector('.chk-unggulan');
-        if (cb) {
-            urutan.push(cb.getAttribute('data-id'));
-        }
-    });
-    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
-    pengaturan.urutan = urutan;
-    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
-    tampilkanToast('Urutan produk disimpan!', 'success');
-}
-
-function resetUrutanProduk() {
-    if (!confirm('Reset urutan produk ke default (berdasarkan waktu upload)?')) return;
-    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
-    pengaturan.urutan = [];
-    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
-    renderPenataanProduk();
-    tampilkanToast('Urutan direset!', 'success');
-}
-// ============================================================
-// AKHIR BLOK 8.63
 // ============================================================
 </script>
 <!-- ===== AKHIR BLOK 8.6 ===== -->
@@ -8878,17 +8585,23 @@ function hapusTagihanManual(idTagihan) {
 // ===== AKHIR BLOK 8.25.2 =====
 // ===== AKHIR BLOK 8.25 =====
 // ============================================================
-// BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN (DENGAN LOKASI)
+// ============================================================
+// BLOK 8.26 - JS_PENGAJUAN_BUKA_AKUN (WAJIB LOKASI & LENGKAP)
 // ============================================================
 
-// --- 1. Perbaiki toggleForm agar bisa membuka form pengajuan ---
+// --- 1. Fungsi toggleForm yang diperbarui (untuk membuka form pengajuan) ---
 function toggleForm(tipe) {
     var error = document.getElementById('authenticationError');
     if (error) error.style.display = 'none';
+
     var login = document.getElementById('loginForm');
     var register = document.getElementById('registerForm');
     var pengajuan = document.getElementById('pengajuanBukaAkunForm');
     
+    // Sembunyikan error lokasi jika ada
+    var errorLokasi = document.getElementById('pengajuanErrorLokasi');
+    if (errorLokasi) errorLokasi.style.display = 'none';
+
     if (tipe === 'register') {
         login.classList.add('hidden-form');
         register.classList.remove('hidden-form');
@@ -8904,20 +8617,34 @@ function toggleForm(tipe) {
     }
 }
 
-// --- 2. Fungsi Simpan Pengajuan Buka Akun ---
-document.getElementById('pengajuanBukaAkunForm')?.addEventListener('submit', function(e) {
+// --- 2. Event Listener Form Pengajuan (Wajib Ambil Lokasi) ---
+document.getElementById('pengajuanBukaAkunForm').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    // Ambil data lokasi
+    var lat = document.getElementById('pengajuanLat').value.trim();
+    var lng = document.getElementById('pengajuanLng').value.trim();
+    var errorLokasi = document.getElementById('pengajuanErrorLokasi');
+
+    // CEK WAJIB LOKASI
+    if (!lat || !lng) {
+        if (errorLokasi) errorLokasi.style.display = 'block';
+        tampilkanToast('Anda wajib mengambil lokasi otomatis menggunakan tombol di atas!', 'warning');
+        return;
+    } else {
+        if (errorLokasi) errorLokasi.style.display = 'none';
+    }
+
     var nama = document.getElementById('pengajuanNama').value.trim();
     var kontak = document.getElementById('pengajuanKontak').value.trim();
     var role = document.getElementById('pengajuanRole').value;
     var alasan = document.getElementById('pengajuanAlasan').value.trim();
-
-    // Ambil lokasi dari form pengajuan
-    var lat = document.getElementById('pengajuanLat').value.trim();
-    var lng = document.getElementById('pengajuanLng').value.trim();
     var alamat = document.getElementById('pengajuanLokasi').value.trim();
 
-    if (!nama || !kontak || !role || !alasan) { tampilkanToast('Semua data wajib diisi!', 'warning'); return; }
+    if (!nama || !kontak || !role || !alasan) {
+        tampilkanToast('Semua data wajib diisi!', 'warning');
+        return;
+    }
 
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
     dataPengajuan.push({
@@ -8926,15 +8653,16 @@ document.getElementById('pengajuanBukaAkunForm')?.addEventListener('submit', fun
         kontak: kontak,
         role: role,
         alasan: alasan,
-        // --- TAMBAHAN LOKASI ---
-        latitude: lat || '',
-        longitude: lng || '',
+        // --- TAMBAHAN LOKASI WAJIB ---
+        latitude: lat,
+        longitude: lng,
         alamatLokasi: alamat || '',
         // ---------------------
         status: 'MENUNGGU',
         waktu: new Date().toISOString()
     });
     localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
+
     tampilkanToast('Pengajuan Anda telah dikirim ke Staf Admin!', 'success');
     toggleForm('login');
 });
@@ -8961,7 +8689,7 @@ function renderPengajuanBukaAkun() {
         for (var i = 0; i < pengajuanMenunggu.length; i++) {
             var p = pengajuanMenunggu[i];
             var alamatTampil = p.alamatLokasi || p.latitude && p.longitude ? p.latitude + ', ' + p.longitude : '-';
-            html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.kontak) + '</td><td>' + p.role + '</td><td>' + escapeHtml(p.alasan) + '</td><td>' + escapeHtml(alamatTampil) + '</td><td>';
+            html += '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(p.nama) + '</td><td>' + escapeHtml(p.kontak) + '</td><td>' + p.role + '</td><td>' + escapeHtml(p.alasan) + '</td><td>' + escapeHtml(alamatTampil) + '</td><td>';
             html += '<button class="button button-success button-extra-small" onclick="setujuiPengajuanBukaAkun(\'' + p.id + '\')">Setujui & Buat Akun</button>';
             html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanBukaAkun(\'' + p.id + '\')">Tolak</button>';
             html += '</td></tr>';
@@ -8971,37 +8699,39 @@ function renderPengajuanBukaAkun() {
     areaKonten.innerHTML = html;
 }
 
-// --- 4. Fungsi Setujui & Tolak Pengajuan ---
+// --- 4. Fungsi Setujui Pengajuan ---
 async function setujuiPengajuanBukaAkun(idPengajuan) {
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
     var index = -1;
     for (var i = 0; i < dataPengajuan.length; i++) {
-        if (dataPengajuan[i].id === idPengajuan) { index = i; break; }
+        if (dataPengajuan[i].id === idPengajuan) {
+            index = i;
+            break;
+        }
     }
     if (index === -1) { tampilkanToast('Pengajuan tidak ditemukan!', 'error'); return; }
 
     var p = dataPengajuan[index];
 
-    // --- BUAT USERNAME TANPA ANGKA ACAK (HANYA DARI NAMA) ---
     var usernameDasar = p.nama.toLowerCase().replace(/\s/g, '');
     var username = usernameDasar;
     var dataAkun = getDataAkun();
     var nomorUrut = 1;
-    // Jika username sudah ada, tambahkan angka urut
     while (true) {
         var sudahAda = false;
         for (var i = 0; i < dataAkun.length; i++) {
-            if (dataAkun[i].username === username) { sudahAda = true; break; }
+            if (dataAkun[i].username === username) {
+                sudahAda = true;
+                break;
+            }
         }
         if (!sudahAda) break;
         username = usernameDasar + nomorUrut;
         nomorUrut++;
     }
 
-    // --- BUAT PASSWORD HASH ---
     var passwordHash = await hashPassword('123456');
 
-    // --- BUAT AKUN BARU (DENGAN LOKASI DARI PENGAJUAN) ---
     var akunBaru = {
         id: generateId(p.role),
         role: p.role,
@@ -9011,25 +8741,23 @@ async function setujuiPengajuanBukaAkun(idPengajuan) {
         email: p.kontak,
         nomorHp: p.kontak,
         fitur: { paketTransaksi: ['paket1'] },
-        // --- TAMBAHAN LOKASI ---
         latitude: p.latitude || '',
         longitude: p.longitude || '',
         alamatLokasi: p.alamatLokasi || '',
-        // ---------------------
         status: 'NONAKTIF (Menunggu Verifikasi)',
         waktuRegistrasi: new Date().toISOString()
     };
     dataAkun.push(akunBaru);
     simpanDataAkun(dataAkun);
 
-    // --- UPDATE STATUS PENGAJUAN ---
     dataPengajuan[index].status = 'DISETUJUI';
     localStorage.setItem('2r_pengajuan_buka_akun', JSON.stringify(dataPengajuan));
 
-    tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Password: 123456. Silakan hubungi calon user.', 'success');
+    tampilkanToast('Akun ' + p.role + ' berhasil dibuat! Username: ' + username + ', Password: 123456.', 'success');
     renderPengajuanBukaAkun();
 }
 
+// --- 5. Fungsi Tolak Pengajuan ---
 function tolakPengajuanBukaAkun(idPengajuan) {
     if (!confirm('Yakin ingin menolak pengajuan ini?')) return;
     var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_buka_akun') || '[]');
@@ -12677,6 +12405,654 @@ function resetUrutanProduk() {
 }
 // ============================================================
 // AKHIR BLOK 8.63
+// ============================================================
+// ============================================================
+// BLOK 8.62 - MANAJEMEN KATALOG PRODUK (SUPERADMIN)
+// ============================================================
+
+function renderManajemenKatalog() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    // --- STATISTIK ---
+    var totalProduk = semuaProduk.length;
+    var totalToko = 0;
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+            totalToko++;
+        }
+    }
+
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-crown" style="color:#FF6B00;"></i> Manajemen Katalog (SuperAdmin)</h2>
+        <p>Kelola semua produk dari Toko, Pedagang, dan COD Seller.</p>
+    </div>
+    <div class="widget-grid">
+        <div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-boxes"></i></div><div class="widget-number">${totalProduk}</div><div class="widget-label">Total Produk</div></div>
+        <div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-store"></i></div><div class="widget-number">${totalToko}</div><div class="widget-label">Total Penjual</div></div>
+    </div>
+    `;
+
+    // --- FILTER ---
+    html += `
+    <div class="card">
+        <div class="card-header">Filter & Pencarian</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+            <div style="flex:1; min-width:200px;">
+                <input type="text" id="adminSearchProduk" class="form-input" placeholder="Cari nama produk..." oninput="filterKatalogAdmin()">
+            </div>
+            <div>
+                <select id="adminFilterKategori" class="form-input" style="width:150px;" onchange="filterKatalogAdmin()">
+                    <option value="">Semua Kategori</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Makanan">Makanan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            <div>
+                <select id="adminFilterRole" class="form-input" style="width:200px;" onchange="filterKatalogAdmin()">
+                    <option value="">Semua Penjual</option>
+                    <option value="toko">Toko</option>
+                    <option value="pedagang">Pedagang Pasar</option>
+                    <option value="codseller">COD Seller</option>
+                </select>
+            </div>
+            <div>
+                <select id="adminSortBy" class="form-input" style="width:150px;" onchange="filterKatalogAdmin()">
+                    <option value="nama-asc">Nama (A-Z)</option>
+                    <option value="nama-desc">Nama (Z-A)</option>
+                    <option value="harga-asc">Harga (Terendah)</option>
+                    <option value="harga-desc">Harga (Tertinggi)</option>
+                    <option value="terbaru">Terbaru</option>
+                </select>
+            </div>
+            <div style="display:flex; align-items:center;">
+                <span style="font-size:13px; color:#888;">Total: <strong id="adminTotalProduk">${totalProduk}</strong> produk</span>
+            </div>
+        </div>
+    </div>
+    `;
+
+    // --- TABEL PRODUK ---
+    html += `
+    <div class="card">
+        <div class="table-container">
+            <table class="table" id="adminTabelProduk">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Gambar</th>
+                        <th>Nama Produk</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Penjual</th>
+                        <th>Role</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTbodyProduk">
+    `;
+
+    if (semuaProduk.length === 0) {
+        html += `<tr><td colspan="8" style="text-align:center; padding:30px; color:#888;">Belum ada produk.</td></tr>`;
+    } else {
+        for (var i = 0; i < semuaProduk.length; i++) {
+            var p = semuaProduk[i];
+            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+            var pemilik = null;
+            for (var j = 0; j < dataAkun.length; j++) {
+                if (dataAkun[j].id === p.ownerId) {
+                    pemilik = dataAkun[j];
+                    break;
+                }
+            }
+            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var rolePenjual = pemilik ? pemilik.role : '-';
+            html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${gambar ? `<img src="${gambar}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer;" onclick="previewGambar('${gambar}', '${escapeHtml(p.judul)}')">` : '-'}</td>
+                <td><strong>${escapeHtml(p.judul)}</strong></td>
+                <td>${escapeHtml(p.kategori)}</td>
+                <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
+                <td>${escapeHtml(namaPenjual)}</td>
+                <td>${rolePenjual}</td>
+                <td>
+                    <button class="button button-info button-extra-small" style="background:#17a2b8; color:white;" onclick="detailProdukAdmin('${p.id}')"><i class="fas fa-eye"></i></button>
+                    <button class="button button-danger button-extra-small" onclick="hapusProdukAdmin('${p.id}')"><i class="fas fa-trash"></i> Hapus</button>
+                </td>
+            </tr>
+            `;
+        }
+    }
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+    </div>
+    `;
+
+    areaKonten.innerHTML = html;
+}
+
+// --- Filter & Sortir Admin ---
+function filterKatalogAdmin() {
+    var search = document.getElementById('adminSearchProduk').value.toLowerCase().trim();
+    var kategori = document.getElementById('adminFilterKategori').value;
+    var role = document.getElementById('adminFilterRole').value;
+    var sort = document.getElementById('adminSortBy').value;
+
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    var filtered = semuaProduk.filter(function(p) {
+        if (search && !p.judul.toLowerCase().includes(search)) return false;
+        if (kategori && p.kategori !== kategori) return false;
+        if (role) {
+            var pemilik = null;
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === p.ownerId) {
+                    pemilik = dataAkun[i];
+                    break;
+                }
+            }
+            if (!pemilik || pemilik.role !== role) return false;
+        }
+        return true;
+    });
+
+    if (sort === 'nama-asc') filtered.sort(function(a,b) { return a.judul.localeCompare(b.judul); });
+    else if (sort === 'nama-desc') filtered.sort(function(a,b) { return b.judul.localeCompare(a.judul); });
+    else if (sort === 'harga-asc') filtered.sort(function(a,b) { return a.harga - b.harga; });
+    else if (sort === 'harga-desc') filtered.sort(function(a,b) { return b.harga - a.harga; });
+    else if (sort === 'terbaru') filtered.sort(function(a,b) { return new Date(b.tanggalUpload) - new Date(a.tanggalUpload); });
+
+    document.getElementById('adminTotalProduk').textContent = filtered.length;
+    var tbody = document.getElementById('adminTbodyProduk');
+    var html = '';
+    if (filtered.length === 0) {
+        html = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#888;">Tidak ada produk yang cocok.</td></tr>`;
+    } else {
+        for (var i = 0; i < filtered.length; i++) {
+            var p = filtered[i];
+            var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+            var pemilik = null;
+            for (var j = 0; j < dataAkun.length; j++) {
+                if (dataAkun[j].id === p.ownerId) {
+                    pemilik = dataAkun[j];
+                    break;
+                }
+            }
+            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var rolePenjual = pemilik ? pemilik.role : '-';
+            html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${gambar ? `<img src="${gambar}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">` : '-'}</td>
+                <td><strong>${escapeHtml(p.judul)}</strong></td>
+                <td>${escapeHtml(p.kategori)}</td>
+                <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
+                <td>${escapeHtml(namaPenjual)}</td>
+                <td>${rolePenjual}</td>
+                <td>
+                    <button class="button button-info button-extra-small" style="background:#17a2b8; color:white;" onclick="detailProdukAdmin('${p.id}')"><i class="fas fa-eye"></i></button>
+                    <button class="button button-danger button-extra-small" onclick="hapusProdukAdmin('${p.id}')"><i class="fas fa-trash"></i> Hapus</button>
+                </td>
+            </tr>
+            `;
+        }
+    }
+    tbody.innerHTML = html;
+}
+
+// --- Detail Produk (Modal) ---
+function detailProdukAdmin(id) {
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var p = null;
+    for (var i = 0; i < semuaProduk.length; i++) {
+        if (semuaProduk[i].id === id) { p = semuaProduk[i]; break; }
+    }
+    if (!p) { tampilkanToast('Produk tidak ditemukan!', 'error'); return; }
+
+    var dataAkun = getDataAkun();
+    var pemilik = null;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === p.ownerId) { pemilik = dataAkun[i]; break; }
+    }
+    var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+    var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+
+    var html = `
+    <div class="modal-overlay" id="modalDetailProdukAdmin" style="display:flex; z-index:9999;">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3>Detail Produk</h3>
+                <button class="modal-close" onclick="tutupModalDetailProdukAdmin()">&times;</button>
+            </div>
+            <div class="modal-body">
+                ${gambar ? `<img src="${gambar}" style="width:100%; max-height:200px; object-fit:contain; border-radius:8px; margin-bottom:10px;">` : ''}
+                <div class="grid-2">
+                    <div><strong>Judul:</strong> ${escapeHtml(p.judul)}</div>
+                    <div><strong>Kategori:</strong> ${escapeHtml(p.kategori)}</div>
+                    <div><strong>Harga:</strong> Rp ${p.harga.toLocaleString('id-ID')}</div>
+                    <div><strong>Penjual:</strong> ${escapeHtml(namaPenjual)}</div>
+                    <div style="grid-column:1/-1;"><strong>Deskripsi:</strong><br>${escapeHtml(p.deskripsi)}</div>
+                    <div style="grid-column:1/-1;"><strong>ID Penjual:</strong> ${p.ownerId}</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button button-secondary" onclick="tutupModalDetailProdukAdmin()">Tutup</button>
+            </div>
+        </div>
+    </div>
+    `;
+    var body = document.body;
+    var container = document.createElement('div');
+    container.innerHTML = html;
+    body.appendChild(container);
+}
+
+function tutupModalDetailProdukAdmin() {
+    var modal = document.getElementById('modalDetailProdukAdmin');
+    if (modal) modal.remove();
+}
+
+// --- Hapus Produk ---
+function hapusProdukAdmin(id) {
+    if (!confirm('Yakin ingin menghapus produk ini dari katalog?')) return;
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var baru = semuaProduk.filter(function(p) { return p.id !== id; });
+    localStorage.setItem('2r_produk_publik', JSON.stringify(baru));
+    tampilkanToast('Produk berhasil dihapus!', 'success');
+    renderManajemenKatalog();
+}
+
+// ============================================================
+// AKHIR BLOK 8.62
+// ============================================================
+// ============================================================
+// BLOK 8.63 - PENATAAN PRODUK (SuperAdmin)
+// ============================================================
+
+function renderPenataanProduk() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-cogs" style="color:#FF6B00;"></i> Penataan Produk (Katalog)</h2>
+        <p>Atur urutan tampilan, ukuran gambar, dan tandai produk unggulan.</p>
+    </div>
+    <div class="card">
+        <div class="card-header">Pengaturan Umum</div>
+        <div class="grid-2">
+            <div><label class="form-label">Ukuran Gambar</label>
+                <select id="ukuranGambar" class="form-input" onchange="simpanPengaturanKatalog()">
+                    <option value="kecil" ${pengaturan.ukuran === 'kecil' ? 'selected' : ''}>Kecil (150px)</option>
+                    <option value="sedang" ${pengaturan.ukuran === 'sedang' ? 'selected' : ''}>Sedang (250px)</option>
+                    <option value="besar" ${pengaturan.ukuran === 'besar' ? 'selected' : ''}>Besar (350px)</option>
+                </select>
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+                <button class="button button-primary" onclick="simpanPengaturanKatalog()"><i class="fas fa-save"></i> Simpan Pengaturan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Urutan & Fitur Produk</div>
+        <p style="font-size:13px; color:#888;">Seret atau gunakan tombol panah untuk mengatur urutan. Centang untuk menjadikan produk "Unggulan".</p>
+        <div class="table-container">
+            <table class="table" id="tabelPenataan">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">No</th>
+                        <th>Produk</th>
+                        <th>Penjual</th>
+                        <th style="text-align:center;">Unggulan</th>
+                        <th style="text-align:center;">Aksi Urutan</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    var daftarUrut = (pengaturan.urutan && pengaturan.urutan.length > 0) ? pengaturan.urutan : semuaProduk.map(function(p) { return p.id; });
+    var produkTersedia = [];
+    for (var i = 0; i < daftarUrut.length; i++) {
+        var id = daftarUrut[i];
+        var produk = null;
+        for (var j = 0; j < semuaProduk.length; j++) {
+            if (semuaProduk[j].id === id) { produk = semuaProduk[j]; break; }
+        }
+        if (produk) produkTersedia.push(produk);
+    }
+    for (var i = 0; i < semuaProduk.length; i++) {
+        var p = semuaProduk[i];
+        if (daftarUrut.indexOf(p.id) === -1) {
+            produkTersedia.push(p);
+        }
+    }
+
+    if (produkTersedia.length === 0) {
+        html += `<tr><td colspan="5" style="text-align:center; padding:30px; color:#888;">Belum ada produk.</td></tr>`;
+    } else {
+        for (var i = 0; i < produkTersedia.length; i++) {
+            var p = produkTersedia[i];
+            var pemilik = null;
+            for (var k = 0; k < dataAkun.length; k++) {
+                if (dataAkun[k].id === p.ownerId) { pemilik = dataAkun[k]; break; }
+            }
+            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var isUnggulan = (pengaturan.fitur && pengaturan.fitur.indexOf(p.id) !== -1) ? 'checked' : '';
+            var isFirst = (i === 0);
+            var isLast = (i === produkTersedia.length - 1);
+
+            html += `
+            <tr>
+                <td>${i+1}</td>
+                <td><strong>${escapeHtml(p.judul)}</strong></td>
+                <td>${escapeHtml(namaPenjual)}</td>
+                <td style="text-align:center;">
+                    <input type="checkbox" class="chk-unggulan" data-id="${p.id}" ${isUnggulan} onchange="simpanUnggulan()">
+                </td>
+                <td style="text-align:center; white-space:nowrap;">
+                    <button class="button button-primary button-extra-small" onclick="pindahProduk(${i}, -1)" ${isFirst ? 'disabled' : ''}><i class="fas fa-arrow-up"></i></button>
+                    <button class="button button-primary button-extra-small" onclick="pindahProduk(${i}, 1)" ${isLast ? 'disabled' : ''}><i class="fas fa-arrow-down"></i></button>
+                </td>
+            </tr>
+            `;
+        }
+    }
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:10px; text-align:right;">
+            <button class="button button-success" onclick="simpanUrutanProduk()"><i class="fas fa-save"></i> Simpan Urutan & Unggulan</button>
+            <button class="button button-danger" onclick="resetUrutanProduk()"><i class="fas fa-undo"></i> Reset ke Default</button>
+        </div>
+    </div>
+    `;
+
+    areaKonten.innerHTML = html;
+}
+
+function simpanPengaturanKatalog() {
+    var ukuran = document.getElementById('ukuranGambar').value;
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.ukuran = ukuran;
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    tampilkanToast('Pengaturan ukuran disimpan!', 'success');
+}
+
+function simpanUnggulan() {
+    var checkboxes = document.querySelectorAll('.chk-unggulan');
+    var fitur = [];
+    checkboxes.forEach(function(cb) {
+        if (cb.checked) {
+            fitur.push(cb.getAttribute('data-id'));
+        }
+    });
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.fitur = fitur;
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    tampilkanToast('Produk unggulan diperbarui!', 'success');
+}
+
+function pindahProduk(index, arah) {
+    var tbody = document.querySelector('#tabelPenataan tbody');
+    var rows = tbody.querySelectorAll('tr');
+    if (rows.length <= 1) return;
+    var newIndex = index + arah;
+    if (newIndex < 0 || newIndex >= rows.length) return;
+    tbody.insertBefore(rows[newIndex], rows[index]);
+    var allRows = tbody.querySelectorAll('tr');
+    for (var i = 0; i < allRows.length; i++) {
+        var td = allRows[i].querySelector('td:first-child');
+        if (td) td.textContent = i + 1;
+    }
+    updateArrowButtons();
+}
+
+function updateArrowButtons() {
+    var rows = document.querySelectorAll('#tabelPenataan tbody tr');
+    rows.forEach(function(row, idx) {
+        var btns = row.querySelectorAll('button');
+        if (btns.length === 2) {
+            btns[0].disabled = (idx === 0);
+            btns[1].disabled = (idx === rows.length - 1);
+        }
+    });
+}
+
+function simpanUrutanProduk() {
+    var rows = document.querySelectorAll('#tabelPenataan tbody tr');
+    var urutan = [];
+    rows.forEach(function(row) {
+        var cb = row.querySelector('.chk-unggulan');
+        if (cb) {
+            urutan.push(cb.getAttribute('data-id'));
+        }
+    });
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.urutan = urutan;
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    tampilkanToast('Urutan produk disimpan!', 'success');
+}
+
+function resetUrutanProduk() {
+    if (!confirm('Reset urutan produk ke default (berdasarkan waktu upload)?')) return;
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.urutan = [];
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    renderPenataanProduk();
+    tampilkanToast('Urutan direset!', 'success');
+}
+// ============================================================
+// AKHIR BLOK 8.63
+// ============================================================
+// ============================================================
+// BLOK 8.68 - JS_RENDER_LANDING_PAGE (VERSI JELAS & LENGKAP)
+// ============================================================
+
+// --- 1. Fungsi Utama Render Landing Page ---
+function renderLandingPage() {
+    // Ambil data dari localStorage
+    var dataAkun = getDataAkun();
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+
+    // ====================================================
+    // BAGIAN 1: HITUNG STATISTIK COUNTER
+    // ====================================================
+    var totalToko = 0;
+    var totalOjek = 0;
+    var totalCustomer = 0;
+
+    for (var i = 0; i < dataAkun.length; i++) {
+        var a = dataAkun[i];
+        if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+            totalToko++;
+        } else if (a.role === 'ojek') {
+            totalOjek++;
+        } else if (a.role === 'customer') {
+            totalCustomer++;
+        }
+    }
+
+    // Update angka di HTML
+    var elToko = document.getElementById('statToko');
+    var elOjek = document.getElementById('statOjek');
+    var elCustomer = document.getElementById('statCustomer');
+
+    if (elToko) elToko.textContent = totalToko;
+    if (elOjek) elOjek.textContent = totalOjek;
+    if (elCustomer) elCustomer.textContent = totalCustomer;
+
+    // ====================================================
+    // BAGIAN 2: RENDER PREVIEW TOKO TERDEKAT
+    // ====================================================
+    var tokoList = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (tokoList.length >= 3) break; // Batasi hanya 3 toko
+        var a = dataAkun[i];
+        if (a.role === 'toko' || a.role === 'pedagang') {
+            tokoList.push(a);
+        }
+    }
+
+    var htmlToko = '';
+    if (tokoList.length === 0) {
+        htmlToko = '<div style="text-align:center; color:#888; padding:10px;">Belum ada toko terdaftar.</div>';
+    } else {
+        for (var i = 0; i < tokoList.length; i++) {
+            var t = tokoList[i];
+            var jarakDummy = (i + 1) * 1.5; // Jarak dummy 1.5km, 3.0km, 4.5km
+            htmlToko += `
+            <div style="background:white; border-radius:12px; padding:15px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <div>
+                    <strong>${escapeHtml(t.nama || t.username)}</strong>
+                    <div style="font-size:12px; color:#888;">${t.role === 'toko' ? 'Toko' : 'Pedagang'}</div>
+                    <div style="font-size:11px; color:#aaa;"><i class="fas fa-map-marker-alt" style="color:#f44336;"></i> ${jarakDummy} km</div>
+                </div>
+                <button class="button button-primary button-small" onclick="toggleForm('register')"><i class="fas fa-cart-plus"></i> Beli</button>
+            </div>
+            `;
+        }
+    }
+
+    var elTokoTerdekat = document.getElementById('previewTokoTerdekat');
+    if (elTokoTerdekat) elTokoTerdekat.innerHTML = htmlToko;
+
+    // ====================================================
+    // BAGIAN 3: RENDER PREVIEW OJEK TERDEKAT
+    // ====================================================
+    var ojekList = [];
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (ojekList.length >= 2) break; // Batasi hanya 2 ojek
+        var a = dataAkun[i];
+        if (a.role === 'ojek') {
+            ojekList.push(a);
+        }
+    }
+
+    var htmlOjek = '';
+    if (ojekList.length === 0) {
+        htmlOjek = '<div style="text-align:center; color:#888; padding:10px;">Belum ada ojek terdaftar.</div>';
+    } else {
+        for (var i = 0; i < ojekList.length; i++) {
+            var o = ojekList[i];
+            var jarakDummy = (i + 1) * 2.0;
+            htmlOjek += `
+            <div style="background:white; border-radius:12px; padding:15px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <div>
+                    <strong>${escapeHtml(o.nama || o.username)}</strong>
+                    <div style="font-size:12px; color:#888;">Ojek</div>
+                    <div style="font-size:11px; color:#aaa;"><i class="fas fa-map-marker-alt" style="color:#f44336;"></i> ${jarakDummy} km</div>
+                </div>
+                <button class="button button-primary button-small" onclick="toggleForm('register')"><i class="fas fa-motorcycle"></i> Pesan</button>
+            </div>
+            `;
+        }
+    }
+
+    var elOjekTerdekat = document.getElementById('previewOjekTerdekat');
+    if (elOjekTerdekat) elOjekTerdekat.innerHTML = htmlOjek;
+
+    // ====================================================
+    // BAGIAN 4: RENDER PREVIEW PRODUK UNGGULAN
+    // ====================================================
+    var produkPreview = [];
+    for (var i = 0; i < semuaProduk.length; i++) {
+        if (produkPreview.length >= 4) break; // Batasi hanya 4 produk
+        produkPreview.push(semuaProduk[i]);
+    }
+
+    var htmlProduk = '';
+    if (produkPreview.length === 0) {
+        htmlProduk = '<div style="text-align:center; color:#888; padding:10px; grid-column:1/-1;">Belum ada produk.</div>';
+    } else {
+        for (var i = 0; i < produkPreview.length; i++) {
+            var p = produkPreview[i];
+            // Ambil gambar pertama jika ada
+            var gambar = '';
+            if (p.gambar && p.gambar.length > 0) {
+                gambar = p.gambar[0];
+            }
+            htmlProduk += `
+            <div onclick="toggleForm('register')" style="background:white; border-radius:12px; padding:10px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer;">
+                <img src="${gambar}" style="width:100%; height:100px; object-fit:cover; border-radius:8px;" onerror="this.style.display=\'none\'">
+                <div style="font-size:13px; font-weight:600; margin-top:5px;">${escapeHtml(p.judul)}</div>
+                <div style="font-size:12px; color:#FF6B00;">Rp ${p.harga.toLocaleString('id-ID')}</div>
+            </div>
+            `;
+        }
+    }
+
+    var elProduk = document.getElementById('previewProdukUnggulan');
+    if (elProduk) elProduk.innerHTML = htmlProduk;
+}
+
+
+// ============================================================
+// BLOK 8.68.2 - FUNGSI FILTER PRODUK PUBLIK
+// ============================================================
+function filterProdukPublic() {
+    var inputCari = document.getElementById('searchProdukPublic');
+    if (!inputCari) return;
+
+    var keyword = inputCari.value.toLowerCase().trim();
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var filtered = [];
+
+    for (var i = 0; i < semuaProduk.length; i++) {
+        if (semuaProduk[i].judul.toLowerCase().includes(keyword)) {
+            filtered.push(semuaProduk[i]);
+        }
+    }
+
+    var htmlProduk = '';
+    if (filtered.length === 0) {
+        htmlProduk = '<div style="text-align:center; color:#888; padding:10px; grid-column:1/-1;">Produk tidak ditemukan.</div>';
+    } else {
+        for (var i = 0; i < filtered.length; i++) {
+            var p = filtered[i];
+            var gambar = '';
+            if (p.gambar && p.gambar.length > 0) {
+                gambar = p.gambar[0];
+            }
+            htmlProduk += `
+            <div onclick="toggleForm('register')" style="background:white; border-radius:12px; padding:10px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05); cursor:pointer;">
+                <img src="${gambar}" style="width:100%; height:100px; object-fit:cover; border-radius:8px;" onerror="this.style.display=\'none\'">
+                <div style="font-size:13px; font-weight:600; margin-top:5px;">${escapeHtml(p.judul)}</div>
+                <div style="font-size:12px; color:#FF6B00;">Rp ${p.harga.toLocaleString('id-ID')}</div>
+            </div>
+            `;
+        }
+    }
+
+    var elProduk = document.getElementById('previewProdukUnggulan');
+    if (elProduk) elProduk.innerHTML = htmlProduk;
+}
+// ============================================================
+// AKHIR BLOK 8.68
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
