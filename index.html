@@ -1221,20 +1221,13 @@ function buatSidebarHTML(role) {
 <!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
 <script>
 // ============================================================
-// BLOK 6.2.1 - NAVIGASI KE HALAMAN (VERSI AMAN)
+// BLOK 6.2.1 - NAVIGASI KE HALAMAN (LENGKAP - FINAL)
 // ============================================================
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) {
-        console.warn('Element #mainContent tidak ditemukan!');
-        return;
-    }
+    if (!areaKonten) return;
 
-    // Daftar case navigasi (pastikan semua sudah ada)
-    if (namaHalaman === 'dashboard') {
-        if (typeof renderDashboard === 'function') renderDashboard();
-        else areaKonten.innerHTML = '<div>Dashboard belum siap.</div>';
-    }
+    if (namaHalaman === 'dashboard') renderDashboard();
     else if (namaHalaman === 'profile') renderProfil();
     else if (namaHalaman === 'daftarAkun') renderDaftarAkun();
     else if (namaHalaman === 'persetujuan') renderPersetujuanAkun();
@@ -1289,14 +1282,8 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
     else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
     else if (namaHalaman === 'reviewPengajuanAktivasi') renderReviewPengajuan();
-    else if (namaHalaman === 'katalogProduk') {
-        // Jika fungsi renderSemuaProduk belum siap, tampilkan pesan
-        if (typeof renderSemuaProduk === 'function') {
-            renderSemuaProduk();
-        } else {
-            areaKonten.innerHTML = '<div class="card"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Katalog Produk sedang dimuat...</h3><p>Fungsi render belum siap. Refresh sebentar lagi.</p></div></div>';
-        }
-    }
+    else if (namaHalaman === 'katalogProduk') renderSemuaProduk();
+    else if (namaHalaman === 'manajemenKatalog') renderManajemenKatalog();
     else renderPlaceholder(namaHalaman);
 }
 // ============================================================
@@ -4172,10 +4159,9 @@ function renderManajemenKatalog() {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
-    // --- HEADER + STATISTIK ---
+    // --- STATISTIK ---
     var totalProduk = semuaProduk.length;
     var totalToko = 0;
-    var roleMap = {};
     for (var i = 0; i < dataAkun.length; i++) {
         var a = dataAkun[i];
         if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
@@ -4189,20 +4175,12 @@ function renderManajemenKatalog() {
         <p>Kelola semua produk dari Toko, Pedagang, dan COD Seller.</p>
     </div>
     <div class="widget-grid">
-        <div class="widget-card">
-            <div class="widget-icon" style="color:#2196F3;"><i class="fas fa-boxes"></i></div>
-            <div class="widget-number">${totalProduk}</div>
-            <div class="widget-label">Total Produk</div>
-        </div>
-        <div class="widget-card">
-            <div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-store"></i></div>
-            <div class="widget-number">${totalToko}</div>
-            <div class="widget-label">Total Penjual</div>
-        </div>
+        <div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-boxes"></i></div><div class="widget-number">${totalProduk}</div><div class="widget-label">Total Produk</div></div>
+        <div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-store"></i></div><div class="widget-number">${totalToko}</div><div class="widget-label">Total Penjual</div></div>
     </div>
     `;
 
-    // --- FILTER & PENCARIAN ---
+    // --- FILTER ---
     html += `
     <div class="card">
         <div class="card-header">Filter & Pencarian</div>
@@ -4243,7 +4221,7 @@ function renderManajemenKatalog() {
     </div>
     `;
 
-    // --- TABEL PRODUK (DENGAN AKSI ADMIN) ---
+    // --- TABEL PRODUK ---
     html += `
     <div class="card">
         <div class="table-container">
@@ -4278,13 +4256,10 @@ function renderManajemenKatalog() {
             }
             var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
             var rolePenjual = pemilik ? pemilik.role : '-';
-
             html += `
             <tr>
                 <td>${i + 1}</td>
-                <td>
-                    ${gambar ? `<img src="${gambar}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer;" onclick="previewGambar('${gambar}', '${escapeHtml(p.judul)}')">` : '-'}
-                </td>
+                <td>${gambar ? `<img src="${gambar}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; cursor:pointer;" onclick="previewGambar('${gambar}', '${escapeHtml(p.judul)}')">` : '-'}</td>
                 <td><strong>${escapeHtml(p.judul)}</strong></td>
                 <td>${escapeHtml(p.kategori)}</td>
                 <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
@@ -4309,7 +4284,7 @@ function renderManajemenKatalog() {
     areaKonten.innerHTML = html;
 }
 
-// --- Fungsi filter & sortir Admin ---
+// --- Filter & Sortir Admin ---
 function filterKatalogAdmin() {
     var search = document.getElementById('adminSearchProduk').value.toLowerCase().trim();
     var kategori = document.getElementById('adminFilterKategori').value;
@@ -4335,7 +4310,6 @@ function filterKatalogAdmin() {
         return true;
     });
 
-    // Sorting
     if (sort === 'nama-asc') filtered.sort(function(a,b) { return a.judul.localeCompare(b.judul); });
     else if (sort === 'nama-desc') filtered.sort(function(a,b) { return b.judul.localeCompare(a.judul); });
     else if (sort === 'harga-asc') filtered.sort(function(a,b) { return a.harga - b.harga; });
@@ -4343,7 +4317,6 @@ function filterKatalogAdmin() {
     else if (sort === 'terbaru') filtered.sort(function(a,b) { return new Date(b.tanggalUpload) - new Date(a.tanggalUpload); });
 
     document.getElementById('adminTotalProduk').textContent = filtered.length;
-
     var tbody = document.getElementById('adminTbodyProduk');
     var html = '';
     if (filtered.length === 0) {
@@ -4381,7 +4354,7 @@ function filterKatalogAdmin() {
     tbody.innerHTML = html;
 }
 
-// --- Detail produk (modal) ---
+// --- Detail Produk (Modal) ---
 function detailProdukAdmin(id) {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var p = null;
@@ -4433,7 +4406,7 @@ function tutupModalDetailProdukAdmin() {
     if (modal) modal.remove();
 }
 
-// --- Hapus produk ---
+// --- Hapus Produk ---
 function hapusProdukAdmin(id) {
     if (!confirm('Yakin ingin menghapus produk ini dari katalog?')) return;
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
@@ -11236,14 +11209,15 @@ function ambilLokasiPengajuan() {
 // AKHIR BLOK 8.56
 // ============================================================
 // ============================================================
-// BLOK 8.57 - RENDER KATALOG PRODUK (SEMUA PRODUK DARI SEMUA TOKO)
 // ============================================================
+// BLOK 8.57 - RENDER KATALOG PRODUK (FINAL - DI AKHIR FILE)
+// ============================================================
+
 function renderSemuaProduk() {
     var areaKonten = document.getElementById('mainContent');
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
-    // --- Filter dan Pencarian ---
     var html = `
     <div class="page-header">
         <h2><i class="fas fa-store-alt" style="color:#FF6B00;"></i> Katalog Produk</h2>
@@ -11279,7 +11253,6 @@ function renderSemuaProduk() {
     </div>
     `;
 
-    // --- Grid Produk ---
     html += '<div id="gridKatalog" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; padding:5px;">';
 
     if (semuaProduk.length === 0) {
@@ -11288,8 +11261,6 @@ function renderSemuaProduk() {
         for (var i = 0; i < semuaProduk.length; i++) {
             var p = semuaProduk[i];
             var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
-
-            // Cari nama pemilik
             var pemilik = null;
             for (var j = 0; j < dataAkun.length; j++) {
                 if (dataAkun[j].id === p.ownerId) {
@@ -11298,7 +11269,6 @@ function renderSemuaProduk() {
                 }
             }
             var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
-
             html += `
             <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
@@ -11320,7 +11290,6 @@ function renderSemuaProduk() {
     areaKonten.innerHTML = html;
 }
 
-// --- Fungsi Filter (dipanggil dari input/select) ---
 function filterKatalog() {
     var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
     var kategori = document.getElementById('filterKategoriKatalog').value;
@@ -11346,7 +11315,6 @@ function filterKatalog() {
     });
 
     document.getElementById('totalKatalog').textContent = filtered.length;
-
     var grid = document.getElementById('gridKatalog');
     var html = '';
     if (filtered.length === 0) {
@@ -11381,6 +11349,7 @@ function filterKatalog() {
     }
     grid.innerHTML = html;
 }
+
 // ============================================================
 // AKHIR BLOK 8.57
 // ============================================================
