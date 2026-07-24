@@ -3754,6 +3754,1215 @@
 <!-- ========================================================== -->
 <!-- AKHIR BAGIAN 46                                            -->
 <!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 47 - BLOK 8.2.5: JS: EVENT LUPA PASSWORD            -->
+<!-- ========================================================== -->
 
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.5 - EVENT LUPA PASSWORD                          */
+    /* ========================================================== */
+    
+    // -------- AMBIL ELEMEN LINK LUPA PASSWORD --------
+    var lupaPasswordLink = document.getElementById('tombolLupaPassword');
+    
+    // -------- PASANG EVENT LISTENER --------
+    if (lupaPasswordLink) {
+        lupaPasswordLink.addEventListener('click', async function() {
+            // -------- AMBIL USERNAME DARI INPUT LOGIN --------
+            var username = document.getElementById('loginUsername').value.trim();
+            
+            // -------- VALIDASI USERNAME --------
+            if (!username) {
+                tampilkanToast('Masukkan username terlebih dahulu!', 'warning');
+                return;
+            }
+            
+            // -------- CEGAH RESET PASSWORD UNTUK SUPERADMIN --------
+            if (username === 'admin') {
+                tampilkanToast('SuperAdmin tidak dapat mereset password melalui form ini. Hubungi pengelola sistem.', 'error');
+                return;
+            }
+            
+            // -------- AMBIL DATA AKUN --------
+            var dataAkun = getDataAkun();
+            var user = null;
+            
+            // -------- CARI USER DENGAN USERNAME YANG SESUAI --------
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].username === username) {
+                    user = dataAkun[i];
+                    break;
+                }
+            }
+            
+            // -------- VALIDASI APAKAH USER DITEMUKAN --------
+            if (!user) {
+                tampilkanToast('Username tidak ditemukan!', 'error');
+                return;
+            }
+            
+            // -------- GENERATE PASSWORD BARU (8 KARAKTER ACAK) --------
+            var newPassword = Math.random().toString(36).slice(-8);
+            
+            // -------- HASH PASSWORD BARU --------
+            var hash = await hashPassword(newPassword);
+            
+            // -------- UPDATE PASSWORD DI DATABASE --------
+            user.password = hash;
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].username === username) {
+                    dataAkun[i].password = hash;
+                    break;
+                }
+            }
+            
+            // -------- SIMPAN PERUBAHAN --------
+            simpanDataAkun(dataAkun);
+            
+            // -------- TAMPILKAN PASSWORD BARU MELALUI TOAST --------
+            tampilkanToast('Password Anda telah direset. Password baru: ' + newPassword, 'success');
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.5                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 47                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 48 - BLOK 8.2.6: JS: EVENT LOGOUT                   -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.6 - EVENT LOGOUT                                 */
+    /* ========================================================== */
+    
+    // -------- AMBIL ELEMEN TOMBOL LOGOUT --------
+    var logoutButton = document.getElementById('buttonLogout');
+    
+    // -------- PASANG EVENT LISTENER --------
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function() {
+            // -------- TAMPILKAN KONFIRMASI --------
+            if (confirm('Keluar dari aplikasi?')) {
+                // -------- HAPUS DATA SESSION --------
+                localStorage.removeItem('2r_user');
+                localStorage.removeItem('2r_user_role');
+                localStorage.removeItem('2r_mode_kasir');
+                localStorage.removeItem('2r_user_original_role');
+                
+                // -------- TAMPILKAN TOAST --------
+                tampilkanToast('Anda telah keluar.', 'info');
+                
+                // -------- RELOAD HALAMAN (KEMBALI KE LANDING) --------
+                location.reload();
+            }
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.6                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 48                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 49 - BLOK 8.2.7: JS: EVENT HAMBURGER MENU           -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.7 - EVENT HAMBURGER MENU                         */
+    /* ========================================================== */
+    
+    // -------- AMBIL ELEMEN YANG DIPERLUKAN --------
+    var tombolMenu = document.getElementById('menuToggle');
+    var sidebar = document.querySelector('.sidebar');
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    // -------- PASANG EVENT LISTENER --------
+    if (tombolMenu && sidebar && overlay) {
+        // Event untuk tombol hamburger (toggle sidebar)
+        tombolMenu.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Mencegah konflik dengan event lain
+            
+            // Toggle class 'open' pada sidebar
+            sidebar.classList.toggle('open');
+            // Toggle class 'active' pada overlay
+            overlay.classList.toggle('active');
+        });
+
+        // -------- TAMBAHAN: TUTUP SIDEBAR SAAT OVERLAY DIKLIK --------
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
+        // -------- TAMBAHAN: TUTUP SIDEBAR SAAT ITEM SIDEBAR DIKLIK --------
+        // (untuk memastikan sidebar tertutup setelah navigasi di HP)
+        document.querySelectorAll('.sidebar-menu-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 767) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.7                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 49                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 50 - BLOK 8.2.8: JS: EVENT OVERLAY SIDEBAR          -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.8 - EVENT OVERLAY SIDEBAR                        */
+    /* ========================================================== */
+    
+    // -------- AMBIL ELEMEN OVERLAY --------
+    var overlay = document.getElementById('sidebarOverlay');
+    
+    // -------- PASANG EVENT LISTENER --------
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            // -------- AMBIL ELEMEN SIDEBAR --------
+            var sidebar = document.querySelector('.sidebar');
+            
+            // -------- TUTUP SIDEBAR DAN OVERLAY --------
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+            overlay.classList.remove('active');
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.8                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 50                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 51 - BLOK 8.6.1: JS: tampilkanDashboard()           -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.6.1 - TAMPILKAN DASHBOARD                          */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi utama untuk menampilkan dashboard setelah login sukses.
+     * Menangani:
+     * - Validasi data user
+     * - Pengecekan status akun (SUSPEN → menu terbatas)
+     * - Pembuatan sidebar sesuai role
+     * - Setup navigasi
+     * - Tampilan foto profil
+     * - Deteksi lokasi otomatis
+     * - Inisialisasi sistem tagihan
+     * - Halaman default: Katalog Produk
+     * 
+     * @param {Object} user - Objek user yang sedang login (dari session).
+     */
+    function tampilkanDashboard(user) {
+        // ==========================================================
+        // LANGKAH 1: VALIDASI DATA USER
+        // ==========================================================
+        
+        // Jika user tidak valid atau tidak memiliki nama, logout paksa
+        if (!user || !user.nama) {
+            localStorage.removeItem('2r_user');
+            localStorage.removeItem('2r_user_role');
+            location.reload();
+            return;
+        }
+
+        // ==========================================================
+        // LANGKAH 2: AMBIL DATA AKUN TERBARU DARI DATABASE
+        // ==========================================================
+        
+        var dataAkun = getDataAkun();
+        var userData = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                userData = dataAkun[i];
+                break;
+            }
+        }
+
+        // ==========================================================
+        // LANGKAH 3: CEK STATUS AKUN (SUSPEN ATAU AKTIF)
+        // ==========================================================
+        
+        // Jika akun ditemukan dan berstatus SUSPEN
+        if (userData && userData.status === 'SUSPEN') {
+            // --- Tampilkan dashboard dengan menu terbatas ---
+            document.getElementById('pageAuthentication').style.display = 'none';
+            document.getElementById('pageDashboard').style.display = 'block';
+            
+            // Update navbar
+            document.getElementById('userNama').textContent = user.nama;
+            document.getElementById('roleBadge').textContent = user.role + ' (SUSPEN)';
+            
+            // Sidebar hanya berisi menu "Bayar Tagihan"
+            var menuTerbatas = '<div class="sidebar-menu-title">AKUN DISUSPEN</div>';
+            menuTerbatas += '<div class="sidebar-menu-item active" data-page="statusAkun"><i class="fas fa-exclamation-triangle"></i><span>Bayar Tagihan</span></div>';
+            document.getElementById('sidebarContainer').innerHTML = menuTerbatas;
+            
+            // Kosongkan konten dan tampilkan halaman status akun
+            document.getElementById('mainContent').innerHTML = '';
+            renderStatusAkunGabungan(); // Fungsi ini akan dibuat di Bagian 93
+            return;
+        }
+
+        // ==========================================================
+        // LANGKAH 4: TAMPILKAN DASHBOARD NORMAL (AKUN AKTIF)
+        // ==========================================================
+        
+        // Sembunyikan authentication, tampilkan dashboard
+        document.getElementById('pageAuthentication').style.display = 'none';
+        document.getElementById('pageDashboard').style.display = 'block';
+
+        // ==========================================================
+        // LANGKAH 5: SETUP NAVBAR (NAMA, ROLE, AVATAR)
+        // ==========================================================
+        
+        // Tampilkan nama user di navbar
+        document.getElementById('userNama').textContent = user.nama;
+
+        // Tentukan label role
+        var daftarRole = {
+            superadmin: 'SuperAdmin',
+            customer: 'Customer',
+            toko: 'Toko',
+            ojek: 'Ojek',
+            pedagang: 'Pedagang Pasar',
+            staf_admin: 'Staf Admin',
+            customer_service: 'Customer Service',
+            staf_owner_toko: 'Staf Owner Toko',
+            staf_owner_ojek: 'Staf Owner Ojek',
+            sponsor: 'Sponsor'
+        };
+        document.getElementById('roleBadge').textContent = daftarRole[user.role] || user.role;
+
+        // ==========================================================
+        // LANGKAH 6: BUAT SIDEBAR SESUAI ROLE
+        // ==========================================================
+        
+        document.getElementById('sidebarContainer').innerHTML = buatSidebarHTML(user.role);
+        setupNavigasiSidebar();
+
+        // ==========================================================
+        // LANGKAH 7: TAMPILKAN FOTO PROFIL (JIKA ADA)
+        // ==========================================================
+        
+        var avatar = document.getElementById('userAvatar');
+        var placeholder = document.getElementById('userAvatarPlaceholder');
+        if (avatar && placeholder) {
+            if (user.fotoProfil) {
+                avatar.src = user.fotoProfil;
+                avatar.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                avatar.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+
+        // ==========================================================
+        // LANGKAH 8: DETEKSI LOKASI OTOMATIS (UNTUK NON-ADMIN)
+        // ==========================================================
+        
+        if (user.role !== 'superadmin' && typeof deteksiDanSimpanLokasi === 'function') {
+            deteksiDanSimpanLokasi(user.id, function(err) {
+                // Abaikan error jika lokasi gagal diambil
+            });
+        }
+
+        // ==========================================================
+        // LANGKAH 9: INISIALISASI SISTEM TAGIHAN
+        // ==========================================================
+        
+        if (typeof inisialisasiSistemTagihan === 'function') {
+            inisialisasiSistemTagihan();
+        }
+
+        // ==========================================================
+        // LANGKAH 10: TAMPILKAN HALAMAN DEFAULT (KATALOG PRODUK)
+        // ==========================================================
+        
+        // Default: tampilkan katalog produk untuk semua role
+        if (typeof renderSemuaProduk === 'function') {
+            renderSemuaProduk();
+        } else {
+            // Fallback jika fungsi katalog belum tersedia
+            document.getElementById('mainContent').innerHTML = `
+            <div class="card" style="padding:50px; text-align:center;">
+                <i class="fas fa-boxes" style="font-size:60px; color:#ddd;"></i>
+                <h3>Katalog Produk Belum Siap</h3>
+                <p style="color:#888;">Fungsi renderSemuaProduk belum didefinisikan.</p>
+            </div>
+            `;
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.6.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 51                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 52 - BLOK 8.6.2: JS: tampilkanDashboardKasir()      -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.6.2 - TAMPILKAN DASHBOARD KASIR                    */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi untuk menampilkan dashboard khusus kasir.
+     * Kasir hanya memiliki akses ke menu:
+     * - Transaksi Kasir
+     * - Pemeriksaan Stok
+     * 
+     * @param {Object} kasir - Objek kasir yang sedang login (dari session).
+     */
+    function tampilkanDashboardKasir(kasir) {
+        // ==========================================================
+        // LANGKAH 1: TAMPILKAN DASHBOARD
+        // ==========================================================
+        
+        // Sembunyikan halaman authentication
+        document.getElementById('pageAuthentication').style.display = 'none';
+        
+        // Tampilkan halaman dashboard
+        document.getElementById('pageDashboard').style.display = 'block';
+
+        // ==========================================================
+        // LANGKAH 2: UPDATE NAMA DAN ROLE DI NAVBAR
+        // ==========================================================
+        
+        // Ganti nama user di navbar dengan nama kasir
+        document.getElementById('userNama').textContent = kasir.nama;
+        
+        // Ganti badge role menjadi "Kasir"
+        document.getElementById('roleBadge').textContent = 'Kasir';
+
+        // ==========================================================
+        // LANGKAH 3: BUAT SIDEBAR KHUSUS KASIR
+        // ==========================================================
+        
+        // Sidebar kasir hanya berisi menu Transaksi dan Cek Stok
+        var sidebarHtml = '';
+        sidebarHtml += '<div class="sidebar-menu-title">Menu Kasir</div>';
+        sidebarHtml += '<div class="sidebar-menu-item" data-page="transaksiKasir"><i class="fas fa-cash-register"></i><span>Transaksi</span></div>';
+        sidebarHtml += '<div class="sidebar-menu-item" data-page="pemeriksaanStok"><i class="fas fa-clipboard-check"></i><span>Cek Stok</span></div>';
+        // Catatan: Menu Logout Kasir tidak ditampilkan di sidebar,
+        // karena logout dilakukan melalui tombol keluar di navbar (Logout umum).
+        
+        // Masukkan sidebar ke container
+        document.getElementById('sidebarContainer').innerHTML = sidebarHtml;
+
+        // ==========================================================
+        // LANGKAH 4: SETUP NAVIGASI SIDEBAR
+        // ==========================================================
+        
+        // Pasang event listener pada item sidebar agar navigasi berfungsi
+        setupNavigasiSidebar();
+
+        // ==========================================================
+        // LANGKAH 5: TAMPILKAN HALAMAN DEFAULT (TRANSAKSI KASIR)
+        // ==========================================================
+        
+        // Tampilkan halaman transaksi kasir sebagai default
+        if (typeof renderTransaksiKasir === 'function') {
+            renderTransaksiKasir();
+        } else {
+            // Fallback jika fungsi belum tersedia
+            document.getElementById('mainContent').innerHTML = `
+            <div class="page-header">
+                <h2>Transaksi Kasir</h2>
+                <p>Halaman transaksi sedang dalam pengembangan.</p>
+            </div>
+            `;
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.6.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 52                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 53 - BLOK 8.1.1: JS: buatSidebarHTML()              -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.1.1 - BUAT SIDEBAR HTML                            */
+    /* ========================================================== */
+    
+    /**
+     * Menghasilkan HTML sidebar berdasarkan role user.
+     * Fungsi ini membaca status user, paket transaksi, dan jumlah
+     * notifikasi yang belum dibaca, lalu menyusun menu yang sesuai.
+     * 
+     * @param {string} role - Role user yang sedang login.
+     * @returns {string} HTML string untuk sidebar.
+     */
+    function buatSidebarHTML(role) {
+        // -------- AMBIL DATA USER DAN NOTIFIKASI --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var notifBelumDibaca = 0;
+        if (user.id) {
+            var dataNotifikasi = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+            for (var i = 0; i < dataNotifikasi.length; i++) {
+                if (dataNotifikasi[i].userId === user.id && !dataNotifikasi[i].sudahDibaca) {
+                    notifBelumDibaca++;
+                }
+            }
+        }
+
+        // -------- CEK STATUS PRO DAN PAKET TRANSAKSI --------
+        var isPro = user.isPro || false;
+        if (!user.fitur) user.fitur = {};
+        if (!user.fitur.paketTransaksi) user.fitur.paketTransaksi = ['paket1'];
+        var paket = user.fitur.paketTransaksi;
+
+        // ==========================================================
+        // DEFINISI MENU PER ROLE
+        // ==========================================================
+        
+        var menuRole = {
+            // ===== SUPERADMIN =====
+            'superadmin': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }
+                    ]
+                },
+                {
+                    judul: 'Menu Admin',
+                    items: [
+                        { halaman: 'daftarAkun', icon: 'fa-user-plus', label: 'Daftar Akun Baru' },
+                        { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' },
+                        { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Semua Akun' },
+                        { halaman: 'transferMenu', icon: 'fa-exchange-alt', label: 'Transfer Menu' },
+                        { halaman: 'settingRekening', icon: 'fa-university', label: 'Setting Rekening' },
+                        { halaman: 'settingHargaAplikasi', icon: 'fa-tags', label: 'Setting Harga Aplikasi' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'kelolaWilayah', icon: 'fa-map-marked-alt', label: 'Kelola Wilayah' },
+                        { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+                        { halaman: 'dataPenagihan', icon: 'fa-file-invoice-dollar', label: 'Data Penagihan' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                        { halaman: 'backupRestore', icon: 'fa-database', label: 'Backup & Restore' },
+                        { halaman: 'resetCleanup', icon: 'fa-broom', label: 'Reset & Pembersihan' },
+                        { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' },
+                        { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' },
+                        { halaman: 'manajemenKatalog', icon: 'fa-tools', label: 'Manajemen Katalog' },
+                        { halaman: 'penataanProduk', icon: 'fa-edit', label: 'Penataan Produk' }
+                    ]
+                }
+            ],
+
+            // ===== CUSTOMER =====
+            'customer': [
+                {
+                    judul: 'Menu Belanja',
+                    items: [
+                        { halaman: 'dashboardCustomer', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'profilCustomer', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'lihatTokoTerdekat', icon: 'fa-store', label: 'Lihat Toko Terdekat' },
+                        { halaman: 'lihatOjekTerdekat', icon: 'fa-motorcycle', label: 'Lihat Ojek Terdekat' },
+                        { halaman: 'lihatProduk', icon: 'fa-box', label: 'Lihat Produk' },
+                        { halaman: 'keranjang', icon: 'fa-shopping-cart', label: 'Keranjang' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                    ]
+                },
+                {
+                    judul: 'Transaksi',
+                    items: [
+                        { halaman: 'daftarBelanja', icon: 'fa-clipboard-list', label: 'Daftar Belanja' },
+                        { halaman: 'riwayatBelanja', icon: 'fa-history', label: 'Riwayat Belanja' },
+                        { halaman: 'pembayaran', icon: 'fa-credit-card', label: 'Pembayaran' },
+                        { halaman: 'ulasanRating', icon: 'fa-star', label: 'Ulasan & Rating' }
+                    ]
+                },
+                {
+                    judul: 'Lainnya',
+                    items: [
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                        { halaman: 'notifikasi', icon: 'fa-bell', label: 'Notifikasi' },
+                        { halaman: 'hapusAkun', icon: 'fa-trash-alt', label: 'Hapus Akun' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' }
+                    ]
+                }
+            ],
+
+            // ===== TOKO =====
+            'toko': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                    ]
+                },
+                {
+                    judul: 'Menu Toko',
+                    items: (function() {
+                        var base = [
+                            { halaman: 'kelolaProduk', icon: 'fa-box', label: 'Kelola Produk' },
+                            { halaman: 'uploadProdukPublik', icon: 'fa-upload', label: 'Upload Produk Publik' },
+                            { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
+                            { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
+                            { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
+                            { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
+                            { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
+                            { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
+                            { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                            { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
+                            { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' },
+                            { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                        ];
+                        if (paket.includes('paket1')) {
+                            base.push(
+                                { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
+                                { halaman: 'rekapPenjualan', icon: 'fa-chart-line', label: 'Rekap Penjualan' }
+                            );
+                            if (isPro) {
+                                base.push(
+                                    { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
+                                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
+                                    { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
+                                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                );
+                            }
+                        }
+                        if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                        if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
+                        return base;
+                    })()
+                }
+            ],
+            
+            // ===== PEDAGANG =====
+            'pedagang': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                    ]
+                },
+                {
+                    judul: 'Menu Pedagang',
+                    items: (function() {
+                        var base = [
+                            { halaman: 'kelolaProduk', icon: 'fa-box', label: 'Kelola Produk' },
+                            { halaman: 'uploadProdukPublik', icon: 'fa-upload', label: 'Upload Produk Publik' },
+                            { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
+                            { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
+                            { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
+                            { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
+                            { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
+                            { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
+                            { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                            { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
+                            { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' },
+                            { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                        ];
+                        if (paket.includes('paket1')) {
+                            base.push(
+                                { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
+                                { halaman: 'rekapPenjualan', icon: 'fa-chart-line', label: 'Rekap Penjualan' }
+                            );
+                            if (isPro) {
+                                base.push(
+                                    { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
+                                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
+                                    { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
+                                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                );
+                            }
+                        }
+                        if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                        if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
+                        return base;
+                    })()
+                }
+            ],
+
+            // ===== COD SELLER =====
+            'codseller': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                    ]
+                },
+                {
+                    judul: 'Menu COD Seller',
+                    items: (function() {
+                        var base = [
+                            { halaman: 'kelolaProduk', icon: 'fa-box', label: 'Kelola Produk' },
+                            { halaman: 'uploadProdukPublik', icon: 'fa-upload', label: 'Upload Produk Publik' },
+                            { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
+                            { halaman: 'settingToko', icon: 'fa-store', label: 'Setting Toko' },
+                            { halaman: 'kelolaKasir', icon: 'fa-user-cog', label: 'Kelola Kasir' },
+                            { halaman: 'transaksiKasir', icon: 'fa-cash-register', label: 'Transaksi Kasir' },
+                            { halaman: 'pemeriksaanStok', icon: 'fa-clipboard-check', label: 'Pemeriksaan Stok' },
+                            { halaman: 'laporanKerugian', icon: 'fa-exclamation-triangle', label: 'Laporan Kerugian' },
+                            { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                            { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' },
+                            { halaman: 'orderAntarOjek', icon: 'fa-motorcycle', label: 'Pesan Ojek' },
+                            { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' }
+                        ];
+                        if (paket.includes('paket1')) {
+                            base.push(
+                                { halaman: 'transaksiPenjualan', icon: 'fa-cash-register', label: 'Transaksi Penjualan' },
+                                { halaman: 'rekapPenjualan', icon: 'fa-chart-line', label: 'Rekap Penjualan' }
+                            );
+                            if (isPro) {
+                                base.push(
+                                    { halaman: 'pengeluaran', icon: 'fa-file-invoice', label: 'Rekap Pengeluaran' },
+                                    { halaman: 'modalCash', icon: 'fa-coins', label: 'Modal Cash' },
+                                    { halaman: 'logStok', icon: 'fa-history', label: 'Log Stok' },
+                                    { halaman: 'hutangPiutang', icon: 'fa-hand-holding-usd', label: 'Hutang Piutang' }
+                                );
+                            }
+                        }
+                        if (paket.includes('paket2')) base.push({ halaman: 'transaksiOnline1', icon: 'fa-shopping-cart', label: 'Transaksi Online 1' });
+                        if (paket.includes('paket3')) base.push({ halaman: 'transaksiOnline2', icon: 'fa-credit-card', label: 'Transaksi Online 2' });
+                        return base;
+                    })()
+                }
+            ],
+
+            // ===== OJEK =====
+            'ojek': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    ]
+                },
+                {
+                    judul: 'Menu Ojek',
+                    items: [
+                        { halaman: 'orderMasuk', icon: 'fa-motorcycle', label: 'Order Masuk' },
+                        { halaman: 'riwayatOrder', icon: 'fa-history', label: 'Riwayat Order' },
+                        { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' },
+                        { halaman: 'orderAntarMasuk', icon: 'fa-tasks', label: 'Order Antar Masuk' },
+                        { halaman: 'riwayatOrderOjek', icon: 'fa-history', label: 'Riwayat Order Ojek' },
+                        { halaman: 'statusAkun', icon: 'fa-id-card', label: 'Status Akun' }
+                    ]
+                }
+            ],
+
+            // ===== STAF ADMIN =====
+            'staf_admin': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'persetujuan', icon: 'fa-check-double', label: 'Persetujuan Akun' },
+                        { halaman: 'kelolaAkun', icon: 'fa-users-cog', label: 'Kelola Akun' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'pengajuanUploadProduk', icon: 'fa-upload', label: 'Pengajuan Upload Produk' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' },
+                        { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' },
+                        { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' }
+                    ]
+                }
+            ],
+
+            // ===== CUSTOMER SERVICE =====
+            'customer_service': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'tiketBantuan', icon: 'fa-ticket-alt', label: 'Tiket Bantuan' },
+                        { halaman: 'liveChat', icon: 'fa-comments', label: 'Live Chat' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    ]
+                }
+            ],
+
+            // ===== STAF OWNER TOKO =====
+            'staf_owner_toko': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'kelolaProduk', icon: 'fa-box', label: 'Kelola Produk' },
+                        { halaman: 'uploadProdukPublik', icon: 'fa-upload', label: 'Upload Produk Publik' },
+                        { halaman: 'manajemenStokGudang', icon: 'fa-warehouse', label: 'Manajemen Stok Gudang' },
+                        { halaman: 'pesananMasuk', icon: 'fa-shopping-cart', label: 'Pesanan Masuk' },
+                        { halaman: 'laporanPenjualan', icon: 'fa-chart-line', label: 'Laporan Penjualan' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    ]
+                }
+            ],
+
+            // ===== STAF OWNER OJEK =====
+            'staf_owner_ojek': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'chat', icon: 'fa-comments', label: 'Chat' },
+                        { halaman: 'orderMasuk', icon: 'fa-motorcycle', label: 'Order Masuk' },
+                        { halaman: 'riwayatOrder', icon: 'fa-history', label: 'Riwayat Order' },
+                        { halaman: 'laporanOjek', icon: 'fa-chart-bar', label: 'Laporan Ojek' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    ]
+                }
+            ],
+
+            // ===== SPONSOR =====
+            'sponsor': [
+                {
+                    judul: 'Menu Utama',
+                    items: [
+                        { halaman: 'dashboard', icon: 'fa-th-large', label: 'Dasbor' },
+                        { halaman: 'iklanSaya', icon: 'fa-ad', label: 'Iklan Saya' },
+                        { halaman: 'statistik', icon: 'fa-chart-pie', label: 'Statistik' },
+                        { halaman: 'pembayaran', icon: 'fa-credit-card', label: 'Pembayaran' },
+                        { halaman: 'profile', icon: 'fa-user-circle', label: 'Profil' },
+                        { halaman: 'helloFriends', icon: 'fa-video', label: 'HelloFriends (Coming Soon)' },
+                        { halaman: 'menuIklan', icon: 'fa-ad', label: 'Menu Iklan' },
+                        { halaman: 'papanInformasi', icon: 'fa-bullhorn', label: 'Papan Informasi' },
+                        { halaman: 'bantuanFAQ', icon: 'fa-question-circle', label: 'Bantuan & FAQ' }
+                    ]
+                }
+            ]
+        };
+
+        // ==========================================================
+        // BANGUN HTML SIDEBAR
+        // ==========================================================
+        
+        var daftarMenu = menuRole[role] || menuRole['customer'];
+        var html = '';
+        
+        for (var i = 0; i < daftarMenu.length; i++) {
+            var bagian = daftarMenu[i];
+            html += '<div class="sidebar-menu-title">' + bagian.judul + '</div>';
+            for (var j = 0; j < bagian.items.length; j++) {
+                var item = bagian.items[j];
+                var active = (item.halaman === 'dashboard' || item.halaman === 'dashboardCustomer') ? ' active' : '';
+                var badgeHtml = '';
+                if (item.halaman === 'notifikasi' && notifBelumDibaca > 0) {
+                    badgeHtml = '<span class="notif-badge">' + notifBelumDibaca + '</span>';
+                }
+                html += '<div class="sidebar-menu-item' + active + '" data-page="' + item.halaman + '">';
+                html += '<i class="fas ' + item.icon + '"></i><span>' + item.label + badgeHtml + '</span></div>';
+            }
+        }
+        
+        return html;
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.1.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 53                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 54 - BLOK 8.1.2: JS: setupNavigasiSidebar()         -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.1.2 - SETUP NAVIGASI SIDEBAR                       */
+    /* ========================================================== */
+    
+    /**
+     * Memasang event listener pada setiap item sidebar.
+     * Fungsi ini harus dipanggil setelah sidebar HTML dimasukkan ke DOM.
+     * 
+     * Setiap item yang diklik akan:
+     * - Diberi class 'active' (dan yang lain dihapus).
+     * - Memanggil navigasiKeHalaman() dengan data-page.
+     * - Menutup sidebar jika tampilan HP (≤ 767px).
+     */
+    function setupNavigasiSidebar() {
+        // -------- AMBIL SEMUA ITEM SIDEBAR --------
+        var items = document.querySelectorAll('.sidebar-menu-item');
+        
+        // -------- PASANG EVENT LISTENER PADA SETIAP ITEM --------
+        items.forEach(function(item) {
+            item.addEventListener('click', function() {
+                // -------- AMBIL NAMA HALAMAN DARI ATRIBUT DATA --------
+                var halaman = this.getAttribute('data-page');
+                if (!halaman) return;
+                
+                // -------- HAPUS CLASS ACTIVE DARI SEMUA ITEM --------
+                items.forEach(function(m) {
+                    m.classList.remove('active');
+                });
+                
+                // -------- TAMBAHKAN CLASS ACTIVE PADA ITEM YANG DIKLIK --------
+                this.classList.add('active');
+                
+                // -------- NAVIGASI KE HALAMAN YANG SESUAI --------
+                navigasiKeHalaman(halaman);
+                
+                // -------- TUTUP SIDEBAR OTOMATIS DI HP --------
+                if (window.innerWidth <= 767) {
+                    var sidebar = document.querySelector('.sidebar');
+                    var overlay = document.getElementById('sidebarOverlay');
+                    if (sidebar) sidebar.classList.remove('open');
+                    if (overlay) overlay.classList.remove('active');
+                }
+            });
+        });
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.1.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 54                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 55 - BLOK 8.6.3: JS: getModeAktif()                 -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.6.3 - GET MODE AKTIF                                */
+    /* ========================================================== */
+    
+    /**
+     * Mengecek apakah user sedang login sebagai kasir atau owner.
+     * 
+     * @returns {string} 'kasir' jika mode kasir aktif, 'owner' jika mode owner aktif.
+     */
+    function getModeAktif() {
+        // Cek apakah ada data kasir di session
+        var kasir = JSON.parse(localStorage.getItem('2r_mode_kasir') || 'null');
+        
+        // Jika ada data kasir, berarti mode kasir aktif
+        if (kasir) {
+            return 'kasir';
+        }
+        
+        // Jika tidak ada data kasir, mode owner aktif
+        return 'owner';
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.6.3                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 55                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 56 - BLOK 8.6.4: JS: logoutKasir()                  -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.6.4 - LOGOUT KASIR                                 */
+    /* ========================================================== */
+    
+    /**
+     * Logout dari mode kasir dan kembali ke mode owner.
+     * Fungsi ini akan:
+     * - Menghapus data kasir dari session ('2r_mode_kasir').
+     * - Mengembalikan role asli user ke '2r_user_role'.
+     * - Menghapus data '2r_user_original_role'.
+     * - Melakukan reload halaman untuk kembali ke dashboard owner.
+     */
+    function logoutKasir() {
+        // -------- HAPUS DATA KASIR DARI SESSION --------
+        localStorage.removeItem('2r_mode_kasir');
+        
+        // -------- KEMBALIKAN ROLE ASLI USER --------
+        var originalRole = localStorage.getItem('2r_user_original_role') || 'toko';
+        localStorage.setItem('2r_user_role', originalRole);
+        
+        // -------- HAPUS DATA ORIGINAL ROLE --------
+        localStorage.removeItem('2r_user_original_role');
+        
+        // -------- TAMPILKAN NOTIFIKASI --------
+        tampilkanToast('Logout kasir berhasil. Kembali ke mode owner.', 'success');
+        
+        // -------- RELOAD HALAMAN --------
+        location.reload();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.6.4                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 56                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 57 - BLOK 8.6.5: JS: renderDashboard()              -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.6.5 - RENDER DASHBOARD UTAMA                       */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman dashboard utama berdasarkan role user.
+     * Fungsi ini akan menampilkan widget grid dengan statistik
+     * dan konten yang sesuai dengan role user.
+     * 
+     * Fungsi ini dipanggil saat:
+     * - User mengklik menu "Dasbor" di sidebar.
+     * - Setelah login sukses (sebagai halaman default).
+     */
+    function renderDashboard() {
+        // -------- AMBIL ROLE DAN DATA USER --------
+        var role = localStorage.getItem('2r_user_role');
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        var html = '';
+
+        // ==========================================================
+        // BAGIAN 1: DASHBOARD SUPERADMIN
+        // ==========================================================
+        if (role === 'superadmin') {
+            // -------- HITUNG STATISTIK DARI DATA AKUN --------
+            var dataAkun = getDataAkun();
+            var total = dataAkun.length;
+            var aktif = 0, menunggu = 0, nonaktif = 0;
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].status === 'AKTIF') aktif++;
+                else if (dataAkun[i].status === 'NONAKTIF (Menunggu Verifikasi)') menunggu++;
+                else nonaktif++;
+            }
+            // -------- HITUNG PENGAJUAN HAPUS DARI STAF --------
+            var pengajuanStaf = JSON.parse(localStorage.getItem('2r_pengajuan_hapus_staf') || '[]');
+            var diteruskan = pengajuanStaf.filter(function(p) { return p.status === 'MENUNGGU'; }).length;
+
+            html += '<div class="page-header"><h2>Dasbor SuperAdmin</h2><p>Selamat datang, <strong>' + (user.nama || 'SuperAdmin') + '</strong>!</p></div>';
+            html += '<div class="widget-grid">';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-users"></i></div><div class="widget-number">' + total + '</div><div class="widget-label">Total Akun</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-check-circle"></i></div><div class="widget-number">' + aktif + '</div><div class="widget-label">Akun Aktif</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF9800;"><i class="fas fa-clock"></i></div><div class="widget-number">' + menunggu + '</div><div class="widget-label">Menunggu Verifikasi</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#F44336;"><i class="fas fa-ban"></i></div><div class="widget-number">' + nonaktif + '</div><div class="widget-label">Dinonaktifkan</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF9800;"><i class="fas fa-trash-alt"></i></div><div class="widget-number">' + diteruskan + '</div><div class="widget-label">Pengajuan Hapus dari Staf</div></div>';
+            html += '</div>';
+
+            // -------- TAMPILKAN TABEL PENGAJUAN HAPUS (JIKA ADA) --------
+            if (diteruskan > 0) {
+                html += '<div class="card"><div class="card-header">Pengajuan Hapus dari Staf Admin</div><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Username</th><th>Nama</th><th>Role</th><th>Aksi</th></tr></thead><tbody>';
+                for (var i = 0; i < pengajuanStaf.length; i++) {
+                    if (pengajuanStaf[i].status === 'MENUNGGU') {
+                        var p = pengajuanStaf[i];
+                        html += '<tr><td>' + (i+1) + '</td><td>' + p.targetUsername + '</td><td>' + p.targetNama + '</td><td>' + p.targetRole + '</td><td>';
+                        html += '<button class="button button-success button-extra-small" onclick="setujuiPengajuanStaf(' + i + ')">Setujui & Hapus</button>';
+                        html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanStaf(' + i + ')">Tolak</button>';
+                        html += '</td></tr>';
+                    }
+                }
+                html += '</tbody></table></div></div>';
+            }
+        } 
+        
+        // ==========================================================
+        // BAGIAN 2: DASHBOARD STAF ADMIN
+        // ==========================================================
+        else if (role === 'staf_admin') {
+            var dataAkun = getDataAkun();
+            var menungguVerif = 0;
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].status === 'NONAKTIF (Menunggu Verifikasi)') menungguVerif++;
+            }
+            var pengajuanCustomer = JSON.parse(localStorage.getItem('2r_pengajuan_hapus') || '[]');
+            var pengajuanMenunggu = pengajuanCustomer.filter(function(p) { return p.status === 'MENUNGGU'; });
+            
+            html += '<div class="page-header"><h2>Dasbor Staf Admin</h2><p>Selamat datang, <strong>' + (user.nama || 'Staf Admin') + '</strong>!</p></div>';
+            html += '<div class="widget-grid">';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF9800;"><i class="fas fa-clock"></i></div><div class="widget-number">' + menungguVerif + '</div><div class="widget-label">Menunggu Verifikasi</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-users"></i></div><div class="widget-number">' + dataAkun.length + '</div><div class="widget-label">Total Akun</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#f44336;"><i class="fas fa-trash-alt"></i></div><div class="widget-number">' + pengajuanMenunggu.length + '</div><div class="widget-label">Pengajuan Hapus dari Customer</div></div>';
+            html += '</div>';
+            
+            if (pengajuanMenunggu.length > 0) {
+                html += '<div class="card"><div class="card-header">Pengajuan Hapus dari Customer</div><div class="table-container"><table class="table"><thead><tr><th>No</th><th>Nama</th><th>Username</th><th>Email</th><th>Aksi</th></tr></thead><tbody>';
+                for (var i = 0; i < pengajuanMenunggu.length; i++) {
+                    var p = pengajuanMenunggu[i];
+                    html += '<tr><td>' + (i+1) + '</td><td>' + p.nama + '</td><td>' + p.username + '</td><td>' + p.email + '</td><td>';
+                    html += '<button class="button button-warning button-extra-small" onclick="teruskanPengajuanHapus(' + i + ')">Teruskan ke SuperAdmin</button>';
+                    html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanHapusStaf(' + i + ')">Tolak</button>';
+                    html += '</td></tr>';
+                }
+                html += '</tbody></table></div></div>';
+            }
+        } 
+        
+        // ==========================================================
+        // BAGIAN 3: DASHBOARD TOKO / STAF OWNER TOKO
+        // ==========================================================
+        else if (role === 'toko' || role === 'staf_owner_toko') {
+            html += '<div class="page-header"><h2>Dasbor Toko</h2><p>Selamat datang, <strong>' + (user.nama || 'Toko') + '</strong>!</p></div>';
+            html += '<div class="widget-grid">';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-box"></i></div><div class="widget-number">0</div><div class="widget-label">Total Produk</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-shopping-cart"></i></div><div class="widget-number">0</div><div class="widget-label">Pesanan Baru</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-money-bill-wave"></i></div><div class="widget-number">Rp 0</div><div class="widget-label">Pendapatan</div></div>';
+            html += '</div>';
+        } 
+        
+        // ==========================================================
+        // BAGIAN 4: DASHBOARD OJEK / STAF OWNER OJEK
+        // ==========================================================
+        else if (role === 'ojek' || role === 'staf_owner_ojek') {
+            html += '<div class="page-header"><h2>Dasbor Ojek</h2><p>Selamat datang, <strong>' + (user.nama || 'Ojek') + '</strong>!</p></div>';
+            html += '<div class="widget-grid">';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-motorcycle"></i></div><div class="widget-number">0</div><div class="widget-label">Order Aktif</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-check-circle"></i></div><div class="widget-number">0</div><div class="widget-label">Order Selesai</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-money-bill-wave"></i></div><div class="widget-number">Rp 0</div><div class="widget-label">Pendapatan</div></div>';
+            html += '</div>';
+        } 
+        
+        // ==========================================================
+        // BAGIAN 5: DASHBOARD PEDAGANG
+        // ==========================================================
+        else if (role === 'pedagang') {
+            html += '<div class="page-header"><h2>Dasbor Pedagang Pasar</h2><p>Selamat datang, <strong>' + (user.nama || 'Pedagang') + '</strong>!</p></div>';
+            html += '<div class="card"><p>Selamat bergabung di Toko Online 2R! Lengkapi profil Anda.</p><button class="button button-primary margin-top-10" onclick="navigasiKeHalaman(\'profile\')">Lengkapi Profil</button></div>';
+        } 
+        
+        // ==========================================================
+        // BAGIAN 6: DASHBOARD CUSTOMER SERVICE
+        // ==========================================================
+        else if (role === 'customer_service') {
+            html += '<div class="page-header"><h2>Dasbor Customer Service</h2><p>Selamat datang, <strong>' + (user.nama || 'Customer Service') + '</strong>!</p></div>';
+            html += '<div class="widget-grid">';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF9800;"><i class="fas fa-ticket-alt"></i></div><div class="widget-number">0</div><div class="widget-label">Tiket Masuk</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-check-circle"></i></div><div class="widget-number">0</div><div class="widget-label">Tiket Selesai</div></div>';
+            html += '</div>';
+        } 
+        
+        // ==========================================================
+        // BAGIAN 7: DASHBOARD SPONSOR
+        // ==========================================================
+        else if (role === 'sponsor') {
+            html += '<div class="page-header"><h2>Dasbor Sponsor</h2><p>Selamat datang, <strong>' + (user.nama || 'Sponsor') + '</strong>!</p></div>';
+            html += '<div class="widget-grid">';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-ad"></i></div><div class="widget-number">0</div><div class="widget-label">Iklan Aktif</div></div>';
+            html += '<div class="widget-card"><div class="widget-icon" style="color:#2196F3;"><i class="fas fa-eye"></i></div><div class="widget-number">0</div><div class="widget-label">Total Impresi</div></div>';
+            html += '</div>';
+        } 
+        
+        // ==========================================================
+        // BAGIAN 8: DASHBOARD UMUM (ROLE LAIN)
+        // ==========================================================
+        else {
+            html += '<div class="page-header"><h2>Dasbor</h2><p>Selamat datang, <strong>' + (user.nama || 'User') + '</strong>!</p></div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.6.5                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 57                                            -->
+<!-- ========================================================== -->
 </body>
 </html>
