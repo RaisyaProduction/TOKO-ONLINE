@@ -6985,5 +6985,3682 @@
 <!-- ========================================================== -->
 <!-- AKHIR BAGIAN 71                                            -->
 <!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 72 - BLOK 8.7.16: JS: renderTransferMenu()          -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.7.16 - RENDER TRANSFER MENU UTAMA                   */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman utama Transfer Menu untuk SuperAdmin.
+     * Halaman ini menampilkan 3 kartu menu:
+     * - Upload Produk Publik (Atur akses upload produk untuk toko)
+     * - Paket Transaksi (Atur akses paket transaksi P1, P2, P3)
+     * - Menu Lainnya (Atur akses menu tambahan lainnya)
+     * 
+     * Fungsi ini dipanggil saat SuperAdmin mengklik menu "Transfer Menu".
+     */
+    function renderTransferMenu() {
+        // -------- CEK AKSES --------
+        var role = localStorage.getItem('2r_user_role');
+        if (role !== 'superadmin') {
+            tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL ELEMEN KONTEN --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Transfer Menu</h2>';
+        html += '<p>Pilih kategori menu yang ingin Anda transfer ke akun target.</p></div>';
+        
+        // -------- GRID KARTU MENU --------
+        html += '<div class="widget-grid">';
+        
+        // -------- KARTU 1: UPLOAD PRODUK PUBLIK --------
+        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransferUploadProduk()">';
+        html += '<div class="widget-icon" style="color:#FF6B00;"><i class="fas fa-upload"></i></div>';
+        html += '<div class="widget-number" style="font-size:18px;">Upload Produk Publik</div>';
+        html += '<div class="widget-label">Atur akses upload produk untuk toko</div>';
+        html += '</div>';
+        
+        // -------- KARTU 2: PAKET TRANSAKSI --------
+        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransferTransaksi()">';
+        html += '<div class="widget-icon" style="color:#2196F3;"><i class="fas fa-credit-card"></i></div>';
+        html += '<div class="widget-number" style="font-size:18px;">Paket Transaksi</div>';
+        html += '<div class="widget-label">Atur akses paket transaksi (P1, P2, P3)</div>';
+        html += '</div>';
+        
+        // -------- KARTU 3: MENU LAINNYA --------
+        html += '<div class="widget-card" style="cursor:pointer;" onclick="renderTransferLainnya()">';
+        html += '<div class="widget-icon" style="color:#4CAF50;"><i class="fas fa-cogs"></i></div>';
+        html += '<div class="widget-number" style="font-size:18px;">Menu Lainnya</div>';
+        html += '<div class="widget-label">Atur akses menu tambahan lainnya</div>';
+        html += '</div>';
+        
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.1 - RENDER TRANSFER UPLOAD PRODUK              */
+    /* ========================================================== */
+    
+    /**
+     * Merender submenu Transfer Upload Produk Publik.
+     * Menampilkan daftar toko dengan status upload publik (Aktif/Nonaktif)
+     * dan tombol untuk mengubah status.
+     * 
+     * Fungsi ini dipanggil saat kartu "Upload Produk Publik" diklik.
+     */
+    function renderTransferUploadProduk() {
+        // -------- CEK AKSES --------
+        var role = localStorage.getItem('2r_user_role');
+        if (role !== 'superadmin') {
+            tampilkanToast('Anda tidak memiliki akses!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL ELEMEN KONTEN --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA AKUN --------
+        var dataAkun = getDataAkun();
+        var daftarToko = [];
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].role === 'toko') {
+                daftarToko.push(dataAkun[i]);
+            }
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Transfer Upload Produk Publik</h2>';
+        html += '<p>Pilih toko yang ingin Anda aktifkan/nonaktifkan fitur upload produk publik.</p>';
+        html += '<button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button></div>';
+        
+        // -------- TABEL DAFTAR TOKO --------
+        html += '<div class="card"><div class="card-header">Daftar Toko <span style="font-weight:normal;font-size:13px;color:#888;">(Total: ' + daftarToko.length + ')</span></div>';
+        
+        if (daftarToko.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada toko</h3></div>';
+        } else {
+            html += '<div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>Nomor</th><th>ID</th><th>Username</th><th>Nama</th><th>Status Upload Publik</th><th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            
+            for (var i = 0; i < daftarToko.length; i++) {
+                var toko = daftarToko[i];
+                var statusUpload = toko.fitur && toko.fitur.uploadProdukPublik ? 'Aktif' : 'Nonaktif';
+                var badge = statusUpload === 'Aktif' ? 'badge-success' : 'badge-danger';
+                
+                html += '<tr><td>' + (i+1) + '</td><td>' + toko.id + '</td><td>' + toko.username + '</td><td>' + toko.nama + '</td>';
+                html += '<td><span class="badge ' + badge + '">' + statusUpload + '</span></td><td>';
+                
+                if (statusUpload === 'Aktif') {
+                    html += '<button class="button button-danger button-extra-small" onclick="nonaktifkanUploadPublik(\'' + toko.id + '\')">Nonaktifkan</button>';
+                } else {
+                    html += '<button class="button button-success button-extra-small" onclick="aktifkanUploadPublik(\'' + toko.id + '\')">Aktifkan</button>';
+                }
+                html += '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.2 - AKTIFKAN UPLOAD PUBLIK                     */
+    /* ========================================================== */
+    
+    /**
+     * Mengaktifkan fitur Upload Produk Publik untuk toko tertentu.
+     * 
+     * @param {string} id - ID toko yang akan diaktifkan.
+     */
+    function aktifkanUploadPublik(id) {
+        if (!confirm('Aktifkan fitur Upload Produk Publik untuk toko ini?')) return;
+        
+        var dataAkun = getDataAkun();
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === id) {
+                if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+                dataAkun[i].fitur.uploadProdukPublik = true;
+                break;
+            }
+        }
+        simpanDataAkun(dataAkun);
+        renderTransferUploadProduk();
+        tampilkanToast('Fitur Upload Produk Publik telah diaktifkan!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.3 - NONAKTIFKAN UPLOAD PUBLIK                  */
+    /* ========================================================== */
+    
+    /**
+     * Menonaktifkan fitur Upload Produk Publik untuk toko tertentu.
+     * 
+     * @param {string} id - ID toko yang akan dinonaktifkan.
+     */
+    function nonaktifkanUploadPublik(id) {
+        if (!confirm('Nonaktifkan fitur Upload Produk Publik untuk toko ini?')) return;
+        
+        var dataAkun = getDataAkun();
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === id) {
+                if (dataAkun[i].fitur) dataAkun[i].fitur.uploadProdukPublik = false;
+                break;
+            }
+        }
+        simpanDataAkun(dataAkun);
+        renderTransferUploadProduk();
+        tampilkanToast('Fitur Upload Produk Publik telah dinonaktifkan!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.4 - RENDER TRANSFER TRANSAKSI                  */
+    /* ========================================================== */
+    
+    /**
+     * Merender submenu Transfer Paket Transaksi.
+     * Menampilkan daftar akun target (Toko, Pedagang, COD Seller)
+     * dengan checkbox untuk memilih paket transaksi (P1, P2, P3)
+     * dan tombol setup data dummy.
+     * 
+     * Fungsi ini dipanggil saat kartu "Paket Transaksi" diklik.
+     */
+    function renderTransferTransaksi() {
+        // -------- CEK AKSES --------
+        var role = localStorage.getItem('2r_user_role');
+        if (role !== 'superadmin') {
+            tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL ELEMEN KONTEN --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA AKUN --------
+        var dataAkun = getDataAkun();
+        var daftarTarget = [];
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+                daftarTarget.push(a);
+            }
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header">';
+        html += '<h2>Transfer Menu – Paket Transaksi</h2>';
+        html += '<p>Pilih paket transaksi dan setup data dummy untuk akun target. <strong>Klik "Simpan" untuk menyimpan perubahan paket.</strong></p>';
+        html += '<button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+        html += '</div>';
+        
+        // -------- DAFTAR PAKET YANG TERSEDIA --------
+        html += '<div class="card">';
+        html += '<div class="card-header">Daftar Paket Transaksi yang Tersedia</div>';
+        html += '<div class="grid-2">';
+        
+        // -------- PAKET 1 --------
+        html += '<div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
+        html += '<h4 style="color:#FF6B00; margin:0 0 5px 0;">Paket Transaksi 1</h4>';
+        html += '<p style="font-size:13px; color:#555; margin:0;">Transaksi Langsung (Offline) – Pelanggan datang ke toko.</p>';
+        html += '<ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+        html += '<li>Transaksi Penjualan</li>';
+        html += '<li>Rekap Penjualan Harian/Mingguan/Bulanan</li>';
+        html += '<li>Rekap Pengeluaran</li>';
+        html += '<li>Modal Cash & Belanja</li>';
+        html += '</ul></div>';
+        
+        // -------- PAKET 2 --------
+        html += '<div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
+        html += '<h4 style="color:#2196F3; margin:0 0 5px 0;">Paket Transaksi 2</h4>';
+        html += '<p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Pembayaran langsung ke rekening toko.</p>';
+        html += '<ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+        html += '<li>Transaksi Online 1 (Daftar Pesanan & Konfirmasi Manual)</li>';
+        html += '</ul></div>';
+        
+        // -------- PAKET 3 --------
+        html += '<div style="background:#f8f9fa; border-radius:10px; padding:15px; border:1px solid #e9ecef;">';
+        html += '<h4 style="color:#4CAF50; margin:0 0 5px 0;">Paket Transaksi 3</h4>';
+        html += '<p style="font-size:13px; color:#555; margin:0;">Transaksi Online – Dengan sistem order dan konfirmasi.</p>';
+        html += '<ul style="font-size:12px; color:#666; margin:10px 0 0 0; padding-left:20px;">';
+        html += '<li>Transaksi Online 2 (Sistem Order Lengkap)</li>';
+        html += '</ul></div>';
+        
+        html += '</div></div>';
+        
+        // -------- TABEL AKUN TARGET --------
+        html += '<div class="card">';
+        html += '<div class="card-header">';
+        html += '<span>Daftar Akun Target (Toko, Pedagang, COD Seller)</span>';
+        html += '<span style="font-weight:normal; font-size:13px; color:#888;">Total: ' + daftarTarget.length + ' akun</span>';
+        html += '</div>';
+        
+        if (daftarTarget.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-store"></i><h3>Belum ada akun Toko, Pedagang, atau COD Seller</h3></div>';
+        } else {
+            html += '<form id="formTransferPaket">';
+            html += '<div class="table-container">';
+            html += '<table class="table"><thead><tr>';
+            html += '<th>No</th><th>ID</th><th>Nama</th><th>Role</th><th style="text-align:center;">Paket 1</th><th style="text-align:center;">Paket 2</th><th style="text-align:center;">Paket 3</th><th style="text-align:center;">Setup Data</th>';
+            html += '</tr></thead><tbody>';
+            
+            for (var i = 0; i < daftarTarget.length; i++) {
+                var a = daftarTarget[i];
+                var namaRole = a.role === 'toko' ? 'Toko' : (a.role === 'pedagang' ? 'Pedagang Pasar' : 'COD Seller');
+                var paketAktif = a.fitur && a.fitur.paketTransaksi ? a.fitur.paketTransaksi : [];
+                if (!Array.isArray(paketAktif)) paketAktif = [];
+                var cek1 = paketAktif.includes('paket1') ? 'checked' : '';
+                var cek2 = paketAktif.includes('paket2') ? 'checked' : '';
+                var cek3 = paketAktif.includes('paket3') ? 'checked' : '';
+                
+                html += '<tr>';
+                html += '<td>' + (i + 1) + '</td>';
+                html += '<td>' + a.id + '</td>';
+                html += '<td>' + escapeHtml(a.nama || a.username) + '</td>';
+                html += '<td>' + namaRole + '</td>';
+                html += '<td style="text-align:center;"><input type="checkbox" name="paket1" value="' + a.id + '" ' + cek1 + '></td>';
+                html += '<td style="text-align:center;"><input type="checkbox" name="paket2" value="' + a.id + '" ' + cek2 + '></td>';
+                html += '<td style="text-align:center;"><input type="checkbox" name="paket3" value="' + a.id + '" ' + cek3 + '></td>';
+                html += '<td style="text-align:center;"><button class="button button-success button-extra-small" onclick="setupDummyAkunTarget(\'' + a.id + '\')"><i class="fas fa-database"></i> Setup Dummy</button></td>';
+                html += '</tr>';
+            }
+            html += '</tbody></table></div>';
+            html += '<div style="margin-top:10px; text-align:right;"><button type="button" class="button button-primary" onclick="simpanPaketTransaksi()"><i class="fas fa-save"></i> Simpan Paket</button></div>';
+            html += '</form>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.5 - SIMPAN PAKET TRANSAKSI                     */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan perubahan paket transaksi untuk semua akun target.
+     * Mengambil status checkbox dari form dan memperbarui data akun.
+     * 
+     * Fungsi ini dipanggil saat tombol "Simpan Paket" ditekan.
+     */
+    function simpanPaketTransaksi() {
+        var dataAkun = getDataAkun();
+        var paket1 = document.querySelectorAll('input[name="paket1"]:checked');
+        var paket2 = document.querySelectorAll('input[name="paket2"]:checked');
+        var paket3 = document.querySelectorAll('input[name="paket3"]:checked');
+        
+        var mapPaket = {};
+        function tambahPaket(idAkun, namaPaket) {
+            if (!mapPaket[idAkun]) mapPaket[idAkun] = [];
+            if (!mapPaket[idAkun].includes(namaPaket)) {
+                mapPaket[idAkun].push(namaPaket);
+            }
+        }
+        paket1.forEach(function(cb) { tambahPaket(cb.value, 'paket1'); });
+        paket2.forEach(function(cb) { tambahPaket(cb.value, 'paket2'); });
+        paket3.forEach(function(cb) { tambahPaket(cb.value, 'paket3'); });
+        
+        // Reset dan isi ulang
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+                if (a.fitur) delete a.fitur.paketTransaksi;
+            }
+        }
+        for (var id in mapPaket) {
+            for (var i = 0; i < dataAkun.length; i++) {
+                if (dataAkun[i].id === id) {
+                    if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+                    dataAkun[i].fitur.paketTransaksi = mapPaket[id];
+                    break;
+                }
+            }
+        }
+        simpanDataAkun(dataAkun);
+        tampilkanToast('Paket transaksi berhasil disimpan!', 'success');
+        renderTransferTransaksi();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.6 - SETUP DUMMY AKUN TARGET                    */
+    /* ========================================================== */
+    
+    /**
+     * Mengisi data dummy (produk & modal cash) untuk akun target.
+     * Fungsi ini memanggil inisialisasiDataDummyTransaksi().
+     * 
+     * @param {string} idAkun - ID akun target yang akan diisi data dummy.
+     */
+    function setupDummyAkunTarget(idAkun) {
+        var role = localStorage.getItem('2r_user_role');
+        if (role !== 'superadmin') {
+            tampilkanToast('Hanya SuperAdmin yang dapat melakukan setup ini!', 'error');
+            return;
+        }
+        if (!confirm('Yakin ingin mengisi data dummy (produk & modal cash) untuk akun ' + idAkun + '?')) return;
+        
+        // Panggil fungsi inisialisasi dengan target ID
+        if (typeof inisialisasiDataDummyTransaksi === 'function') {
+            inisialisasiDataDummyTransaksi(idAkun);
+            tampilkanToast('Data dummy berhasil dibuat untuk ' + idAkun + '!', 'success');
+        } else {
+            tampilkanToast('Fungsi inisialisasiDataDummyTransaksi belum tersedia.', 'error');
+        }
+        renderTransferTransaksi();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.16.7 - RENDER TRANSFER LAINNYA                    */
+    /* ========================================================== */
+    
+    /**
+     * Merender submenu Transfer Menu Lainnya.
+     * Saat ini masih placeholder untuk pengembangan mendatang.
+     * 
+     * Fungsi ini dipanggil saat kartu "Menu Lainnya" diklik.
+     */
+    function renderTransferLainnya() {
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        var html = '<div class="page-header"><h2>Transfer Menu Lainnya</h2><p>Halaman ini sedang dalam pengembangan.</p>';
+        html += '<button class="button button-primary button-small" onclick="renderTransferMenu()"><i class="fas fa-arrow-left"></i> Kembali</button></div>';
+        html += '<div class="card"><div class="empty-state"><i class="fas fa-tools" style="color:#FF9800;"></i><h3>Fitur Transfer Menu Lainnya</h3><p>Segera hadir.</p></div></div>';
+        
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.7.16                                          */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 72                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 73 - BLOK 8.7.17: JS: renderKelolaWilayah()         -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.7.17 - RENDER KELOLA WILAYAH                       */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman kelola wilayah Indonesia untuk SuperAdmin.
+     * Halaman ini berisi:
+     * - Form tambah wilayah baru (Provinsi, Kabupaten, Kecamatan, Kelurahan, Kode Pos).
+     * - Tabel daftar wilayah tersimpan dengan tombol Edit dan Hapus.
+     * 
+     * Data disimpan ke localStorage dengan key '2r_data_wilayah'.
+     * Halaman ini hanya dapat diakses oleh SuperAdmin.
+     * 
+     * Fungsi ini dipanggil saat SuperAdmin mengklik menu "Kelola Wilayah".
+     */
+    function renderKelolaWilayah() {
+        // -------- AMBIL ELEMEN KONTEN --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA WILAYAH --------
+        var dataWilayah = JSON.parse(localStorage.getItem('2r_data_wilayah') || '[]');
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Kelola Wilayah Indonesia</h2>';
+        html += '<p>SuperAdmin dapat menambahkan, mengedit, atau menghapus data wilayah (Provinsi, Kabupaten, Kecamatan, Kelurahan, Kode Pos).</p></div>';
+        
+        // ==========================================================
+        // BAGIAN 1: FORM TAMBAH WILAYAH BARU
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Tambah Wilayah Baru</div>';
+        html += '<div class="grid-2">';
+        html += '<div><label class="form-label">Provinsi</label><input type="text" id="wilProvinsi" class="form-input" placeholder="Contoh: DKI Jakarta"></div>';
+        html += '<div><label class="form-label">Kabupaten / Kota</label><input type="text" id="wilKabupaten" class="form-input" placeholder="Contoh: Jakarta Pusat"></div>';
+        html += '<div><label class="form-label">Kecamatan</label><input type="text" id="wilKecamatan" class="form-input" placeholder="Contoh: Gambir"></div>';
+        html += '<div><label class="form-label">Kelurahan / Desa</label><input type="text" id="wilDesa" class="form-input" placeholder="Contoh: Gambir"></div>';
+        html += '<div><label class="form-label">Kode Pos</label><input type="text" id="wilKodepos" class="form-input" placeholder="Contoh: 10230"></div>';
+        html += '</div>';
+        html += '<button class="button button-primary margin-top-10" onclick="tambahWilayah()"><i class="fas fa-plus"></i> Tambah Wilayah</button>';
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 2: DAFTAR WILAYAH TERSIMPAN
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Daftar Wilayah Tersimpan <span style="font-weight:normal;font-size:13px;color:#888;">(Total: ' + dataWilayah.length + ' data)</span></div>';
+        
+        if (dataWilayah.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-map"></i><h3>Belum ada data wilayah</h3></div>';
+        } else {
+            html += '<div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>No</th><th>Provinsi</th><th>Kabupaten</th><th>Kecamatan</th><th>Kelurahan</th><th>Kode Pos</th><th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            
+            for (var i = 0; i < dataWilayah.length; i++) {
+                var w = dataWilayah[i];
+                html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(w.provinsi) + '</td>';
+                html += '<td>' + escapeHtml(w.kabupaten) + '</td><td>' + escapeHtml(w.kecamatan) + '</td>';
+                html += '<td>' + escapeHtml(w.desa) + '</td><td>' + (w.kodepos || '-') + '</td><td>';
+                html += '<button class="button button-primary button-extra-small" onclick="editWilayah(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
+                html += '<button class="button button-danger button-extra-small" onclick="hapusWilayah(' + i + ')"><i class="fas fa-trash"></i> Hapus</button>';
+                html += '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.17.1 - TAMBAH WILAYAH                             */
+    /* ========================================================== */
+    
+    /**
+     * Menambahkan data wilayah baru ke database.
+     * Mengambil nilai dari form, melakukan validasi, dan menyimpan
+     * data ke localStorage dengan key '2r_data_wilayah'.
+     * 
+     * Fungsi ini dipanggil saat tombol "Tambah Wilayah" ditekan.
+     */
+    function tambahWilayah() {
+        // -------- AMBIL NILAI DARI FORM --------
+        var provinsi = document.getElementById('wilProvinsi').value.trim();
+        var kabupaten = document.getElementById('wilKabupaten').value.trim();
+        var kecamatan = document.getElementById('wilKecamatan').value.trim();
+        var desa = document.getElementById('wilDesa').value.trim();
+        var kodepos = document.getElementById('wilKodepos').value.trim();
+        
+        // -------- VALIDASI --------
+        if (!provinsi || !kabupaten || !kecamatan || !desa || !kodepos) {
+            tampilkanToast('Semua data wajib diisi!', 'warning');
+            return;
+        }
+        
+        // -------- AMBIL DATA WILAYAH --------
+        var dataWilayah = JSON.parse(localStorage.getItem('2r_data_wilayah') || '[]');
+        
+        // -------- CEK DUPLIKASI --------
+        for (var i = 0; i < dataWilayah.length; i++) {
+            if (dataWilayah[i].provinsi.toLowerCase() === provinsi.toLowerCase() &&
+                dataWilayah[i].kabupaten.toLowerCase() === kabupaten.toLowerCase() &&
+                dataWilayah[i].kecamatan.toLowerCase() === kecamatan.toLowerCase() &&
+                dataWilayah[i].desa.toLowerCase() === desa.toLowerCase()) {
+                tampilkanToast('Data wilayah sudah ada!', 'warning');
+                return;
+            }
+        }
+        
+        // -------- SIMPAN DATA --------
+        dataWilayah.push({
+            id: Date.now(),
+            provinsi: provinsi,
+            kabupaten: kabupaten,
+            kecamatan: kecamatan,
+            desa: desa,
+            kodepos: kodepos
+        });
+        localStorage.setItem('2r_data_wilayah', JSON.stringify(dataWilayah));
+        
+        // -------- KOSONGKAN FORM --------
+        document.getElementById('wilProvinsi').value = '';
+        document.getElementById('wilKabupaten').value = '';
+        document.getElementById('wilKecamatan').value = '';
+        document.getElementById('wilDesa').value = '';
+        document.getElementById('wilKodepos').value = '';
+        
+        // -------- RENDER ULANG DAN NOTIFIKASI --------
+        renderKelolaWilayah();
+        tampilkanToast('Wilayah berhasil ditambahkan!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.17.2 - HAPUS WILAYAH                              */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus data wilayah berdasarkan index.
+     * 
+     * @param {number} index - Index data wilayah yang akan dihapus.
+     */
+    function hapusWilayah(index) {
+        if (!confirm('Yakin ingin menghapus data wilayah ini?')) return;
+        
+        var dataWilayah = JSON.parse(localStorage.getItem('2r_data_wilayah') || '[]');
+        dataWilayah.splice(index, 1);
+        localStorage.setItem('2r_data_wilayah', JSON.stringify(dataWilayah));
+        renderKelolaWilayah();
+        tampilkanToast('Wilayah dihapus!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.17.3 - EDIT WILAYAH                               */
+    /* ========================================================== */
+    
+    /**
+     * Mengedit data wilayah yang sudah ada.
+     * Menampilkan prompt untuk mengubah setiap field.
+     * 
+     * @param {number} index - Index data wilayah yang akan diedit.
+     */
+    function editWilayah(index) {
+        var dataWilayah = JSON.parse(localStorage.getItem('2r_data_wilayah') || '[]');
+        var w = dataWilayah[index];
+        
+        var provinsiBaru = prompt('Provinsi:', w.provinsi);
+        if (provinsiBaru === null) return;
+        
+        var kabupatenBaru = prompt('Kabupaten/Kota:', w.kabupaten);
+        if (kabupatenBaru === null) return;
+        
+        var kecamatanBaru = prompt('Kecamatan:', w.kecamatan);
+        if (kecamatanBaru === null) return;
+        
+        var desaBaru = prompt('Kelurahan/Desa:', w.desa);
+        if (desaBaru === null) return;
+        
+        var kodeposBaru = prompt('Kode Pos:', w.kodepos);
+        if (kodeposBaru === null) return;
+        
+        dataWilayah[index].provinsi = provinsiBaru.trim();
+        dataWilayah[index].kabupaten = kabupatenBaru.trim();
+        dataWilayah[index].kecamatan = kecamatanBaru.trim();
+        dataWilayah[index].desa = desaBaru.trim();
+        dataWilayah[index].kodepos = kodeposBaru.trim();
+        
+        localStorage.setItem('2r_data_wilayah', JSON.stringify(dataWilayah));
+        renderKelolaWilayah();
+        tampilkanToast('Wilayah diperbarui!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.7.17                                          */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 73                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 74 - BLOK 8.7.18: JS: renderPengajuanUploadProduk() -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.7.18 - RENDER PENGAJUAN UPLOAD PRODUK              */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman pengajuan upload produk publik.
+     * Untuk pengaju (Toko, Pedagang, COD Seller):
+     *   - Menampilkan form pengajuan baru dengan pilihan paket.
+     *   - Menampilkan riwayat pengajuan (status, alasan penolakan).
+     * Untuk SuperAdmin/Staf Admin:
+     *   - Menampilkan daftar pengajuan menunggu dengan tombol setujui/tolak.
+     *   - Menampilkan semua riwayat pengajuan.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Pengajuan Upload Produk".
+     */
+    function renderPengajuanUploadProduk() {
+        // -------- AMBIL ROLE DAN DATA USER --------
+        var role = localStorage.getItem('2r_user_role');
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PENGAJUAN DAN HARGA --------
+        var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+        var hargaUpload = JSON.parse(localStorage.getItem('2r_harga_produk_publik') || '{"10":2000,"15":3000,"25":5000}');
+        
+        // -------- FORMAT HARGA UNTUK DROPDOWN --------
+        var opsiHarga = '';
+        var keys = Object.keys(hargaUpload).sort(function(a,b) { return parseInt(a) - parseInt(b); });
+        for (var i = 0; i < keys.length; i++) {
+            var jml = keys[i];
+            var hrg = hargaUpload[jml];
+            opsiHarga += '<option value="' + jml + '">' + jml + ' Produk (Rp ' + hrg.toLocaleString('id-ID') + ')</option>';
+        }
+        if (!opsiHarga) opsiHarga = '<option value="">Belum ada paket harga</option>';
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Pengajuan Upload Produk Publik</h2>';
+        html += '<p>Ajukan penambahan slot upload produk publik ke SuperAdmin.</p></div>';
+        
+        // ==========================================================
+        // BAGIAN 1: UNTUK PENGAJU (Toko, Pedagang, COD Seller)
+        // ==========================================================
+        
+        if (role === 'toko' || role === 'pedagang' || role === 'codseller') {
+            var pengajuanSaya = dataPengajuan.filter(function(p) { return p.pengajuId === user.id; });
+            
+            // -------- FORM PENGAJUAN BARU --------
+            html += '<div class="card"><div class="card-header">Form Pengajuan Baru</div>';
+            html += '<div class="grid-2">';
+            html += '<div><label class="form-label">Pilih Paket Upload</label><select id="pilihPaketUpload" class="form-input">' + opsiHarga + '</select></div>';
+            html += '<div><label class="form-label">Alasan Permintaan</label><input type="text" id="alasanPengajuan" class="form-input" placeholder="Misal: Butuh lebih banyak untuk produk baru"></div>';
+            html += '</div>';
+            html += '<button class="button button-primary margin-top-10" onclick="simpanPengajuanUpload()"><i class="fas fa-paper-plane"></i> Ajukan</button>';
+            html += '</div>';
+            
+            // -------- RIWAYAT PENGAJUAN SAYA --------
+            html += '<div class="card"><div class="card-header">Riwayat Pengajuan Saya</div>';
+            if (pengajuanSaya.length === 0) {
+                html += '<div class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada pengajuan</h3></div>';
+            } else {
+                html += '<div class="table-container"><table class="table"><thead><tr>';
+                html += '<th>Tanggal</th><th>Jumlah Diminta</th><th>Alasan</th><th>Status</th><th>Alasan Penolakan</th>';
+                html += '</tr></thead><tbody>';
+                
+                pengajuanSaya.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+                for (var i = 0; i < pengajuanSaya.length; i++) {
+                    var p = pengajuanSaya[i];
+                    var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
+                    var alasanTolak = p.status === 'DITOLAK' ? (p.alasanPenolakan || '-') : '-';
+                    
+                    html += '<tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td>';
+                    html += '<td>' + p.jumlahDiminta + ' Produk</td>';
+                    html += '<td>' + escapeHtml(p.alasan || '-') + '</td>';
+                    html += '<td><span class="badge ' + badge + '">' + p.status + '</span></td>';
+                    html += '<td>' + escapeHtml(alasanTolak) + '</td></tr>';
+                }
+                html += '</tbody></table></div>';
+            }
+            html += '</div>';
+            
+        // ==========================================================
+        // BAGIAN 2: UNTUK SUPERADMIN / STAF ADMIN
+        // ==========================================================
+        } else if (role === 'superadmin' || role === 'staf_admin') {
+            var pengajuanMasuk = dataPengajuan.filter(function(p) { return p.status === 'MENUNGGU'; });
+            
+            // -------- DAFTAR PENGAJUAN MENUNGGU --------
+            html += '<div class="card"><div class="card-header">Daftar Pengajuan Masuk (Menunggu)</div>';
+            if (pengajuanMasuk.length === 0) {
+                html += '<div class="empty-state"><i class="fas fa-check-double"></i><h3>Tidak ada pengajuan menunggu</h3></div>';
+            } else {
+                html += '<div class="table-container"><table class="table"><thead><tr>';
+                html += '<th>No</th><th>Pengaju</th><th>Akun</th><th>Jumlah Diminta</th><th>Alasan</th><th>Aksi</th>';
+                html += '</tr></thead><tbody>';
+                
+                for (var i = 0; i < pengajuanMasuk.length; i++) {
+                    var p = pengajuanMasuk[i];
+                    html += '<tr><td>' + (i+1) + '</td><td>' + escapeHtml(p.namaPengaju || '-') + '</td>';
+                    html += '<td>' + p.pengajuId + '</td><td>' + p.jumlahDiminta + ' Produk</td>';
+                    html += '<td>' + escapeHtml(p.alasan || '-') + '</td><td>';
+                    html += '<button class="button button-success button-extra-small" onclick="setujuiPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-check"></i> Setujui</button>';
+                    html += '<button class="button button-danger button-extra-small" onclick="tolakPengajuanUpload(\'' + p.id + '\')"><i class="fas fa-times"></i> Tolak</button>';
+                    html += '</td></tr>';
+                }
+                html += '</tbody></table></div>';
+            }
+            html += '</div>';
+            
+            // -------- SEMUA RIWAYAT PENGAJUAN --------
+            html += '<div class="card"><div class="card-header">Semua Riwayat Pengajuan</div>';
+            if (dataPengajuan.length === 0) {
+                html += '<div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada riwayat</h3></div>';
+            } else {
+                html += '<div class="table-container"><table class="table"><thead><tr>';
+                html += '<th>Tanggal</th><th>Pengaju</th><th>Jumlah</th><th>Status</th>';
+                html += '</tr></thead><tbody>';
+                
+                dataPengajuan.sort(function(a,b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+                for (var i = 0; i < dataPengajuan.length; i++) {
+                    var p = dataPengajuan[i];
+                    var badge = p.status === 'DISETUJUI' ? 'badge-success' : (p.status === 'DITOLAK' ? 'badge-danger' : 'badge-warning');
+                    html += '<tr><td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td>';
+                    html += '<td>' + escapeHtml(p.namaPengaju || '-') + '</td>';
+                    html += '<td>' + p.jumlahDiminta + ' Produk</td>';
+                    html += '<td><span class="badge ' + badge + '">' + p.status + '</span></td></tr>';
+                }
+                html += '</tbody></table></div>';
+            }
+            html += '</div>';
+            
+        // ==========================================================
+        // BAGIAN 3: AKSES DIBATASI UNTUK ROLE LAIN
+        // ==========================================================
+        } else {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-lock"></i><h3>Akses Dibatasi</h3>';
+            html += '<p>Halaman ini hanya untuk akun Toko, Pedagang, COD Seller, dan Admin.</p></div></div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.18.1 - SIMPAN PENGAJUAN BARU                      */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan pengajuan baru ke database.
+     * Pengaju memilih paket dan mengisi alasan.
+     * Status awal: MENUNGGU.
+     * 
+     * Fungsi ini dipanggil saat tombol "Ajukan" ditekan.
+     */
+    function simpanPengajuanUpload() {
+        // -------- CEK AKSES --------
+        var role = localStorage.getItem('2r_user_role');
+        if (role !== 'toko' && role !== 'pedagang' && role !== 'codseller') {
+            tampilkanToast('Anda tidak memiliki akses untuk mengajukan!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL DATA DARI FORM --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var paketSelect = document.getElementById('pilihPaketUpload');
+        var alasanInput = document.getElementById('alasanPengajuan');
+        var jumlahDiminta = parseInt(paketSelect.value);
+        var alasan = alasanInput.value.trim();
+        
+        // -------- VALIDASI --------
+        if (!jumlahDiminta || jumlahDiminta <= 0) {
+            tampilkanToast('Pilih paket yang valid!', 'warning');
+            return;
+        }
+        if (!alasan) {
+            tampilkanToast('Isi alasan permintaan Anda!', 'warning');
+            return;
+        }
+        
+        // -------- CEK PENGAJUAN SEBELUMNYA (CEGAH DUPLIKASI) --------
+        var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+        for (var i = 0; i < dataPengajuan.length; i++) {
+            if (dataPengajuan[i].pengajuId === user.id && dataPengajuan[i].status === 'MENUNGGU') {
+                tampilkanToast('Anda masih memiliki pengajuan yang menunggu!', 'warning');
+                return;
+            }
+        }
+        
+        // -------- BUAT PENGAJUAN BARU --------
+        var pengajuanBaru = {
+            id: 'AJU-' + Date.now(),
+            pengajuId: user.id,
+            namaPengaju: user.nama || user.username,
+            jumlahDiminta: jumlahDiminta,
+            alasan: alasan,
+            status: 'MENUNGGU',
+            tanggal: new Date().toISOString()
+        };
+        dataPengajuan.push(pengajuanBaru);
+        localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+        
+        // -------- KOSONGKAN FORM DAN NOTIFIKASI --------
+        document.getElementById('alasanPengajuan').value = '';
+        tampilkanToast('Pengajuan berhasil dikirim ke SuperAdmin!', 'success');
+        renderPengajuanUploadProduk();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.18.2 - SETUJUI PENGAJUAN (ADMIN)                  */
+    /* ========================================================== */
+    
+    /**
+     * Menyetujui pengajuan dan menambahkan kapasitas upload.
+     * Status pengajuan berubah menjadi DISETUJUI.
+     * Kapasitas produk akun ditambah sesuai jumlah diminta.
+     * 
+     * @param {string} idPengajuan - ID pengajuan yang akan disetujui.
+     */
+    function setujuiPengajuanUpload(idPengajuan) {
+        if (!confirm('Setujui pengajuan ini? Kapasitas upload akan ditambahkan.')) return;
+        
+        var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+        var dataAkun = getDataAkun();
+        var targetPengajuan = null;
+        var indexPengajuan = -1;
+        
+        // -------- CARI PENGAJUAN --------
+        for (var i = 0; i < dataPengajuan.length; i++) {
+            if (dataPengajuan[i].id === idPengajuan) {
+                targetPengajuan = dataPengajuan[i];
+                indexPengajuan = i;
+                break;
+            }
+        }
+        if (!targetPengajuan) {
+            tampilkanToast('Pengajuan tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // -------- TAMBAH KAPASITAS AKUN --------
+        var akunDitemukan = false;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === targetPengajuan.pengajuId) {
+                if (!dataAkun[i].fitur) dataAkun[i].fitur = {};
+                var currentMaks = dataAkun[i].fitur.maksProdukPublik || 5;
+                dataAkun[i].fitur.maksProdukPublik = currentMaks + targetPengajuan.jumlahDiminta;
+                akunDitemukan = true;
+                break;
+            }
+        }
+        
+        // -------- UPDATE STATUS PENGAJUAN --------
+        if (akunDitemukan) {
+            dataPengajuan[indexPengajuan].status = 'DISETUJUI';
+            localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+            simpanDataAkun(dataAkun);
+            tampilkanToast('Pengajuan disetujui! Kapasitas produk telah ditambah.', 'success');
+        } else {
+            tampilkanToast('Akun pengaju tidak ditemukan!', 'error');
+        }
+        renderPengajuanUploadProduk();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.18.3 - TOLAK PENGAJUAN (ADMIN)                    */
+    /* ========================================================== */
+    
+    /**
+     * Menolak pengajuan dengan alasan.
+     * Status pengajuan berubah menjadi DITOLAK.
+     * Alasan penolakan disimpan.
+     * 
+     * @param {string} idPengajuan - ID pengajuan yang akan ditolak.
+     */
+    function tolakPengajuanUpload(idPengajuan) {
+        var alasan = prompt('Alasan penolakan (opsional):');
+        if (alasan === null) return;
+        alasan = alasan.trim() || 'Tidak ada alasan yang diberikan';
+        
+        var dataPengajuan = JSON.parse(localStorage.getItem('2r_pengajuan_upload') || '[]');
+        for (var i = 0; i < dataPengajuan.length; i++) {
+            if (dataPengajuan[i].id === idPengajuan) {
+                dataPengajuan[i].status = 'DITOLAK';
+                dataPengajuan[i].alasanPenolakan = alasan;
+                break;
+            }
+        }
+        localStorage.setItem('2r_pengajuan_upload', JSON.stringify(dataPengajuan));
+        tampilkanToast('Pengajuan ditolak!', 'success');
+        renderPengajuanUploadProduk();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.7.18                                          */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 74                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 75 - BLOK 8.7.19: JS: renderDataPenagihan()         -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.7.19 - RENDER DATA PENAGIHAN                       */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman data penagihan untuk SuperAdmin/Staf Admin.
+     * Halaman ini menampilkan tabel gabungan data akun dan tagihan:
+     * - ID Akun, Nama, Role, Status Pro, Status Akun
+     * - Tagihan Terakhir, Status Tagihan
+     * - Aksi: Edit/Hapus Tagihan, Force Suspen/Aktifkan Akun
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Data Penagihan".
+     * Hanya SuperAdmin dan Staf Admin yang memiliki akses.
+     */
+    function renderDataPenagihan() {
+        // -------- CEK AKSES --------
+        var role = localStorage.getItem('2r_user_role');
+        if (role !== 'superadmin' && role !== 'staf_admin') {
+            tampilkanToast('Anda tidak memiliki akses ke halaman ini!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL ELEMEN KONTEN --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA AKUN DAN TAGIHAN --------
+        var dataAkun = getDataAkun();
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Data Penagihan Akun</h2>';
+        html += '<p>Daftar tagihan dan status akun Toko, Pedagang, dan COD Seller.</p></div>';
+        
+        // -------- TOMBOL TAMBAH TAGIHAN MANUAL (SUPERADMIN SAJA) --------
+        html += '<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">';
+        if (role === 'superadmin') {
+            html += '<button class="button button-primary" onclick="bukaModalTambahTagihan()"><i class="fas fa-plus"></i> Tambah Tagihan Manual</button>';
+        }
+        html += '<span style="font-size:12px; color:#888; align-self:center;">* Sistem otomatis berjalan tanggal 5 & 10. Tombol ini untuk intervensi darurat.</span>';
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 1: GABUNGKAN DATA AKUN DENGAN TAGIHAN TERAKHIR
+        // ==========================================================
+        
+        var dataGabungan = [];
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            
+            // -------- FILTER HANYA ROLE BISNIS (TOKO, PEDAGANG, COD SELLER) --------
+            if (a.role === 'superadmin' || a.role === 'customer') continue;
+            
+            // -------- CARI TAGIHAN TERAKHIR UNTUK AKUN INI --------
+            var tagihanTerakhir = null;
+            for (var j = dataTagihan.length - 1; j >= 0; j--) {
+                if (dataTagihan[j].akunId === a.id) {
+                    tagihanTerakhir = dataTagihan[j];
+                    break;
+                }
+            }
+            
+            dataGabungan.push({
+                id: a.id,
+                nama: a.nama || a.username,
+                role: a.role,
+                statusAkun: a.status || 'AKTIF',
+                isPro: a.isPro || false,
+                tagihanTerakhir: tagihanTerakhir
+            });
+        }
+        
+        // ==========================================================
+        // BAGIAN 2: TABEL DATA PENAGIHAN
+        // ==========================================================
+        
+        if (dataGabungan.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i>';
+            html += '<h3>Belum ada data akun</h3></div></div>';
+        } else {
+            html += '<div class="card"><div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>ID Akun</th><th>Nama</th><th>Role</th><th>Akun Pro</th><th>Status Akun</th>';
+            html += '<th>Tagihan Terakhir</th><th>Status Tagihan</th><th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            
+            for (var i = 0; i < dataGabungan.length; i++) {
+                var d = dataGabungan[i];
+                var badgeAkun = d.statusAkun === 'SUSPEN' ? 'badge-danger' : 'badge-success';
+                var badgePro = d.isPro ? 'badge-success' : 'badge-warning';
+                
+                // -------- FORMAT TAGIHAN TERAKHIR --------
+                var tagihanText = '-';
+                var badgeTagihan = 'badge-secondary';
+                var tagihanId = '';
+                
+                if (d.tagihanTerakhir) {
+                    var t = d.tagihanTerakhir;
+                    tagihanText = 'Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + ' (' + t.bulan + '/' + t.tahun + ')';
+                    badgeTagihan = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+                    tagihanId = t.id;
+                }
+                
+                html += '<tr><td>' + escapeHtml(d.id) + '</td>';
+                html += '<td>' + escapeHtml(d.nama) + '</td>';
+                html += '<td>' + d.role + '</td>';
+                html += '<td><span class="badge ' + badgePro + '">' + (d.isPro ? 'PRO' : 'Biasa') + '</span></td>';
+                html += '<td><span class="badge ' + badgeAkun + '">' + d.statusAkun + '</span></td>';
+                html += '<td>' + tagihanText + '</td>';
+                html += '<td><span class="badge ' + badgeTagihan + '">' + (d.tagihanTerakhir ? d.tagihanTerakhir.status : '-') + '</span></td>';
+                
+                // -------- KOLOM AKSI --------
+                html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+                
+                // -------- TOMBOL CRUD TAGIHAN (HANYA JIKA ADA TAGIHAN) --------
+                if (tagihanId) {
+                    html += '<button class="button button-primary button-extra-small" onclick="bukaModalEditTagihan(\'' + tagihanId + '\')"><i class="fas fa-edit"></i> Edit</button>';
+                    html += '<button class="button button-danger button-extra-small" onclick="hapusTagihanManual(\'' + tagihanId + '\')"><i class="fas fa-trash"></i> Hapus</button>';
+                } else {
+                    html += '<span style="color:#999; font-size:12px;">Tidak ada</span>';
+                }
+                
+                // -------- TOMBOL FORCE STATUS (SELALU ADA) --------
+                html += ' &nbsp;|&nbsp; ';
+                if (d.statusAkun !== 'SUSPEN') {
+                    html += '<button class="button button-warning button-extra-small" onclick="forceSuspenAkun(\'' + d.id + '\')"><i class="fas fa-pause"></i> Suspen</button>';
+                } else {
+                    html += '<button class="button button-success button-extra-small" onclick="forceAktifAkun(\'' + d.id + '\')"><i class="fas fa-play"></i> Aktifkan</button>';
+                }
+                html += '</td>';
+                html += '</tr>';
+            }
+            html += '</tbody></table></div></div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.19.1 - FORCE SUSPEN AKUN                          */
+    /* ========================================================== */
+    
+    /**
+     * Memaksa SUSPEN akun secara manual.
+     * Hanya untuk SuperAdmin.
+     * 
+     * @param {string} idAkun - ID akun yang akan di-SUSPEN.
+     */
+    function forceSuspenAkun(idAkun) {
+        if (!confirm('Yakin ingin memaksa SUSPEN akun ini secara manual?')) return;
+        
+        var dataAkun = getDataAkun();
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === idAkun) {
+                dataAkun[i].status = 'SUSPEN';
+                break;
+            }
+        }
+        simpanDataAkun(dataAkun);
+        tampilkanToast('Akun berhasil di-SUSPEN secara manual!', 'success');
+        renderDataPenagihan();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.19.2 - FORCE AKTIFKAN AKUN                        */
+    /* ========================================================== */
+    
+    /**
+     * Memaksa AKTIFkan akun secara manual.
+     * Hanya untuk SuperAdmin.
+     * 
+     * @param {string} idAkun - ID akun yang akan di-AKTIFkan.
+     */
+    function forceAktifAkun(idAkun) {
+        if (!confirm('Yakin ingin memaksa AKTIFkan akun ini secara manual?')) return;
+        
+        var dataAkun = getDataAkun();
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === idAkun) {
+                dataAkun[i].status = 'AKTIF';
+                break;
+            }
+        }
+        simpanDataAkun(dataAkun);
+        tampilkanToast('Akun berhasil di-AKTIFkan secara manual!', 'success');
+        renderDataPenagihan();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.19.3 - CRUD TAGIHAN MANUAL (MODAL)                */
+    /* ========================================================== */
+    
+    /**
+     * Membuka modal tambah tagihan manual.
+     * Mengisi dropdown akun dengan daftar akun bisnis.
+     * Mode: Tambah Baru.
+     */
+    function bukaModalTambahTagihan() {
+        document.getElementById('tagihanEditId').value = '';
+        document.getElementById('tagihanJumlah').value = '';
+        document.getElementById('tagihanStatus').value = 'BELUM_BAYAR';
+        document.getElementById('modalTagihanTitle').textContent = 'Tambah Tagihan Manual (Darurat)';
+        
+        // -------- ISI DROPDOWN AKUN --------
+        var dataAkun = getDataAkun();
+        var select = document.getElementById('tagihanAkunId');
+        select.innerHTML = '<option value="">-- Pilih Akun --</option>';
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+                select.innerHTML += '<option value="' + a.id + '">' + a.id + ' - ' + a.nama + ' (' + a.role + ')</option>';
+            }
+        }
+        document.getElementById('tagihanAkunId').disabled = false;
+        bukaModal('modalFormTagihan');
+    }
+
+    /**
+     * Membuka modal edit tagihan dengan data yang sudah ada.
+     * Mode: Edit.
+     * 
+     * @param {string} idTagihan - ID tagihan yang akan diedit.
+     */
+    function bukaModalEditTagihan(idTagihan) {
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        var tagihan = null;
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].id === idTagihan) {
+                tagihan = dataTagihan[i];
+                break;
+            }
+        }
+        if (!tagihan) {
+            tampilkanToast('Tagihan tidak ditemukan!', 'error');
+            return;
+        }
+        
+        document.getElementById('tagihanEditId').value = tagihan.id;
+        document.getElementById('tagihanAkunId').value = tagihan.akunId;
+        document.getElementById('tagihanBulan').value = tagihan.bulan;
+        document.getElementById('tagihanTahun').value = tagihan.tahun;
+        document.getElementById('tagihanJumlah').value = tagihan.jumlahTagihan;
+        document.getElementById('tagihanStatus').value = tagihan.status;
+        document.getElementById('modalTagihanTitle').textContent = 'Edit Tagihan (Darurat)';
+        document.getElementById('tagihanAkunId').disabled = true;
+        bukaModal('modalFormTagihan');
+    }
+
+    /**
+     * Menutup modal form tagihan.
+     */
+    function tutupModalTagihan() {
+        tutupModal('modalFormTagihan');
+        document.getElementById('tagihanAkunId').disabled = false;
+    }
+
+    /**
+     * Menyimpan tagihan (tambah baru atau edit).
+     * Fungsi ini dipanggil saat tombol "Simpan" pada modal ditekan.
+     */
+    function simpanTagihanManual() {
+        var editId = document.getElementById('tagihanEditId').value;
+        var akunId = document.getElementById('tagihanAkunId').value;
+        var bulan = parseInt(document.getElementById('tagihanBulan').value);
+        var tahun = parseInt(document.getElementById('tagihanTahun').value);
+        var jumlah = parseFloat(document.getElementById('tagihanJumlah').value) || 0;
+        var status = document.getElementById('tagihanStatus').value;
+        
+        // -------- VALIDASI --------
+        if (!akunId) {
+            tampilkanToast('Pilih akun terlebih dahulu!', 'warning');
+            return;
+        }
+        if (!bulan || !tahun || jumlah <= 0) {
+            tampilkanToast('Data belum lengkap atau jumlah tidak valid!', 'warning');
+            return;
+        }
+        
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        
+        if (editId) {
+            // -------- EDIT DATA --------
+            var found = false;
+            for (var i = 0; i < dataTagihan.length; i++) {
+                if (dataTagihan[i].id === editId) {
+                    dataTagihan[i].bulan = bulan;
+                    dataTagihan[i].tahun = tahun;
+                    dataTagihan[i].jumlahTagihan = jumlah;
+                    dataTagihan[i].status = status;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                tampilkanToast('Tagihan tidak ditemukan!', 'error');
+                return;
+            }
+            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+            tampilkanToast('Tagihan berhasil diperbarui!', 'success');
+        } else {
+            // -------- TAMBAH BARU (CEGAH DUPLIKASI) --------
+            for (var i = 0; i < dataTagihan.length; i++) {
+                if (dataTagihan[i].akunId === akunId && dataTagihan[i].bulan === bulan && dataTagihan[i].tahun === tahun) {
+                    tampilkanToast('Tagihan untuk akun ini pada bulan dan tahun tersebut sudah ada!', 'warning');
+                    return;
+                }
+            }
+            var tagihanBaru = {
+                id: 'TAG-' + Date.now(),
+                akunId: akunId,
+                bulan: bulan,
+                tahun: tahun,
+                jumlahTagihan: jumlah,
+                status: status
+            };
+            dataTagihan.push(tagihanBaru);
+            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+            tampilkanToast('Tagihan berhasil ditambahkan secara manual!', 'success');
+        }
+        
+        tutupModalTagihan();
+        renderDataPenagihan();
+    }
+
+    /**
+     * Menghapus tagihan manual.
+     * 
+     * @param {string} idTagihan - ID tagihan yang akan dihapus.
+     */
+    function hapusTagihanManual(idTagihan) {
+        if (!confirm('Yakin ingin menghapus tagihan ini? Data tidak dapat dikembalikan.')) return;
+        
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        var dataBaru = [];
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].id !== idTagihan) {
+                dataBaru.push(dataTagihan[i]);
+            }
+        }
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataBaru));
+        tampilkanToast('Tagihan dihapus!', 'success');
+        renderDataPenagihan();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.7.19                                          */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 75                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 76 - BLOK 8.7.20: JS: renderBantuanFAQ()            -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.7.20 - RENDER BANTUAN & FAQ                        */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman Bantuan & FAQ untuk semua user.
+     * Halaman ini menampilkan:
+     * - Kategori FAQ dengan pertanyaan dan jawaban (accordion).
+     * - Tombol untuk langsung chat ke Customer Service.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Bantuan & FAQ".
+     */
+    function renderBantuanFAQ() {
+        // -------- AMBIL ELEMEN KONTEN UTAMA --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Pusat Bantuan & FAQ</h2>';
+        html += '<p>Temukan jawaban atas pertanyaan seputar aplikasi Toko Online 2R.</p></div>';
+        
+        // -------- DATA FAQ (HARDCODED) --------
+        var dataFAQ = [
+            {
+                kategori: 'Akun & Login',
+                items: [
+                    { q: 'Bagaimana cara mendaftar akun?', a: 'Anda dapat mendaftar dengan mengisi form registrasi di halaman login. Pilih role Anda, lalu isi username, password, dan nama lengkap.' },
+                    { q: 'Saya lupa password, bagaimana cara meresetnya?', a: 'Pada halaman login, masukkan username Anda, lalu klik tombol "Lupa Password?". Sistem akan mereset password Anda menjadi 8 karakter acak baru.' },
+                    { q: 'Mengapa akun saya statusnya "Menunggu Verifikasi"?', a: 'Jika mendaftar sebagai Toko atau Ojek, akun harus disetujui oleh SuperAdmin/Staf Admin terlebih dahulu.' }
+                ]
+            },
+            {
+                kategori: 'Belanja & Layanan (Untuk Customer)',
+                items: [
+                    { q: 'Bagaimana cara membeli produk?', a: 'Anda dapat melihat produk di menu "Lihat Produk" atau "Lihat Toko Terdekat". Jika tertarik, tambahkan ke Keranjang, lalu lanjutkan ke Pembayaran.' },
+                    { q: 'Bagaimana cara memberi Ulasan & Rating?', a: 'Masuk ke menu "Ulasan & Rating", pilih ID Toko/Ojek target, isi bintang dan komentar, lalu klik Kirim Ulasan.' },
+                    { q: 'Bagaimana cara chat dengan penjual?', a: 'Anda bisa menggunakan fitur "Chat". Cari ID tujuan (misal ID Toko), lalu kirim pesan.' }
+                ]
+            },
+            {
+                kategori: 'Manajemen Toko & Ojek (Untuk Penjual)',
+                items: [
+                    { q: 'Bagaimana cara menambahkan produk di gudang?', a: 'Masuk ke menu "Manajemen Stok Gudang", lalu klik "Tambah Produk Baru". Isi data produk dengan lengkap.' },
+                    { q: 'Dimana saya bisa melihat pesanan masuk?', a: 'Anda bisa melihat daftar pesanan di menu "Pesanan Masuk" (Toko) atau "Order Masuk" (Ojek).' },
+                    { q: 'Bagaimana cara membalas ulasan dari Customer?', a: 'Buka menu "Ulasan & Rating". Di bawah ulasan yang masuk, akan ada kolom input teks untuk membalas.' }
+                ]
+            },
+            {
+                kategori: 'Administrasi & Pengelolaan (Untuk Admin)',
+                items: [
+                    { q: 'Bagaimana cara menyetujui akun baru?', a: 'Masuk ke menu "Persetujuan Akun". Lihat daftar akun yang menunggu, lalu klik "Setujui" atau "Tolak".' },
+                    { q: 'Bagaimana cara menambahkan Iklan atau Pengumuman?', a: 'Klik menu "Menu Iklan" lalu "Tambah Iklan Baru". Untuk Pengumuman, buka "Papan Informasi" lalu "Tambah Pengumuman".' }
+                ]
+            }
+        ];
+        
+        // ==========================================================
+        // BAGIAN 1: FAQ CONTAINER
+        // ==========================================================
+        
+        html += '<div class="faq-container">';
+        
+        for (var k = 0; k < dataFAQ.length; k++) {
+            var kat = dataFAQ[k];
+            
+            // -------- JUDUL KATEGORI --------
+            html += '<div class="faq-kategori-title">' + escapeHtml(kat.kategori) + '</div>';
+            
+            // -------- ITEM PERTANYAAN --------
+            for (var i = 0; i < kat.items.length; i++) {
+                var item = kat.items[i];
+                var indexId = 'faq_' + k + '_' + i;
+                
+                html += '<div class="faq-item" id="' + indexId + '">';
+                html += '  <div class="faq-question" onclick="toggleFaq(\'' + indexId + '\')">';
+                html += '    <span>' + escapeHtml(item.q) + '</span>';
+                html += '    <i class="fas fa-chevron-down"></i>';
+                html += '  </div>';
+                html += '  <div class="faq-answer">' + escapeHtml(item.a) + '</div>';
+                html += '</div>';
+            }
+        }
+        
+        // -------- BAGIAN HUBUNGI KAMI --------
+        html += '<div class="faq-kategori-title">Hubungi Kami</div>';
+        html += '<div class="card" style="text-align:center; background:#f8f9fa;">';
+        html += '  <p style="font-size:14px; color:#666; margin-bottom:10px;">Butuh bantuan lebih lanjut? Silakan chat langsung dengan Admin atau Customer Service.</p>';
+        html += '  <button class="button button-primary" onclick="klikChatCS()"><i class="fas fa-comments"></i> Buka Chat</button>';
+        html += '</div>';
+        
+        html += '</div>'; // tutup faq-container
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.7.20.1 - TOGGLE FAQ (ACCORDION)                     */
+    /* ========================================================== */
+    
+    /**
+     * Membuka atau menutup jawaban dari satu item FAQ.
+     * Jika item belum aktif, akan membuka dan menutup item lain yang terbuka.
+     * Jika item sudah aktif, akan menutupnya.
+     * 
+     * @param {string} id - ID elemen faq-item yang akan di-toggle.
+     */
+    function toggleFaq(id) {
+        var element = document.getElementById(id);
+        if (!element) return;
+        
+        if (element.classList.contains('active')) {
+            // -------- TUTUP JIKA SUDAH AKTIF --------
+            element.classList.remove('active');
+        } else {
+            // -------- TUTUP SEMUA ITEM LAIN YANG TERBUKA --------
+            var allItems = document.querySelectorAll('.faq-item');
+            for (var i = 0; i < allItems.length; i++) {
+                allItems[i].classList.remove('active');
+            }
+            
+            // -------- BUKA ITEM YANG DIKLIK --------
+            element.classList.add('active');
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.7.20                                          */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 76                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 77 - BLOK 8.8.1: JS: renderManajemenStokGudang()    -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.8.1 - RENDER MANAJEMEN STOK GUDANG                 */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman manajemen stok gudang untuk Toko.
+     * Halaman ini menampilkan:
+     * - Total produk dan total stok.
+     * - Tombol Tambah Produk Baru dan Download Excel.
+     * - Filter (Semua, Terlaris, Tidak Laku, Mendekati Kadaluarsa).
+     * - Tabel produk dengan kolom aksi (Edit, Hapus).
+     * 
+     * Data produk disimpan di localStorage dengan key '2r_produk_gudang'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Manajemen Stok Gudang".
+     */
+    function renderManajemenStokGudang() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PRODUK GUDANG --------
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        // -------- HITUNG TOTAL STOK --------
+        var totalStok = 0;
+        for (var i = 0; i < produkSaya.length; i++) {
+            totalStok += produkSaya[i].jumlahStok;
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Manajemen Stok Gudang</h2>';
+        html += '<p>Total Produk: <strong>' + produkSaya.length + '</strong> | Total Stok: <strong>' + totalStok + '</strong></p></div>';
+        
+        // -------- TOMBOL AKSI --------
+        html += '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">';
+        html += '<button class="button button-primary" onclick="bukaFormTambahProdukGudang()"><i class="fas fa-plus"></i> Tambah Produk Baru</button>';
+        html += '<button class="button button-success" onclick="downloadExcelStokGudang()"><i class="fas fa-file-excel"></i> Download Excel</button>';
+        html += '</div>';
+        
+        // -------- FILTER BUTTON --------
+        html += '<div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">';
+        html += '<button class="button button-primary button-small" onclick="tampilkanProdukGudang(\'semua\')">Semua</button>';
+        html += '<button class="button button-success button-small" onclick="tampilkanProdukGudang(\'terlaris\')">Terlaris</button>';
+        html += '<button class="button button-warning button-small" onclick="tampilkanProdukGudang(\'tidakLaku\')">Tidak Laku</button>';
+        html += '<button class="button button-danger button-small" onclick="tampilkanProdukGudang(\'kadaluarsa\')">Mendekati Kadaluarsa</button>';
+        html += '</div>';
+        
+        // -------- TABEL PRODUK --------
+        html += '<div id="tabelProdukGudang">' + tampilkanTabelProdukGudang(produkSaya, 'semua') + '</div>';
+        
+        // -------- FORM TAMBAH PRODUK (TERSEMBUNYI) --------
+        html += '<div id="formTambahProdukGudang" class="hidden" style="margin-top:20px;">' + renderFormTambahProdukGudang() + '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.1.1 - TAMPILKAN TABEL PRODUK (FILTER)            */
+    /* ========================================================== */
+    
+    /**
+     * Menghasilkan HTML tabel produk berdasarkan filter.
+     * Filter yang tersedia: semua, terlaris, tidakLaku, kadaluarsa.
+     * 
+     * @param {Array} dataProduk - Array produk milik toko yang sedang login.
+     * @param {string} filter - Jenis filter ('semua', 'terlaris', 'tidakLaku', 'kadaluarsa').
+     * @returns {string} HTML string tabel produk.
+     */
+    function tampilkanTabelProdukGudang(dataProduk, filter) {
+        var dataFilter = [];
+        var hariIni = new Date();
+        hariIni.setHours(0, 0, 0, 0);
+        
+        // -------- FILTER DATA --------
+        if (filter === 'semua') {
+            dataFilter = dataProduk;
+        } else if (filter === 'terlaris') {
+            // Sort by totalTerjual (descending), ambil 10 teratas
+            dataFilter = dataProduk.slice().sort(function(a, b) {
+                return (b.totalTerjual || 0) - (a.totalTerjual || 0);
+            }).slice(0, 10);
+        } else if (filter === 'tidakLaku') {
+            dataFilter = dataProduk.filter(function(p) {
+                return (p.totalTerjual || 0) === 0 && p.jumlahStok > 10;
+            });
+        } else if (filter === 'kadaluarsa') {
+            // Produk dengan tanggal kadaluarsa ≤ 30 hari dari hari ini, tetapi belum kadaluarsa
+            dataFilter = dataProduk.filter(function(p) {
+                var kad = new Date(p.tanggalKadaluarsa);
+                kad.setHours(0, 0, 0, 0);
+                var selisih = Math.ceil((kad - hariIni) / (1000 * 60 * 60 * 24));
+                return selisih <= 30 && selisih >= 0;
+            });
+        }
+        
+        // -------- JIKA TIDAK ADA DATA --------
+        if (dataFilter.length === 0) {
+            return '<div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk</h3></div>';
+        }
+        
+        // -------- HITUNG TOTAL --------
+        var totalStok = 0, totalBeli = 0, totalJual = 0;
+        for (var i = 0; i < dataFilter.length; i++) {
+            totalStok += dataFilter[i].jumlahStok;
+            totalBeli += dataFilter[i].hargaBeli * dataFilter[i].jumlahStok;
+            totalJual += dataFilter[i].hargaJual * dataFilter[i].jumlahStok;
+        }
+        var totalKeuntungan = totalJual - totalBeli;
+        
+        // -------- BANGUN HTML TABEL --------
+        var html = '<div class="table-container"><table class="table"><thead><tr>';
+        html += '<th>Nama Produk</th><th>Kode</th><th>Harga Beli</th><th>Harga Jual</th><th>Stok</th>';
+        html += '<th>Jenis</th><th>Satuan</th><th>Kadaluarsa</th><th>Tanggal Input</th><th>Penginput</th><th>Terjual</th><th>Aksi</th>';
+        html += '</tr></thead><tbody>';
+        
+        for (var i = 0; i < dataFilter.length; i++) {
+            var p = dataFilter[i];
+            var badge = 'badge-success';
+            var kad = new Date(p.tanggalKadaluarsa);
+            kad.setHours(0, 0, 0, 0);
+            var selisih = Math.ceil((kad - hariIni) / (1000 * 60 * 60 * 24));
+            if (selisih <= 30 && selisih >= 0) {
+                badge = 'badge-warning';
+            } else if (selisih < 0) {
+                badge = 'badge-danger';
+            }
+            
+            html += '<tr><td>' + escapeHtml(p.namaProduk) + '</td>';
+            html += '<td>' + escapeHtml(p.kodeProduk) + '</td>';
+            html += '<td>Rp ' + p.hargaBeli + '</td>';
+            html += '<td>Rp ' + p.hargaJual + '</td>';
+            html += '<td>' + p.jumlahStok + '</td>';
+            html += '<td>' + escapeHtml(p.jenis) + '</td>';
+            html += '<td>' + escapeHtml(p.satuan) + '</td>';
+            html += '<td><span class="badge ' + badge + '">' + p.tanggalKadaluarsa + '</span></td>';
+            html += '<td>' + (p.tanggalInput || '-') + '</td>';
+            html += '<td>' + escapeHtml(p.namaPenginput || '-') + '</td>';
+            html += '<td>' + p.totalTerjual + '</td>';
+            html += '<td>';
+            html += '<button class="button button-primary button-extra-small" onclick="renderEditProdukGudang(' + p.id + ')"><i class="fas fa-edit"></i> Edit</button>';
+            html += '<button class="button button-danger button-extra-small" onclick="hapusProdukGudang(' + p.id + ')"><i class="fas fa-trash"></i> Hapus</button>';
+            html += '</td></tr>';
+        }
+        
+        // -------- BARIS TOTAL --------
+        html += '<tr style="background:#f0fdf4; font-weight:700; border-top:3px solid #2e7d32;">';
+        html += '<td colspan="2" style="text-align:right;">TOTAL</td>';
+        html += '<td style="color:#d32f2f;">Rp ' + totalBeli.toLocaleString('id-ID') + '</td>';
+        html += '<td style="color:#1976d2;">Rp ' + totalJual.toLocaleString('id-ID') + '</td>';
+        html += '<td>' + totalStok + '</td>';
+        html += '<td colspan="2"></td><td colspan="2"></td><td></td><td></td>';
+        html += '<td><span style="color:#2e7d32;">Keuntungan: Rp ' + totalKeuntungan.toLocaleString('id-ID') + '</span></td>';
+        html += '</tr>';
+        html += '</tbody></table></div>';
+        
+        return html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.1.2 - FILTER PRODUK GUDANG                        */
+    /* ========================================================== */
+    
+    /**
+     * Memfilter dan merender ulang tabel produk gudang.
+     * Fungsi ini dipanggil saat tombol filter ditekan.
+     * 
+     * @param {string} filter - Jenis filter ('semua', 'terlaris', 'tidakLaku', 'kadaluarsa').
+     */
+    function tampilkanProdukGudang(filter) {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        var tabel = document.getElementById('tabelProdukGudang');
+        if (tabel) {
+            tabel.innerHTML = tampilkanTabelProdukGudang(produkSaya, filter);
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.1.3 - HAPUS PRODUK GUDANG                         */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus produk dari gudang berdasarkan ID.
+     * 
+     * @param {number} id - ID produk yang akan dihapus.
+     */
+    function hapusProdukGudang(id) {
+        if (!confirm('Yakin ingin menghapus produk ini secara permanen?')) return;
+        
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var baru = [];
+        for (var i = 0; i < semuaProdukGudang.length; i++) {
+            if (semuaProdukGudang[i].id !== id) {
+                baru.push(semuaProdukGudang[i]);
+            }
+        }
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(baru));
+        renderManajemenStokGudang();
+        tampilkanToast('Produk berhasil dihapus!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.1.4 - DOWNLOAD EXCEL (CSV)                        */
+    /* ========================================================== */
+    
+    /**
+     * Mendownload data stok gudang dalam format CSV.
+     * File dapat dibuka di Excel.
+     */
+    function downloadExcelStokGudang() {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        if (produkSaya.length === 0) {
+            tampilkanToast('Belum ada produk untuk di-download!', 'warning');
+            return;
+        }
+        
+        // -------- HITUNG TOTAL --------
+        var totalStok = 0, totalBeli = 0, totalJual = 0;
+        for (var i = 0; i < produkSaya.length; i++) {
+            totalStok += produkSaya[i].jumlahStok;
+            totalBeli += produkSaya[i].hargaBeli * produkSaya[i].jumlahStok;
+            totalJual += produkSaya[i].hargaJual * produkSaya[i].jumlahStok;
+        }
+        var totalKeuntungan = totalJual - totalBeli;
+        
+        // -------- BANGUN STRING CSV (dengan BOM UTF-8) --------
+        var csv = "Nama Produk;Kode Produk;Harga Beli;Harga Jual;Stok;Jenis;Satuan;Tanggal Kadaluarsa;Tanggal Input;Penginput;Total Terjual\n";
+        for (var i = 0; i < produkSaya.length; i++) {
+            var p = produkSaya[i];
+            csv += '"' + p.namaProduk + '";"' + p.kodeProduk + '";' + p.hargaBeli + ';' + p.hargaJual + ';' + p.jumlahStok + ';"' + p.jenis + '";"' + p.satuan + '";"' + p.tanggalKadaluarsa + '";"' + (p.tanggalInput || '-') + '";"' + (p.namaPenginput || '-') + '";' + p.totalTerjual + '\n';
+        }
+        csv += ';TOTAL;' + totalBeli + ';' + totalJual + ';' + totalStok + ';;;;;;' + totalKeuntungan + '\n';
+        
+        // -------- BUAT BLOB DAN DOWNLOAD --------
+        var blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        var url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = 'Laporan_Stok_Gudang_' + new Date().toISOString().slice(0,10) + '.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        tampilkanToast('Data berhasil didownload sebagai CSV/Excel!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.8.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 77                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 78 - BLOK 8.8.2: JS: renderFormTambahProdukGudang() -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.8.2 - RENDER FORM TAMBAH PRODUK GUDANG             */
+    /* ========================================================== */
+    
+    /**
+     * Menghasilkan HTML form tambah produk gudang.
+     * Form ini berisi:
+     * - Nama Produk
+     * - Kode Produk (Barcode) + tombol Scan
+     * - Harga Beli (Modal)
+     * - Harga Jual
+     * - Harga Grosir
+     * - Minimal Beli Grosir
+     * - Jumlah Stok
+     * - Jenis Produk (dropdown)
+     * - Satuan (dropdown)
+     * - Tanggal Kadaluarsa
+     * - Upload Foto Produk (multiple)
+     * - Tanggal Input
+     * - Penginput
+     * 
+     * @returns {string} HTML string form tambah produk.
+     */
+    function renderFormTambahProdukGudang() {
+        var html = '';
+        html += '<div class="card">';
+        html += '  <div class="card-header">';
+        html += '    Tambah Produk Baru';
+        html += '    <button class="button button-danger button-small" onclick="tutupFormTambahProdukGudang()">';
+        html += '      <i class="fas fa-times"></i> Tutup';
+        html += '    </button>';
+        html += '  </div>';
+        
+        // -------- GRID 2 KOLOM --------
+        html += '  <div class="grid-2">';
+        
+        // -------- NAMA PRODUK --------
+        html += '    <div><label class="form-label">Nama Produk</label>';
+        html += '      <input type="text" id="gudangNamaProduk" class="form-input" placeholder="Nama produk">';
+        html += '    </div>';
+        
+        // -------- KODE PRODUK (BARCODE) --------
+        html += '    <div><label class="form-label">Kode Produk (Barcode)</label>';
+        html += '      <div style="display:flex; gap:5px;">';
+        html += '        <input type="text" id="gudangKodeProduk" class="form-input" placeholder="Scan atau input manual">';
+        html += '        <button class="button button-primary button-small" onclick="scanBarcodeProduk()">';
+        html += '          <i class="fas fa-camera"></i> Scan';
+        html += '        </button>';
+        html += '      </div>';
+        html += '    </div>';
+        
+        // -------- HARGA BELI --------
+        html += '    <div><label class="form-label">Harga Beli (Modal)</label>';
+        html += '      <input type="number" id="gudangHargaBeli" class="form-input" placeholder="Harga modal">';
+        html += '    </div>';
+        
+        // -------- HARGA JUAL --------
+        html += '    <div><label class="form-label">Harga Jual</label>';
+        html += '      <input type="number" id="gudangHargaJual" class="form-input" placeholder="Harga jual">';
+        html += '    </div>';
+        
+        // -------- HARGA GROSIR --------
+        html += '    <div><label class="form-label">Harga Grosir (Rp)</label>';
+        html += '      <input type="number" id="gudangHargaGrosir" class="form-input" placeholder="Harga jika beli banyak">';
+        html += '    </div>';
+        
+        // -------- MINIMAL BELI GROSIR --------
+        html += '    <div><label class="form-label">Minimal Beli Grosir</label>';
+        html += '      <input type="number" id="gudangMinBeli" class="form-input" placeholder="Minimal pcs untuk harga grosir">';
+        html += '    </div>';
+        
+        // -------- JUMLAH STOK --------
+        html += '    <div><label class="form-label">Jumlah Stok</label>';
+        html += '      <input type="number" id="gudangJumlahStok" class="form-input" placeholder="Jumlah stok">';
+        html += '    </div>';
+        
+        // -------- JENIS PRODUK --------
+        html += '    <div><label class="form-label">Jenis Produk</label>';
+        html += '      <select id="gudangJenis" class="form-input">';
+        html += '        <option value="Makanan">Makanan</option>';
+        html += '        <option value="Minuman">Minuman</option>';
+        html += '        <option value="Obat-Obatan">Obat-Obatan</option>';
+        html += '        <option value="Pakaian">Pakaian</option>';
+        html += '        <option value="Elektronik">Elektronik</option>';
+        html += '        <option value="Lainnya">Lainnya</option>';
+        html += '      </select>';
+        html += '    </div>';
+        
+        // -------- SATUAN --------
+        html += '    <div><label class="form-label">Satuan</label>';
+        html += '      <select id="gudangSatuan" class="form-input">';
+        html += '        <option value="Pcs">Pcs</option>';
+        html += '        <option value="Liter">Liter</option>';
+        html += '        <option value="Kg">Kg</option>';
+        html += '        <option value="Box">Box</option>';
+        html += '        <option value="Kardus">Kardus</option>';
+        html += '        <option value="Lusin">Lusin</option>';
+        html += '      </select>';
+        html += '    </div>';
+        
+        // -------- TANGGAL KADALUARSA --------
+        html += '    <div><label class="form-label">Tanggal Kadaluarsa</label>';
+        html += '      <input type="date" id="gudangTanggalKadaluarsa" class="form-input">';
+        html += '    </div>';
+        
+        // -------- UPLOAD FOTO PRODUK --------
+        html += '    <div><label class="form-label">Upload Foto Produk</label>';
+        html += '      <input type="file" id="gudangFotoProduk" multiple accept=".jpg,.jpeg,.png" style="display:none;">';
+        html += '      <button class="button button-primary button-small" onclick="document.getElementById(\'gudangFotoProduk\').click();">';
+        html += '        Pilih Foto';
+        html += '      </button>';
+        html += '      <span id="gudangNamaFoto" style="font-size:12px; color:#888; margin-left:10px;">Belum ada foto</span>';
+        html += '    </div>';
+        html += '  </div>'; // tutup grid-2
+        
+        // -------- TANGGAL INPUT & PENGINPUT --------
+        html += '  <div class="grid-2" style="margin-top:10px;">';
+        html += '    <div><label class="form-label">Tanggal Input</label>';
+        html += '      <input type="date" id="gudangTanggalInput" class="form-input">';
+        html += '    </div>';
+        html += '    <div><label class="form-label">Penginput</label>';
+        html += '      <input type="text" id="gudangPenginput" class="form-input" placeholder="Nama penginput">';
+        html += '    </div>';
+        html += '  </div>';
+        
+        // -------- TOMBOL SIMPAN --------
+        html += '  <button class="button button-primary margin-top-10" onclick="simpanProdukGudang()">';
+        html += '    <i class="fas fa-save"></i> Simpan Produk';
+        html += '  </button>';
+        html += '</div>';
+        
+        return html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.2.1 - BUKA FORM TAMBAH PRODUK                     */
+    /* ========================================================== */
+    
+    /**
+     * Membuka form tambah produk gudang.
+     * Menampilkan form, mengosongkan input, dan memastikan event listener terpasang.
+     */
+    function bukaFormTambahProdukGudang() {
+        var form = document.getElementById('formTambahProdukGudang');
+        if (form) {
+            // -------- TAMPILKAN FORM --------
+            form.classList.remove('hidden');
+            
+            // -------- SCROLL KE FORM --------
+            form.scrollIntoView({ behavior: 'smooth' });
+            
+            // -------- PASANG EVENT LISTENER FOTO --------
+            setTimeout(function() {
+                pasangEventListenerFotoGudang();
+            }, 100);
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.2.2 - TUTUP FORM TAMBAH PRODUK                    */
+    /* ========================================================== */
+    
+    /**
+     * Menutup form tambah produk gudang.
+     */
+    function tutupFormTambahProdukGudang() {
+        var form = document.getElementById('formTambahProdukGudang');
+        if (form) {
+            form.classList.add('hidden');
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.2.3 - EVENT LISTENER UPLOAD FOTO                  */
+    /* ========================================================== */
+    
+    /**
+     * Memasang event listener pada input file foto produk.
+     * Saat user memilih file, nama file ditampilkan dan gambar disimpan
+     * ke temporary storage sebagai base64.
+     */
+    function pasangEventListenerFotoGudang() {
+        var input = document.getElementById('gudangFotoProduk');
+        if (input) {
+            // -------- HAPUS EVENT LISTENER LAMA (CEGAH DUPLIKASI) --------
+            var listener = function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    // -------- TAMPILKAN NAMA FILE --------
+                    document.getElementById('gudangNamaFoto').textContent = file.name;
+                    
+                    // -------- BACA FILE DAN SIMPAN SEBAGAI BASE64 --------
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        localStorage.setItem('2r_produk_gudang_foto_temp', ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.removeEventListener('change', listener);
+            input.addEventListener('change', listener);
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.8.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 78                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 79 - BLOK 8.8.3: JS: simpanProdukGudang()           -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.8.3 - SIMPAN PRODUK GUDANG                         */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan produk baru ke gudang.
+     * Mengambil data dari form tambah produk, melakukan validasi,
+     * membuat objek produk, menyimpan ke localStorage, dan membersihkan form.
+     * 
+     * Fungsi ini dipanggil saat tombol "Simpan Produk" pada form ditekan.
+     */
+    function simpanProdukGudang() {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var nama = document.getElementById('gudangNamaProduk').value.trim();
+        var kode = document.getElementById('gudangKodeProduk').value.trim();
+        var hargaBeli = document.getElementById('gudangHargaBeli').value.trim();
+        var hargaJual = document.getElementById('gudangHargaJual').value.trim();
+        var hargaGrosir = document.getElementById('gudangHargaGrosir').value.trim();
+        var minBeli = document.getElementById('gudangMinBeli').value.trim();
+        var stok = document.getElementById('gudangJumlahStok').value.trim();
+        var jenis = document.getElementById('gudangJenis').value;
+        var satuan = document.getElementById('gudangSatuan').value;
+        var kadaluarsa = document.getElementById('gudangTanggalKadaluarsa').value;
+        var foto = localStorage.getItem('2r_produk_gudang_foto_temp') || '';
+        var tanggalInput = document.getElementById('gudangTanggalInput').value;
+        var penginput = document.getElementById('gudangPenginput').value.trim();
+        
+        // ==========================================================
+        // BAGIAN 1: VALIDASI DATA WAJIB
+        // ==========================================================
+        
+        if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
+            tampilkanToast('Semua data wajib diisi!', 'warning');
+            return;
+        }
+        
+        // ==========================================================
+        // BAGIAN 2: VALIDASI NILAI HARGA DAN STOK
+        // ==========================================================
+        
+        if (parseInt(hargaBeli) <= 0 || parseInt(hargaJual) <= 0 || parseInt(stok) < 0) {
+            tampilkanToast('Harga dan stok harus bernilai positif!', 'warning');
+            return;
+        }
+        
+        // ==========================================================
+        // BAGIAN 3: VALIDASI TANGGAL KADALUARSA
+        // ==========================================================
+        
+        var hariIni = new Date();
+        hariIni.setHours(0, 0, 0, 0);
+        var tanggalKadaluarsa = new Date(kadaluarsa);
+        tanggalKadaluarsa.setHours(0, 0, 0, 0);
+        
+        if (tanggalKadaluarsa < hariIni) {
+            tampilkanToast('Tanggal kadaluarsa tidak boleh kurang dari hari ini!', 'warning');
+            return;
+        }
+        
+        // ==========================================================
+        // BAGIAN 4: BUAT OBJEK PRODUK BARU
+        // ==========================================================
+        
+        var arrayFoto = foto ? [foto] : [];
+        
+        var produkBaru = {
+            id: Date.now(),
+            tokoId: user.id,
+            namaProduk: nama,
+            kodeProduk: kode || '-',
+            hargaBeli: parseInt(hargaBeli),
+            hargaJual: parseInt(hargaJual),
+            hargaGrosir: parseInt(hargaGrosir) || 0,
+            minBeliGrosir: parseInt(minBeli) || 0,
+            jumlahStok: parseInt(stok),
+            jenis: jenis,
+            satuan: satuan,
+            tanggalKadaluarsa: kadaluarsa,
+            fotoProduk: arrayFoto,
+            tanggalInput: tanggalInput,
+            namaPenginput: penginput,
+            tanggalMasuk: new Date().toISOString(),
+            status: 'Aktif',
+            totalTerjual: 0
+        };
+        
+        // ==========================================================
+        // BAGIAN 5: SIMPAN KE LOCALSTORAGE
+        // ==========================================================
+        
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        semuaProdukGudang.push(produkBaru);
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        
+        // ==========================================================
+        // BAGIAN 6: BERSIHKAN TEMPORARY STORAGE
+        // ==========================================================
+        
+        localStorage.removeItem('2r_produk_gudang_foto_temp');
+        
+        // ==========================================================
+        // BAGIAN 7: KOSONGKAN FORM
+        // ==========================================================
+        
+        document.getElementById('gudangNamaProduk').value = '';
+        document.getElementById('gudangKodeProduk').value = '';
+        document.getElementById('gudangHargaBeli').value = '';
+        document.getElementById('gudangHargaJual').value = '';
+        document.getElementById('gudangHargaGrosir').value = '';
+        document.getElementById('gudangMinBeli').value = '';
+        document.getElementById('gudangJumlahStok').value = '';
+        document.getElementById('gudangTanggalKadaluarsa').value = '';
+        document.getElementById('gudangTanggalInput').value = '';
+        document.getElementById('gudangPenginput').value = '';
+        document.getElementById('gudangNamaFoto').textContent = 'Belum ada foto';
+        
+        // ==========================================================
+        // BAGIAN 8: TUTUP FORM DAN RENDER ULANG
+        // ==========================================================
+        
+        tutupFormTambahProdukGudang();
+        renderManajemenStokGudang();
+        
+        // ==========================================================
+        // BAGIAN 9: TAMPILKAN NOTIFIKASI
+        // ==========================================================
+        
+        tampilkanToast('Produk berhasil ditambahkan ke gudang!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.8.3                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 79                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 80 - BLOK 8.8.4: JS: renderEditProdukGudang()       -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.8.4 - RENDER EDIT PRODUK GUDANG                    */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman edit produk gudang.
+     * Fungsi ini akan:
+     * - Mengambil data produk dari localStorage berdasarkan ID.
+     * - Menampilkan form edit dengan nilai yang sudah ada.
+     * - Menyediakan tombol batal dan simpan.
+     * - Memasang event listener untuk upload foto baru.
+     * 
+     * @param {number} id - ID produk yang akan diedit.
+     */
+    function renderEditProdukGudang(id) {
+        // -------- AMBIL ELEMEN KONTEN UTAMA --------
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PRODUK --------
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var target = null;
+        for (var i = 0; i < semuaProdukGudang.length; i++) {
+            if (semuaProdukGudang[i].id === id) {
+                target = semuaProdukGudang[i];
+                break;
+            }
+        }
+        
+        // -------- VALIDASI PRODUK --------
+        if (!target) {
+            tampilkanToast('Produk tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Edit Produk Gudang</h2>';
+        html += '<p>Ubah data produk yang sudah ada.</p></div>';
+        
+        // -------- FORM EDIT PRODUK --------
+        html += '<div class="card"><div class="card-header">Form Edit Produk';
+        html += '  <button class="button button-danger button-small" onclick="renderKelolaProduk()">';
+        html += '    <i class="fas fa-times"></i> Batal';
+        html += '  </button>';
+        html += '</div>';
+        
+        html += '  <div class="grid-2">';
+        
+        // -------- NAMA PRODUK --------
+        html += '    <div><label class="form-label">Nama Produk</label>';
+        html += '      <input type="text" id="editGudangNamaProduk" class="form-input" value="' + escapeHtml(target.namaProduk) + '">';
+        html += '    </div>';
+        
+        // -------- KODE PRODUK --------
+        html += '    <div><label class="form-label">Kode Produk</label>';
+        html += '      <input type="text" id="editGudangKodeProduk" class="form-input" value="' + escapeHtml(target.kodeProduk) + '">';
+        html += '    </div>';
+        
+        // -------- HARGA BELI --------
+        html += '    <div><label class="form-label">Harga Beli</label>';
+        html += '      <input type="number" id="editGudangHargaBeli" class="form-input" value="' + target.hargaBeli + '">';
+        html += '    </div>';
+        
+        // -------- HARGA JUAL --------
+        html += '    <div><label class="form-label">Harga Jual</label>';
+        html += '      <input type="number" id="editGudangHargaJual" class="form-input" value="' + target.hargaJual + '">';
+        html += '    </div>';
+        
+        // -------- HARGA GROSIR --------
+        html += '    <div><label class="form-label">Harga Grosir</label>';
+        html += '      <input type="number" id="editGudangHargaGrosir" class="form-input" value="' + (target.hargaGrosir || 0) + '">';
+        html += '    </div>';
+        
+        // -------- MINIMAL BELI GROSIR --------
+        html += '    <div><label class="form-label">Minimal Beli Grosir</label>';
+        html += '      <input type="number" id="editGudangMinBeli" class="form-input" value="' + (target.minBeliGrosir || 0) + '">';
+        html += '    </div>';
+        
+        // -------- JUMLAH STOK --------
+        html += '    <div><label class="form-label">Jumlah Stok</label>';
+        html += '      <input type="number" id="editGudangJumlahStok" class="form-input" value="' + target.jumlahStok + '">';
+        html += '    </div>';
+        
+        // -------- JENIS PRODUK --------
+        html += '    <div><label class="form-label">Jenis</label>';
+        html += '      <select id="editGudangJenis" class="form-input">';
+        var jenisList = ['Makanan', 'Minuman', 'Obat-Obatan', 'Pakaian', 'Elektronik', 'Lainnya'];
+        for (var i = 0; i < jenisList.length; i++) {
+            var selected = jenisList[i] === target.jenis ? 'selected' : '';
+            html += '        <option value="' + jenisList[i] + '" ' + selected + '>' + jenisList[i] + '</option>';
+        }
+        html += '      </select>';
+        html += '    </div>';
+        
+        // -------- SATUAN --------
+        html += '    <div><label class="form-label">Satuan</label>';
+        html += '      <select id="editGudangSatuan" class="form-input">';
+        var satuanList = ['Pcs', 'Liter', 'Kg', 'Box', 'Kardus', 'Lusin'];
+        for (var i = 0; i < satuanList.length; i++) {
+            var selected = satuanList[i] === target.satuan ? 'selected' : '';
+            html += '        <option value="' + satuanList[i] + '" ' + selected + '>' + satuanList[i] + '</option>';
+        }
+        html += '      </select>';
+        html += '    </div>';
+        
+        // -------- TANGGAL KADALUARSA --------
+        html += '    <div><label class="form-label">Tanggal Kadaluarsa</label>';
+        html += '      <input type="date" id="editGudangTanggalKadaluarsa" class="form-input" value="' + target.tanggalKadaluarsa + '">';
+        html += '    </div>';
+        
+        // -------- TANGGAL INPUT --------
+        html += '    <div><label class="form-label">Tanggal Input</label>';
+        html += '      <input type="date" id="editGudangTanggalInput" class="form-input" value="' + (target.tanggalInput || '') + '">';
+        html += '    </div>';
+        
+        // -------- PENGINPUT --------
+        html += '    <div><label class="form-label">Penginput</label>';
+        html += '      <input type="text" id="editGudangPenginput" class="form-input" value="' + escapeHtml(target.namaPenginput || '') + '">';
+        html += '    </div>';
+        
+        // -------- FOTO PRODUK --------
+        html += '    <div style="grid-column:1/-1;"><label class="form-label">Foto Produk</label>';
+        if (target.fotoProduk && target.fotoProduk.length > 0) {
+            html += '      <div style="margin-bottom:10px;">';
+            html += '        <img src="' + target.fotoProduk[0] + '" style="width:100px;height:100px;object-fit:cover;border-radius:6px;">';
+            html += '      </div>';
+        } else {
+            html += '      <p style="color:#888;font-size:13px;">Belum ada foto</p>';
+        }
+        html += '      <input type="file" id="editGudangFotoProduk" accept=".jpg,.jpeg,.png" style="display:none;">';
+        html += '      <button class="button button-primary button-small" onclick="document.getElementById(\'editGudangFotoProduk\').click();">Pilih Foto Baru</button>';
+        html += '      <span id="editGudangNamaFoto" style="font-size:12px;color:#888;margin-left:10px;">Kosongkan jika tidak ganti</span>';
+        html += '    </div>';
+        html += '  </div>'; // tutup grid-2
+        
+        // -------- TOMBOL SIMPAN --------
+        html += '  <button class="button button-primary margin-top-10" onclick="simpanEditProdukGudang(' + target.id + ')">';
+        html += '    <i class="fas fa-save"></i> Simpan Perubahan';
+        html += '  </button>';
+        html += '</div>'; // tutup card
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+        
+        // -------- PASANG EVENT LISTENER UPLOAD FOTO --------
+        setTimeout(function() {
+            pasangEventListenerFotoEdit();
+        }, 300);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.4.1 - EVENT LISTENER UPLOAD FOTO EDIT             */
+    /* ========================================================== */
+    
+    /**
+     * Memasang event listener pada input file foto untuk edit produk.
+     * Saat user memilih file, nama file ditampilkan dan gambar disimpan
+     * ke temporary storage sebagai base64.
+     */
+    function pasangEventListenerFotoEdit() {
+        var input = document.getElementById('editGudangFotoProduk');
+        if (input) {
+            // -------- HAPUS EVENT LISTENER LAMA (CEGAH DUPLIKASI) --------
+            var listener = function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    // -------- TAMPILKAN NAMA FILE --------
+                    document.getElementById('editGudangNamaFoto').textContent = file.name;
+                    
+                    // -------- BACA FILE DAN SIMPAN SEBAGAI BASE64 --------
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        localStorage.setItem('2r_edit_produk_gudang_foto_temp', ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.removeEventListener('change', listener);
+            input.addEventListener('change', listener);
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.4.2 - SIMPAN EDIT PRODUK GUDANG                   */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan perubahan produk gudang.
+     * Mengambil data dari form edit, melakukan validasi,
+     * memperbarui data produk di localStorage, dan merender ulang.
+     * 
+     * @param {number} id - ID produk yang akan diedit.
+     */
+    function simpanEditProdukGudang(id) {
+        // -------- AMBIL DATA PRODUK --------
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var index = -1;
+        for (var i = 0; i < semuaProdukGudang.length; i++) {
+            if (semuaProdukGudang[i].id === id) {
+                index = i;
+                break;
+            }
+        }
+        if (index === -1) {
+            tampilkanToast('Produk tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var nama = document.getElementById('editGudangNamaProduk').value.trim();
+        var kode = document.getElementById('editGudangKodeProduk').value.trim();
+        var hargaBeli = document.getElementById('editGudangHargaBeli').value.trim();
+        var hargaJual = document.getElementById('editGudangHargaJual').value.trim();
+        var hargaGrosir = document.getElementById('editGudangHargaGrosir').value.trim();
+        var minBeli = document.getElementById('editGudangMinBeli').value.trim();
+        var stok = document.getElementById('editGudangJumlahStok').value.trim();
+        var jenis = document.getElementById('editGudangJenis').value;
+        var satuan = document.getElementById('editGudangSatuan').value;
+        var kadaluarsa = document.getElementById('editGudangTanggalKadaluarsa').value;
+        var fotoBaru = localStorage.getItem('2r_edit_produk_gudang_foto_temp') || '';
+        var tanggalInput = document.getElementById('editGudangTanggalInput').value;
+        var penginput = document.getElementById('editGudangPenginput').value.trim();
+        
+        // -------- VALIDASI DATA WAJIB --------
+        if (!nama || !hargaBeli || !hargaJual || !stok || !kadaluarsa || !tanggalInput || !penginput) {
+            tampilkanToast('Semua data wajib diisi!', 'warning');
+            return;
+        }
+        
+        // -------- UPDATE DATA PRODUK --------
+        semuaProdukGudang[index].namaProduk = nama;
+        semuaProdukGudang[index].kodeProduk = kode || '-';
+        semuaProdukGudang[index].hargaBeli = parseInt(hargaBeli);
+        semuaProdukGudang[index].hargaJual = parseInt(hargaJual);
+        semuaProdukGudang[index].hargaGrosir = parseInt(hargaGrosir) || 0;
+        semuaProdukGudang[index].minBeliGrosir = parseInt(minBeli) || 0;
+        semuaProdukGudang[index].jumlahStok = parseInt(stok);
+        semuaProdukGudang[index].jenis = jenis;
+        semuaProdukGudang[index].satuan = satuan;
+        semuaProdukGudang[index].tanggalKadaluarsa = kadaluarsa;
+        semuaProdukGudang[index].tanggalInput = tanggalInput;
+        semuaProdukGudang[index].namaPenginput = penginput;
+        
+        // -------- UPDATE FOTO (JIKA ADA FOTO BARU) --------
+        if (fotoBaru) {
+            semuaProdukGudang[index].fotoProduk = [fotoBaru];
+            localStorage.removeItem('2r_edit_produk_gudang_foto_temp');
+        }
+        
+        // -------- SIMPAN PERUBAHAN --------
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        
+        // -------- RENDER ULANG HALAMAN --------
+        renderKelolaProduk();
+        
+        // -------- TAMPILKAN NOTIFIKASI --------
+        tampilkanToast('Produk berhasil diperbarui!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.8.4                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 80                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 81 - BLOK 8.8.5: JS: renderKelolaProduk()           -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.8.5 - RENDER KELOLA PRODUK (GRID)                  */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman kelola produk dalam bentuk grid kartu.
+     * Halaman ini menampilkan:
+     * - Gambar produk (jika ada).
+     * - Nama produk.
+     * - Harga jual.
+     * - Stok dan satuan.
+     * - Tombol Edit dan Hapus untuk setiap produk.
+     * - Filter (Semua, Terlaris, Tidak Laku, Kadaluarsa).
+     * 
+     * Data produk diambil dari localStorage '2r_produk_gudang'.
+     * Hanya produk milik user yang sedang login yang ditampilkan.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Kelola Produk".
+     */
+    function renderKelolaProduk() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PRODUK GUDANG --------
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Kelola Produk</h2>';
+        html += '<p>Daftar produk yang tersimpan di gudang Anda. (Foto, Nama, Harga, Stok)</p></div>';
+        
+        // -------- JIKA TIDAK ADA PRODUK --------
+        if (produkSaya.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-box-open"></i>';
+            html += '<h3>Belum ada produk</h3>';
+            html += '<p>Silakan tambahkan produk baru melalui menu Manajemen Stok Gudang.</p></div></div>';
+            areaKonten.innerHTML = html;
+            return;
+        }
+        
+        // -------- FILTER BUTTON --------
+        html += '<div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">';
+        html += '<button class="button button-primary button-small" onclick="tampilkanProdukKelola(\'semua\')">Semua</button>';
+        html += '<button class="button button-success button-small" onclick="tampilkanProdukKelola(\'terlaris\')">Terlaris</button>';
+        html += '<button class="button button-warning button-small" onclick="tampilkanProdukKelola(\'tidakLaku\')">Tidak Laku</button>';
+        html += '<button class="button button-danger button-small" onclick="tampilkanProdukKelola(\'kadaluarsa\')">Mendekati Kadaluarsa</button>';
+        html += '</div>';
+        
+        // -------- GRID PRODUK --------
+        html += '<div id="gridProdukKelola">' + tampilkanGridProdukKelola(produkSaya, 'semua') + '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.5.1 - TAMPILKAN GRID PRODUK (FILTER)             */
+    /* ========================================================== */
+    
+    /**
+     * Menghasilkan HTML grid produk berdasarkan filter.
+     * Filter yang tersedia: semua, terlaris, tidakLaku, kadaluarsa.
+     * 
+     * @param {Array} dataProduk - Array produk milik toko yang sedang login.
+     * @param {string} filter - Jenis filter ('semua', 'terlaris', 'tidakLaku', 'kadaluarsa').
+     * @returns {string} HTML string grid produk.
+     */
+    function tampilkanGridProdukKelola(dataProduk, filter) {
+        var dataFilter = [];
+        var hariIni = new Date();
+        hariIni.setHours(0, 0, 0, 0);
+        
+        // -------- FILTER DATA --------
+        if (filter === 'semua') {
+            dataFilter = dataProduk;
+        } else if (filter === 'terlaris') {
+            dataFilter = dataProduk.slice().sort(function(a, b) {
+                return (b.totalTerjual || 0) - (a.totalTerjual || 0);
+            }).slice(0, 10);
+        } else if (filter === 'tidakLaku') {
+            dataFilter = dataProduk.filter(function(p) {
+                return (p.totalTerjual || 0) === 0 && p.jumlahStok > 10;
+            });
+        } else if (filter === 'kadaluarsa') {
+            dataFilter = dataProduk.filter(function(p) {
+                var kad = new Date(p.tanggalKadaluarsa);
+                kad.setHours(0, 0, 0, 0);
+                var selisih = Math.ceil((kad - hariIni) / (1000 * 60 * 60 * 24));
+                return selisih <= 30 && selisih >= 0;
+            });
+        }
+        
+        // -------- JIKA TIDAK ADA DATA --------
+        if (dataFilter.length === 0) {
+            return '<div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk</h3></div>';
+        }
+        
+        // -------- BANGUN HTML GRID --------
+        var html = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:20px; padding:5px;">';
+        
+        for (var i = 0; i < dataFilter.length; i++) {
+            var p = dataFilter[i];
+            var fotoHtml = '';
+            
+            if (p.fotoProduk && p.fotoProduk.length > 0) {
+                fotoHtml = '<img src="' + p.fotoProduk[0] + '" style="width:100%; height:180px; object-fit:cover; border-radius:8px; margin-bottom:10px;">';
+            } else {
+                fotoHtml = '<div style="width:100%; height:180px; background:#f0f0f0; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; margin-bottom:10px;">';
+                fotoHtml += '<i class="fas fa-image" style="font-size:40px;"></i></div>';
+            }
+            
+            html += '<div style="border:1px solid #eee; border-radius:10px; padding:15px; background:white; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:space-between;">';
+            html += '  <div>';
+            html += '    ' + fotoHtml;
+            html += '    <h4 style="font-size:15px; font-weight:600; margin:0 0 5px 0; color:#333; text-align:center;">' + escapeHtml(p.namaProduk) + '</h4>';
+            html += '    <p style="font-size:14px; font-weight:600; color:#FF6B00; margin:0 0 3px 0; text-align:center;">Rp ' + p.hargaJual + '</p>';
+            html += '    <p style="font-size:13px; color:#888; margin:0; text-align:center;">Stok: ' + p.jumlahStok + ' ' + escapeHtml(p.satuan) + '</p>';
+            html += '  </div>';
+            html += '  <div style="display:flex; gap:8px; margin-top:15px; border-top:1px solid #f5f5f5; padding-top:12px;">';
+            html += '    <button class="button button-primary button-small" style="flex:1;" onclick="renderEditProdukGudang(' + p.id + ')"><i class="fas fa-edit"></i> Edit</button>';
+            html += '    <button class="button button-danger button-small" style="flex:1;" onclick="hapusProdukGudang(' + p.id + ')"><i class="fas fa-trash"></i> Hapus</button>';
+            html += '  </div>';
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.5.2 - FILTER PRODUK KELOLA                        */
+    /* ========================================================== */
+    
+    /**
+     * Memfilter dan merender ulang grid produk kelola.
+     * Fungsi ini dipanggil saat tombol filter ditekan.
+     * 
+     * @param {string} filter - Jenis filter ('semua', 'terlaris', 'tidakLaku', 'kadaluarsa').
+     */
+    function tampilkanProdukKelola(filter) {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        var grid = document.getElementById('gridProdukKelola');
+        if (grid) {
+            grid.innerHTML = tampilkanGridProdukKelola(produkSaya, filter);
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.8.5                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 81                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 82 - BLOK 8.8.6: JS: renderUploadProdukPublik()     -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.8.6 - RENDER UPLOAD PRODUK PUBLIK                  */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman upload produk publik untuk Toko/Pedagang/COD Seller.
+     * Halaman ini menampilkan:
+     * - Sisa slot upload (batas maksimal produk).
+     * - Form tambah produk baru (judul, kategori, harga, gambar, deskripsi).
+     * - Daftar produk yang sudah diupload oleh user.
+     * 
+     * Data produk publik disimpan di localStorage dengan key '2r_produk_publik'.
+     * Batas upload ditentukan oleh properti 'maksProdukPublik' pada data akun.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Upload Produk Publik".
+     */
+    function renderUploadProdukPublik() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PRODUK PUBLIK --------
+        var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+        var produkSaya = semuaProduk.filter(function(p) { return p.ownerId === user.id; });
+        
+        // -------- AMBIL DATA AKUN UNTUK BATAS SLOT --------
+        var dataAkun = getDataAkun();
+        var akunSaya = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                akunSaya = dataAkun[i];
+                break;
+            }
+        }
+        var batas = akunSaya ? (akunSaya.maksProdukPublik || 5) : 5;
+        var sisa = batas - produkSaya.length;
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Upload Produk Publik</h2>';
+        html += '<p>Upload produk untuk ditampilkan di direktori publik. Batas maksimal: <strong>' + batas + ' produk</strong> per akun.</p></div>';
+        
+        // -------- INFORMASI SLOT --------
+        html += '<div class="card" style="background:#e8f5e9; border:1px solid #c8e6c9;">';
+        html += '  <div style="display:flex; justify-content:space-between; align-items:center;">';
+        html += '    <span><strong>Slot tersedia:</strong> ' + sisa + ' dari ' + batas + ' produk</span>';
+        if (sisa <= 0) {
+            html += '    <button class="button button-primary button-small" onclick="ajukanTambahKapasitasProduk()">Ajukan Tambah Kapasitas</button>';
+        }
+        html += '  </div>';
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 1: FORM TAMBAH PRODUK BARU
+        // ==========================================================
+        
+        if (sisa > 0) {
+            html += '<div class="card"><div class="card-header">Tambah Produk Baru</div>';
+            html += '  <div class="grid-2">';
+            
+            // -------- JUDUL PRODUK --------
+            html += '    <div><label class="form-label">Judul Produk</label>';
+            html += '      <input type="text" id="produkJudul" class="form-input" placeholder="Judul produk">';
+            html += '    </div>';
+            
+            // -------- KATEGORI --------
+            html += '    <div><label class="form-label">Kategori</label>';
+            html += '      <select id="produkKategori" class="form-input">';
+            html += '        <option value="Fashion">Fashion</option>';
+            html += '        <option value="Elektronik">Elektronik</option>';
+            html += '        <option value="Makanan">Makanan</option>';
+            html += '        <option value="Lainnya">Lainnya</option>';
+            html += '      </select>';
+            html += '    </div>';
+            
+            // -------- HARGA --------
+            html += '    <div><label class="form-label">Harga (Rp)</label>';
+            html += '      <input type="number" id="produkHarga" class="form-input" placeholder="150000">';
+            html += '    </div>';
+            
+            // -------- GAMBAR --------
+            html += '    <div><label class="form-label">Gambar / Foto (maksimal 5)</label>';
+            html += '      <input type="file" id="produkGambar" multiple accept=".jpg,.jpeg,.png" style="display:none;">';
+            html += '      <button class="button button-primary button-small" onclick="document.getElementById(\'produkGambar\').click();">Pilih Gambar</button>';
+            html += '      <span id="produkNamaGambar" style="font-size:12px; color:#888; margin-left:10px;">Belum ada gambar</span>';
+            html += '    </div>';
+            html += '  </div>'; // tutup grid-2
+            
+            // -------- DESKRIPSI --------
+            html += '  <div class="form-group"><label class="form-label">Deskripsi</label>';
+            html += '    <textarea id="produkDeskripsi" class="form-input" rows="3" placeholder="Deskripsi produk"></textarea>';
+            html += '  </div>';
+            
+            // -------- TOMBOL SIMPAN --------
+            html += '  <button class="button button-primary" onclick="simpanProdukPublik()">';
+            html += '    <i class="fas fa-save"></i> Simpan Produk';
+            html += '  </button>';
+            html += '</div>';
+        }
+        
+        // ==========================================================
+        // BAGIAN 2: DAFTAR PRODUK SAYA
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Daftar Produk Saya <span style="font-weight:normal;font-size:13px;color:#888;">(Total: ' + produkSaya.length + ')</span></div>';
+        
+        if (produkSaya.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3><p>Upload produk pertama Anda.</p></div>';
+        } else {
+            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px;">';
+            for (var i = 0; i < produkSaya.length; i++) {
+                var p = produkSaya[i];
+                html += '<div style="border:1px solid #eee; border-radius:8px; padding:15px; background:white;">';
+                html += '  <h4 style="font-size:14px; margin:0 0 5px;">' + escapeHtml(p.judul) + '</h4>';
+                html += '  <p style="font-size:12px; color:#888;">Rp ' + p.harga + ' | ' + escapeHtml(p.kategori) + '</p>';
+                html += '  <p style="font-size:12px;">' + escapeHtml(p.deskripsi.substring(0, 50)) + '...</p>';
+                html += '  <span style="font-size:11px; color:#888;">Gambar: ' + (p.gambar ? p.gambar.length : 0) + ' foto</span>';
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+        
+        // -------- SETUP EVENT LISTENER UPLOAD GAMBAR --------
+        setTimeout(function() {
+            var inputGambar = document.getElementById('produkGambar');
+            if (inputGambar) {
+                // -------- HAPUS EVENT LISTENER LAMA --------
+                var newInput = inputGambar.cloneNode(true);
+                inputGambar.parentNode.replaceChild(newInput, inputGambar);
+                
+                newInput.addEventListener('change', function(e) {
+                    var file = e.target.files[0];
+                    if (file) {
+                        // -------- TAMPILKAN NAMA FILE --------
+                        document.getElementById('produkNamaGambar').textContent = file.name;
+                        
+                        // -------- BACA FILE DAN SIMPAN SEBAGAI BASE64 --------
+                        var reader = new FileReader();
+                        reader.onload = function(ev) {
+                            localStorage.setItem('2r_produk_gambar_temp', ev.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }, 300);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.6.1 - SIMPAN PRODUK PUBLIK                        */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan produk baru ke direktori publik.
+     * Mengambil data dari form, melakukan validasi, membuat objek produk,
+     * menyimpan ke localStorage, dan membersihkan form.
+     * 
+     * Fungsi ini dipanggil saat tombol "Simpan Produk" ditekan.
+     */
+    function simpanProdukPublik() {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var judul = document.getElementById('produkJudul').value.trim();
+        var kategori = document.getElementById('produkKategori').value;
+        var harga = document.getElementById('produkHarga').value.trim();
+        var deskripsi = document.getElementById('produkDeskripsi').value.trim();
+        var gambar = localStorage.getItem('2r_produk_gambar_temp') || '';
+        
+        // -------- VALIDASI --------
+        if (!judul || !harga || !deskripsi) {
+            tampilkanToast('Judul, harga, dan deskripsi wajib diisi!', 'warning');
+            return;
+        }
+        
+        // -------- VALIDASI JUMLAH GAMBAR --------
+        if (gambar) {
+            // Gambar disimpan sebagai string base64 (tunggal) karena hanya satu file yang diproses
+            // Untuk multiple, kita perlu memodifikasi logika, tetapi di sini kita hanya mendukung satu gambar
+            // Jika ingin multiple, perlu diubah logikanya. Untuk saat ini, kita biarkan satu gambar.
+        }
+        
+        // -------- CEK BATAS SLOT --------
+        var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+        var produkSaya = semuaProduk.filter(function(p) { return p.ownerId === user.id; });
+        var dataAkun = getDataAkun();
+        var akunSaya = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                akunSaya = dataAkun[i];
+                break;
+            }
+        }
+        var batas = akunSaya ? (akunSaya.maksProdukPublik || 5) : 5;
+        if (produkSaya.length >= batas) {
+            tampilkanToast('Batas upload produk sudah penuh! Ajukan tambah kapasitas ke SuperAdmin.', 'warning');
+            return;
+        }
+        
+        // -------- BUAT OBJEK PRODUK BARU --------
+        var produkBaru = {
+            id: Date.now(),
+            ownerId: user.id,
+            judul: judul,
+            deskripsi: deskripsi,
+            harga: parseInt(harga),
+            kategori: kategori,
+            gambar: gambar ? [gambar] : [],
+            tanggalUpload: new Date().toISOString()
+        };
+        
+        // -------- SIMPAN KE LOCALSTORAGE --------
+        semuaProduk.push(produkBaru);
+        localStorage.setItem('2r_produk_publik', JSON.stringify(semuaProduk));
+        
+        // -------- BERSIHKAN TEMPORARY STORAGE --------
+        localStorage.removeItem('2r_produk_gambar_temp');
+        
+        // -------- KOSONGKAN FORM --------
+        document.getElementById('produkJudul').value = '';
+        document.getElementById('produkHarga').value = '';
+        document.getElementById('produkDeskripsi').value = '';
+        document.getElementById('produkNamaGambar').textContent = 'Belum ada gambar';
+        
+        // -------- RENDER ULANG HALAMAN --------
+        renderUploadProdukPublik();
+        
+        // -------- TAMPILKAN NOTIFIKASI --------
+        tampilkanToast('Produk berhasil ditambahkan!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.8.6.2 - AJUKAN TAMBAH KAPASITAS                     */
+    /* ========================================================== */
+    
+    /**
+     * Placeholder untuk mengajukan tambah kapasitas produk.
+     * Saat ini hanya menampilkan notifikasi bahwa fitur sedang dalam pengembangan.
+     */
+    function ajukanTambahKapasitasProduk() {
+        tampilkanToast('Fitur ajukan tambah kapasitas sedang dalam pengembangan.', 'info');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.8.6                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 82                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 83 - BLOK 8.9.1: JS: renderTransaksiPenjualan()     -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.1 - RENDER TRANSAKSI PENJUALAN                   */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman transaksi penjualan offline.
+     * Halaman ini menampilkan:
+     * - Form input tanggal, metode pembayaran (Tunai/Transfer/Hutang).
+     * - Input scan barcode manual.
+     * - Filter kategori produk.
+     * - Daftar item transaksi (produk, jumlah, harga, subtotal).
+     * - Diskon (hanya jika akun PRO).
+     * - Total dan total setelah diskon.
+     * - Tombol simpan transaksi.
+     * - 5 transaksi terakhir dengan aksi (Edit, Hapus, Cetak, WA) hanya untuk PRO.
+     * 
+     * Data produk diambil dari localStorage '2r_produk_gudang' milik toko.
+     * Data transaksi disimpan di localStorage '2r_transaksi_penjualan'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Transaksi Penjualan".
+     */
+    function renderTransaksiPenjualan() {
+        // -------- INISIALISASI DATA DUMMY JIKA PERLU --------
+        if (typeof inisialisasiDataDummyTransaksi === 'function') {
+            inisialisasiDataDummyTransaksi();
+        }
+        
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- CEK STATUS PRO --------
+        var isPro = user.isPro || false;
+        
+        // -------- AMBIL DATA PRODUK GUDANG --------
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Transaksi Penjualan</h2>';
+        html += '<p>Catat penjualan langsung ke pelanggan. Stok akan berkurang otomatis.</p></div>';
+        
+        // -------- BANNER UPGRADE UNTUK USER FREE --------
+        if (!isPro) {
+            html += '<div class="card" style="border:2px solid #FF6B00; background:#fff5f0; margin-bottom:15px;">';
+            html += '  <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">';
+            html += '    <i class="fas fa-crown" style="font-size:24px; color:#FF6B00;"></i>';
+            html += '    <div style="flex:1;"><strong style="font-size:16px;">🚀 Upgrade ke Akun Pro!</strong><br><span style="font-size:13px;">Nikmati Diskon, Cetak Nota, Edit Transaksi, Log Stok, dan fitur bisnis lengkap lainnya.</span></div>';
+            html += '    <button class="button button-primary button-small" onclick="navigasiKeHalaman(\'statusAkun\')"><i class="fas fa-arrow-up"></i> Upgrade Sekarang</button>';
+            html += '  </div>';
+            html += '</div>';
+        }
+        
+        // -------- INPUT SCAN BARCODE (MANUAL) + DOWNLOAD EXCEL --------
+        html += '<div class="card" style="background:#f8f9fa; border:2px solid #FF6B00; margin-bottom:15px;">';
+        html += '  <div class="card-header"><i class="fas fa-qrcode"></i> Scan Barcode (Manual) & Data Produk</div>';
+        html += '  <div style="display:flex; gap:10px; flex-wrap:wrap;">';
+        html += '    <input type="text" id="trxScanInput" class="form-input" placeholder="Scan / Ketik Kode Produk lalu Enter" style="flex:1; min-width:150px;">';
+        html += '    <button class="button button-primary button-small" onclick="prosesScanBarcode()"><i class="fas fa-arrow-right"></i> Cari</button>';
+        html += '    <button class="button button-success button-small" onclick="downloadExcelStokGudang()"><i class="fas fa-file-excel"></i> Download Excel</button>';
+        html += '  </div>';
+        html += '  <div id="scanResult" style="font-size:13px; margin-top:5px; color:#888;"></div>';
+        html += '</div>';
+        
+        // -------- FORM TRANSAKSI --------
+        html += '<div class="card" id="formTransaksiPenjualan">';
+        html += '  <div class="card-header">Form Transaksi</div>';
+        html += '  <div class="grid-2">';
+        html += '    <div><label class="form-label">Tanggal</label>';
+        html += '      <input type="date" id="trxTanggal" class="form-input" value="' + new Date().toISOString().slice(0, 10) + '">';
+        html += '    </div>';
+        html += '    <div><label class="form-label">Metode Pembayaran</label>';
+        html += '      <select id="trxMetode" class="form-input" onchange="toggleHutangInput()">';
+        html += '        <option value="Tunai">Tunai</option>';
+        html += '        <option value="Transfer">Transfer</option>';
+        html += '        <option value="Hutang">Hutang</option>';
+        html += '      </select>';
+        html += '    </div>';
+        html += '  </div>';
+        html += '  <div id="trxHutangContainer" style="display:none; margin-top:10px;">';
+        html += '    <label class="form-label">Nama Pelanggan (Hutang)</label>';
+        html += '    <input type="text" id="trxNamaPelanggan" class="form-input" placeholder="Nama pelanggan berhutang">';
+        html += '  </div>';
+        
+        // -------- FILTER KATEGORI --------
+        html += '  <div class="grid-2" style="margin-bottom:10px;">';
+        html += '    <div><label class="form-label">Filter Kategori</label>';
+        html += '      <select id="trxKategoriFilter" class="form-input" onchange="updateProdukDropdowns()">';
+        html += '        <option value="">Semua Kategori</option>';
+        var uniqueKategori = [];
+        for (var i = 0; i < produkSaya.length; i++) {
+            if (uniqueKategori.indexOf(produkSaya[i].jenis) === -1) {
+                uniqueKategori.push(produkSaya[i].jenis);
+            }
+        }
+        for (var i = 0; i < uniqueKategori.length; i++) {
+            html += '        <option value="' + uniqueKategori[i] + '">' + uniqueKategori[i] + '</option>';
+        }
+        html += '      </select>';
+        html += '    </div>';
+        html += '    <div></div>';
+        html += '  </div>';
+        
+        // -------- ITEM TRANSAKSI (BARIS PERTAMA) --------
+        html += '  <div id="trxItemContainer">';
+        html += '    <div class="grid-2" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;" id="trxItemRow0">';
+        html += '      <div><label class="form-label">Pilih Produk</label>';
+        html += '        <select id="trxProduk0" class="form-input" onchange="updateHargaSatuan(0)">';
+        if (produkSaya.length === 0) {
+            html += '          <option value="">-- Tidak ada produk di gudang --</option>';
+        } else {
+            html += '          <option value="">-- Pilih Produk --</option>';
+            for (var i = 0; i < produkSaya.length; i++) {
+                var p = produkSaya[i];
+                html += '          <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">';
+                html += escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+            }
+        }
+        html += '        </select>';
+        html += '      </div>';
+        html += '      <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah0" class="form-input" min="1" onchange="hitungSubtotal(0)" oninput="hitungSubtotal(0)"></div>';
+        html += '      <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga0" class="form-input" readonly></div>';
+        html += '      <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal0" class="form-input" readonly></div>';
+        html += '    </div>';
+        html += '  </div>';
+        
+        // -------- TOMBOL TAMBAH ITEM --------
+        html += '  <button class="button button-primary button-small" onclick="tambahItemTransaksi()"><i class="fas fa-plus"></i> Tambah Item</button>';
+        
+        // -------- DISKON DAN TOTAL (PRO vs FREE) --------
+        if (isPro) {
+            html += '  <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+            html += '    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">';
+            html += '      <div><label class="form-label">Diskon (Rp)</label><input type="number" id="trxDiskon" class="form-input" value="0" min="0" oninput="hitungTotalAkhir()" style="width:150px;"></div>';
+            html += '      <div style="text-align:right; font-size:18px; font-weight:700;">Total: Rp <span id="trxTotal">0</span></div>';
+            html += '    </div>';
+            html += '    <div style="text-align:right; font-size:14px; color:#d32f2f; font-weight:600;">Total Setelah Diskon: Rp <span id="trxGrandTotal">0</span></div>';
+            html += '  </div>';
+        } else {
+            html += '  <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+            html += '    <div style="text-align:right; font-size:18px; font-weight:700;">Total: Rp <span id="trxTotal">0</span></div>';
+            html += '  </div>';
+        }
+        
+        // -------- CATATAN --------
+        html += '  <div class="form-group"><label class="form-label">Catatan</label>';
+        html += '    <input type="text" id="trxCatatan" class="form-input" placeholder="Opsional">';
+        html += '  </div>';
+        
+        // -------- TOMBOL SIMPAN TRANSAKSI --------
+        html += '  <button class="button button-primary" onclick="simpanTransaksiPenjualan()" style="width:100%;"><i class="fas fa-save"></i> Simpan Transaksi</button>';
+        html += '</div>'; // tutup card form
+        
+        // -------- TRANSAKSI TERAKHIR --------
+        var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+        var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+        transaksiSaya.sort(function(a, b) { return new Date(b.tanggal) - new Date(a.tanggal); });
+        
+        html += '<div class="card">';
+        html += '  <div class="card-header">Transaksi Terakhir</div>';
+        if (transaksiSaya.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi</h3></div>';
+        } else {
+            html += '  <div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>Tanggal</th><th>Item</th><th>Total</th><th>Diskon</th><th>Bayar</th><th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            var max = Math.min(transaksiSaya.length, 5);
+            for (var i = 0; i < max; i++) {
+                var t = transaksiSaya[i];
+                var diskon = t.diskon || 0;
+                var bayar = t.total - diskon;
+                html += '<tr><td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td>';
+                html += '<td>' + t.items.length + ' item</td>';
+                html += '<td>Rp ' + t.total.toLocaleString('id-ID') + '</td>';
+                if (isPro) {
+                    html += '<td style="color:#d32f2f;">- Rp ' + diskon.toLocaleString('id-ID') + '</td>';
+                    html += '<td><strong>Rp ' + bayar.toLocaleString('id-ID') + '</strong></td>';
+                } else {
+                    html += '<td style="color:#888;">-</td>';
+                    html += '<td>Rp ' + t.total.toLocaleString('id-ID') + '</td>';
+                }
+                html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+                if (isPro) {
+                    html += '  <button class="button button-primary button-extra-small" onclick="bukaEditTransaksi(\'' + t.id + '\')"><i class="fas fa-edit"></i> Edit</button>';
+                    html += '  <button class="button button-danger button-extra-small" onclick="hapusTransaksiPenjualan(\'' + t.id + '\')"><i class="fas fa-trash"></i> Hapus</button>';
+                    html += '  <button class="button button-success button-extra-small" onclick="cetakNota(\'' + t.id + '\')"><i class="fas fa-print"></i> Cetak</button>';
+                    html += '  <button class="button button-warning button-extra-small" onclick="bagikanNotaWA(\'' + t.id + '\')"><i class="fab fa-whatsapp"></i> WA</button>';
+                } else {
+                    html += '  <span style="color:#999; font-size:12px;">Fitur Pro</span>';
+                }
+                html += '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+            html += '  <div style="text-align:right; margin-top:10px;"><button class="button button-primary button-small" onclick="renderRekapPenjualan()">Lihat Semua</button></div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+        
+        // -------- SETUP EVENT LISTENER UNTUK SCAN BARCODE --------
+        setTimeout(function() {
+            var scanInput = document.getElementById('trxScanInput');
+            if (scanInput) {
+                scanInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        prosesScanBarcode();
+                    }
+                });
+            }
+            // -------- RESET DISKON --------
+            if (document.getElementById('trxDiskon')) {
+                document.getElementById('trxDiskon').value = 0;
+            }
+            // -------- HITUNG TOTAL AWAL --------
+            hitungTotalAkhir();
+        }, 300);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.1 - UPDATE HARGA SATUAN                        */
+    /* ========================================================== */
+    
+    /**
+     * Memperbarui harga satuan dan subtotal saat produk dipilih.
+     * Jika jumlah >= minimal beli grosir, gunakan harga grosir.
+     * 
+     * @param {number} index - Index baris item.
+     */
+    function updateHargaSatuan(index) {
+        var select = document.getElementById('trxProduk' + index);
+        if (!select) return;
+        var selected = select.options[select.selectedIndex];
+        var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
+        if (selected && selected.dataset.harga) {
+            var hargaJual = parseFloat(selected.dataset.harga);
+            var hargaGrosir = parseFloat(selected.dataset.hargaGrosir) || 0;
+            var minBeli = parseInt(selected.dataset.minBeli) || 99999;
+            // Logika: Jika Jumlah >= Minimal Beli DAN harga grosir > 0, pakai harga grosir
+            var hargaAkhir = (hargaGrosir > 0 && jumlah >= minBeli) ? hargaGrosir : hargaJual;
+            document.getElementById('trxHarga' + index).value = hargaAkhir;
+        } else {
+            document.getElementById('trxHarga' + index).value = '';
+        }
+        hitungSubtotal(index);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.2 - HITUNG SUBTOTAL                            */
+    /* ========================================================== */
+    
+    /**
+     * Menghitung subtotal untuk satu baris item dan total keseluruhan.
+     * 
+     * @param {number} index - Index baris item.
+     */
+    function hitungSubtotal(index) {
+        var harga = parseFloat(document.getElementById('trxHarga' + index).value) || 0;
+        var jumlah = parseInt(document.getElementById('trxJumlah' + index).value) || 0;
+        var subtotal = harga * jumlah;
+        document.getElementById('trxSubtotal' + index).value = subtotal;
+        
+        // Hitung total semua baris
+        var total = 0;
+        var i = 0;
+        while (document.getElementById('trxSubtotal' + i)) {
+            total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+            i++;
+        }
+        document.getElementById('trxTotal').textContent = total.toLocaleString('id-ID');
+        hitungTotalAkhir();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.3 - HITUNG TOTAL AKHIR (DENGAN DISKON)         */
+    /* ========================================================== */
+    
+    /**
+     * Menghitung total akhir setelah diskon (jika ada).
+     */
+    function hitungTotalAkhir() {
+        var total = 0;
+        var i = 0;
+        while (document.getElementById('trxSubtotal' + i)) {
+            total += parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+            i++;
+        }
+        var totalEl = document.getElementById('trxTotal');
+        if (totalEl) totalEl.textContent = total.toLocaleString('id-ID');
+        
+        var diskonInput = document.getElementById('trxDiskon');
+        var diskon = diskonInput ? (parseFloat(diskonInput.value) || 0) : 0;
+        var grandTotal = total - diskon;
+        if (grandTotal < 0) grandTotal = 0;
+        var grandTotalEl = document.getElementById('trxGrandTotal');
+        if (grandTotalEl) grandTotalEl.textContent = grandTotal.toLocaleString('id-ID');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.4 - UPDATE PRODUK DROPDOWN (FILTER KATEGORI)   */
+    /* ========================================================== */
+    
+    /**
+     * Memperbarui dropdown produk di semua baris berdasarkan filter kategori.
+     */
+    function updateProdukDropdowns() {
+        var filter = document.getElementById('trxKategoriFilter').value;
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        if (filter) {
+            produkSaya = produkSaya.filter(function(p) { return p.jenis === filter; });
+        }
+        var i = 0;
+        while (document.getElementById('trxProduk' + i)) {
+            var select = document.getElementById('trxProduk' + i);
+            var currentVal = select.value;
+            select.innerHTML = '<option value="">-- Pilih Produk --</option>';
+            for (var j = 0; j < produkSaya.length; j++) {
+                var p = produkSaya[j];
+                var selected = (p.id == currentVal) ? 'selected' : '';
+                select.innerHTML += '<option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '" ' + selected + '>' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+            }
+            updateHargaSatuan(i);
+            i++;
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.5 - TAMBAH ITEM TRANSAKSI                       */
+    /* ========================================================== */
+    
+    /**
+     * Menambahkan baris item baru ke form transaksi.
+     */
+    function tambahItemTransaksi() {
+        var container = document.getElementById('trxItemContainer');
+        var index = container.children.length;
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        
+        var row = document.createElement('div');
+        row.className = 'grid-2';
+        row.style.marginTop = '10px';
+        row.style.borderTop = '1px solid #eee';
+        row.style.paddingTop = '10px';
+        row.id = 'trxItemRow' + index;
+        
+        var html = '';
+        html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
+        html += '    <option value="">-- Pilih Produk --</option>';
+        for (var i = 0; i < produkSaya.length; i++) {
+            var p = produkSaya[i];
+            html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+        }
+        html += '  </select></div>';
+        html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
+        html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
+        html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
+        row.innerHTML = html;
+        container.appendChild(row);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.6 - TOGGLE INPUT HUTANG                         */
+    /* ========================================================== */
+    
+    /**
+     * Menampilkan atau menyembunyikan input nama pelanggan untuk metode Hutang.
+     */
+    function toggleHutangInput() {
+        var metode = document.getElementById('trxMetode').value;
+        var container = document.getElementById('trxHutangContainer');
+        if (container) {
+            if (metode === 'Hutang') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+                document.getElementById('trxNamaPelanggan').value = '';
+            }
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.1.7 - PROSES SCAN BARCODE                         */
+    /* ========================================================== */
+    
+    /**
+     * Mencari produk berdasarkan kode barcode yang diinput.
+     * Jika ditemukan, menambahkan produk ke baris transaksi baru atau mengisi baris kosong.
+     */
+    function prosesScanBarcode() {
+        var input = document.getElementById('trxScanInput');
+        if (!input) return;
+        var kode = input.value.trim();
+        if (!kode) {
+            tampilkanToast('Masukkan kode produk terlebih dahulu!', 'warning');
+            return;
+        }
+        
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produk = null;
+        
+        for (var i = 0; i < semuaProduk.length; i++) {
+            if (semuaProduk[i].tokoId === user.id && semuaProduk[i].kodeProduk === kode) {
+                produk = semuaProduk[i];
+                break;
+            }
+        }
+        
+        if (!produk) {
+            tampilkanToast('Produk dengan kode ' + kode + ' tidak ditemukan!', 'error');
+            return;
+        }
+        
+        var index = 0;
+        while (document.getElementById('trxProduk' + index)) {
+            var select = document.getElementById('trxProduk' + index);
+            if (select.value === '') {
+                select.value = produk.id;
+                updateHargaSatuan(index);
+                document.getElementById('trxJumlah' + index).value = 1;
+                hitungSubtotal(index);
+                input.value = '';
+                tampilkanToast('Produk ditemukan: ' + produk.namaProduk, 'success');
+                hitungTotalAkhir();
+                return;
+            }
+            index++;
+        }
+        
+        // Jika tidak ada baris kosong, tambahkan baris baru
+        var container = document.getElementById('trxItemContainer');
+        if (!container) return;
+        
+        var row = document.createElement('div');
+        row.className = 'grid-2';
+        row.style.marginTop = '10px';
+        row.style.borderTop = '1px solid #eee';
+        row.style.paddingTop = '10px';
+        row.id = 'trxItemRow' + index;
+        
+        var html = '';
+        html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk' + index + '" class="form-input" onchange="updateHargaSatuan(' + index + ')">';
+        html += '    <option value="">-- Pilih Produk --</option>';
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+        for (var i = 0; i < produkSaya.length; i++) {
+            var p = produkSaya[i];
+            html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+        }
+        html += '  </select></div>';
+        html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah' + index + '" class="form-input" min="1" onchange="hitungSubtotal(' + index + ')" oninput="hitungSubtotal(' + index + ')"></div>';
+        html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga' + index + '" class="form-input" readonly></div>';
+        html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal' + index + '" class="form-input" readonly></div>';
+        row.innerHTML = html;
+        container.appendChild(row);
+        
+        document.getElementById('trxProduk' + index).value = produk.id;
+        updateHargaSatuan(index);
+        document.getElementById('trxJumlah' + index).value = 1;
+        hitungSubtotal(index);
+        input.value = '';
+        tampilkanToast('Produk ditemukan: ' + produk.namaProduk + ' (baris baru ditambahkan)', 'success');
+        hitungTotalAkhir();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 83                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 84 - BLOK 8.9.2: JS: simpanTransaksiPenjualan()     -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.2 - SIMPAN TRANSAKSI PENJUALAN                   */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan transaksi penjualan ke localStorage.
+     * Fungsi ini akan:
+     * - Mengambil data dari form transaksi (tanggal, metode, item, diskon, catatan).
+     * - Memvalidasi stok setiap produk.
+     * - Mengurangi stok produk di gudang.
+     * - Mencatat log stok (simpanLogStok).
+     * - Menyimpan transaksi ke 2r_transaksi_penjualan.
+     * - Jika metode Tunai, menambahkan pendapatan ke modal cash.
+     * - Jika metode Hutang, mencatat data hutang ke 2r_hutang_piutang.
+     * - Menampilkan notifikasi sukses dan merender ulang halaman.
+     * 
+     * Fungsi ini dipanggil saat tombol "Simpan Transaksi" ditekan.
+     */
+    function simpanTransaksiPenjualan() {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var tanggal = document.getElementById('trxTanggal').value;
+        var metode = document.getElementById('trxMetode').value;
+        var catatan = document.getElementById('trxCatatan').value.trim();
+        var diskon = parseFloat(document.getElementById('trxDiskon')?.value) || 0;
+        
+        // -------- AMBIL NAMA PELANGGAN JIKA HUTANG --------
+        var namaPelanggan = '';
+        if (metode === 'Hutang') {
+            namaPelanggan = document.getElementById('trxNamaPelanggan').value.trim();
+            if (!namaPelanggan) {
+                tampilkanToast('Nama pelanggan wajib diisi untuk pembayaran Hutang!', 'warning');
+                return;
+            }
+        }
+        
+        // ==========================================================
+        // BAGIAN 1: KUMPULKAN ITEM DARI FORM
+        // ==========================================================
+        
+        var items = [];
+        var i = 0;
+        while (document.getElementById('trxProduk' + i)) {
+            var select = document.getElementById('trxProduk' + i);
+            var produkId = select.value;
+            if (!produkId) {
+                i++;
+                continue;
+            }
+            var jumlah = parseInt(document.getElementById('trxJumlah' + i).value) || 0;
+            var harga = parseFloat(document.getElementById('trxHarga' + i).value) || 0;
+            var subtotal = parseFloat(document.getElementById('trxSubtotal' + i).value) || 0;
+            
+            if (jumlah <= 0) {
+                tampilkanToast('Jumlah barang harus lebih dari 0!', 'warning');
+                return;
+            }
+            
+            // -------- VALIDASI STOK --------
+            var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+            var produk = null;
+            for (var j = 0; j < semuaProdukGudang.length; j++) {
+                if (semuaProdukGudang[j].id == produkId) {
+                    produk = semuaProdukGudang[j];
+                    break;
+                }
+            }
+            if (!produk) {
+                tampilkanToast('Produk tidak ditemukan!', 'error');
+                return;
+            }
+            if (produk.jumlahStok < jumlah) {
+                tampilkanToast('Stok produk ' + produk.namaProduk + ' tidak cukup! Tersedia: ' + produk.jumlahStok, 'error');
+                return;
+            }
+            
+            items.push({
+                produkId: parseInt(produkId),
+                nama: produk.namaProduk,
+                harga: harga,
+                jumlah: jumlah,
+                subtotal: subtotal
+            });
+            i++;
+        }
+        
+        if (items.length === 0) {
+            tampilkanToast('Minimal satu item harus ditambahkan!', 'warning');
+            return;
+        }
+        
+        // ==========================================================
+        // BAGIAN 2: HITUNG TOTAL
+        // ==========================================================
+        
+        var total = 0;
+        for (var k = 0; k < items.length; k++) {
+            total += items[k].subtotal;
+        }
+        var grandTotal = total - diskon;
+        if (grandTotal < 0) grandTotal = 0;
+        
+        // ==========================================================
+        // BAGIAN 3: SIMPAN TRANSAKSI
+        // ==========================================================
+        
+        var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+        var transaksiBaru = {
+            id: 'TRX-' + Date.now(),
+            tokoId: user.id,
+            tanggal: tanggal,
+            items: items,
+            total: total,
+            diskon: diskon,
+            grandTotal: grandTotal,
+            metodePembayaran: metode,
+            catatan: catatan,
+            createdAt: new Date().toISOString()
+        };
+        semuaTransaksi.push(transaksiBaru);
+        localStorage.setItem('2r_transaksi_penjualan', JSON.stringify(semuaTransaksi));
+        
+        // ==========================================================
+        // BAGIAN 4: KURANGI STOK GUDANG & CATAT LOG
+        // ==========================================================
+        
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        for (var l = 0; l < items.length; l++) {
+            var item = items[l];
+            for (var m = 0; m < semuaProdukGudang.length; m++) {
+                if (semuaProdukGudang[m].id == item.produkId) {
+                    semuaProdukGudang[m].jumlahStok -= item.jumlah;
+                    semuaProdukGudang[m].totalTerjual = (semuaProdukGudang[m].totalTerjual || 0) + item.jumlah;
+                    // -------- SIMPAN LOG STOK --------
+                    if (typeof simpanLogStok === 'function') {
+                        simpanLogStok(item.produkId, item.nama, -item.jumlah, 'Penjualan #' + transaksiBaru.id);
+                    }
+                    break;
+                }
+            }
+        }
+        localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        
+        // ==========================================================
+        // BAGIAN 5: UPDATE MODAL CASH (JIKA TUNAI)
+        // ==========================================================
+        
+        if (metode === 'Tunai') {
+            var modalKey = '2r_modal_cash_' + user.id;
+            var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+            modalData.saldo = (modalData.saldo || 0) + grandTotal;
+            modalData.riwayat.push({
+                tanggal: new Date().toISOString(),
+                jenis: 'Penjualan',
+                jumlah: grandTotal,
+                saldoSetelah: modalData.saldo,
+                keterangan: 'Transaksi #' + transaksiBaru.id
+            });
+            localStorage.setItem(modalKey, JSON.stringify(modalData));
+        }
+        
+        // ==========================================================
+        // BAGIAN 6: CATAT HUTANG (JIKA METODE HUTANG)
+        // ==========================================================
+        
+        if (metode === 'Hutang') {
+            var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+            dataHutang.push({
+                id: 'HUT-' + Date.now(),
+                tokoId: user.id,
+                transaksiId: transaksiBaru.id,
+                namaPelanggan: namaPelanggan,
+                jumlahHutang: grandTotal,
+                sisaHutang: grandTotal,
+                tanggalTransaksi: tanggal,
+                status: 'Belum Lunas',
+                catatan: catatan || 'Hutang transaksi',
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataHutang));
+            tampilkanToast('Transaksi Hutang berhasil dicatat untuk ' + namaPelanggan, 'info');
+        }
+        
+        // ==========================================================
+        // BAGIAN 7: RESET FORM & RENDER ULANG
+        // ==========================================================
+        
+        // Kosongkan form (hapus item dan reset)
+        var container = document.getElementById('trxItemContainer');
+        if (container) {
+            container.innerHTML = '';
+            // Tambahkan kembali baris pertama
+            var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+            var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+            var produkSaya = semuaProdukGudang.filter(function(p) { return p.tokoId === user.id; });
+            
+            var row = document.createElement('div');
+            row.className = 'grid-2';
+            row.style.marginTop = '10px';
+            row.style.borderTop = '1px solid #eee';
+            row.style.paddingTop = '10px';
+            row.id = 'trxItemRow0';
+            var html = '';
+            html += '  <div><label class="form-label">Pilih Produk</label><select id="trxProduk0" class="form-input" onchange="updateHargaSatuan(0)">';
+            if (produkSaya.length === 0) {
+                html += '    <option value="">-- Tidak ada produk di gudang --</option>';
+            } else {
+                html += '    <option value="">-- Pilih Produk --</option>';
+                for (var i = 0; i < produkSaya.length; i++) {
+                    var p = produkSaya[i];
+                    html += '    <option value="' + p.id + '" data-harga="' + p.hargaJual + '" data-harga-grosir="' + (p.hargaGrosir || 0) + '" data-min-beli="' + (p.minBeliGrosir || 99999) + '" data-stok="' + p.jumlahStok + '">' + escapeHtml(p.namaProduk) + ' (Rp ' + p.hargaJual + ', Stok: ' + p.jumlahStok + ')</option>';
+                }
+            }
+            html += '  </select></div>';
+            html += '  <div><label class="form-label">Jumlah</label><input type="number" id="trxJumlah0" class="form-input" min="1" onchange="hitungSubtotal(0)" oninput="hitungSubtotal(0)"></div>';
+            html += '  <div><label class="form-label">Harga Satuan</label><input type="number" id="trxHarga0" class="form-input" readonly></div>';
+            html += '  <div><label class="form-label">Subtotal</label><input type="number" id="trxSubtotal0" class="form-input" readonly></div>';
+            row.innerHTML = html;
+            container.appendChild(row);
+        }
+        document.getElementById('trxCatatan').value = '';
+        document.getElementById('trxDiskon').value = 0;
+        document.getElementById('trxNamaPelanggan').value = '';
+        hitungTotalAkhir();
+        
+        // -------- RENDER ULANG HALAMAN --------
+        renderTransaksiPenjualan();
+        
+        // -------- TAMPILKAN NOTIFIKASI --------
+        tampilkanToast('Transaksi berhasil disimpan! Stok telah diperbarui.', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 84                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 85 - BLOK 8.9.3: JS: renderRekapPenjualan()         -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.3 - RENDER REKAP PENJUALAN                       */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman rekap penjualan.
+     * Halaman ini menampilkan:
+     * - Total penjualan untuk periode yang dipilih (Hari, Minggu, Bulan).
+     * - Tabel transaksi dengan detail (No, Tanggal, Item, Total, Diskon, Bayar, Metode, Catatan).
+     * - Filter periode (tombol Hari Ini, Minggu Ini, Bulan Ini).
+     * - Tombol download CSV (hanya untuk user PRO).
+     * 
+     * Data transaksi diambil dari localStorage '2r_transaksi_penjualan'.
+     * Filter periode disimpan di variabel global window._currentRekapFilter.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Rekap Penjualan".
+     */
+    function renderRekapPenjualan() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- CEK STATUS PRO --------
+        var isPro = user.isPro || false;
+        
+        // -------- AMBIL SEMUA TRANSAKSI --------
+        var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+        var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+        
+        // -------- TENTUKAN FILTER SAAT INI --------
+        var filter = window._currentRekapFilter || 'hari';
+        var now = new Date();
+        var startDate = new Date();
+        if (filter === 'hari') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (filter === 'minggu') {
+            var day = now.getDay();
+            var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        } else if (filter === 'bulan') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        
+        // -------- FILTER TRANSAKSI --------
+        var filtered = transaksiSaya.filter(function(t) {
+            return new Date(t.tanggal) >= startDate;
+        });
+        var totalPenjualan = 0;
+        for (var i = 0; i < filtered.length; i++) {
+            totalPenjualan += filtered[i].grandTotal || filtered[i].total;
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Rekap Penjualan</h2>';
+        html += '<p>Total penjualan ' + (filter === 'hari' ? 'hari ini' : filter === 'minggu' ? 'minggu ini' : 'bulan ini') + ': <strong>Rp ' + totalPenjualan.toLocaleString('id-ID') + '</strong></p></div>';
+        
+        // -------- BANNER UPGRADE UNTUK USER FREE --------
+        if (!isPro) {
+            html += '<div class="card" style="border:2px solid #FF6B00; background:#fff5f0; margin-bottom:15px;">';
+            html += '  <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">';
+            html += '    <i class="fas fa-crown" style="font-size:24px; color:#FF6B00;"></i>';
+            html += '    <div style="flex:1;"><strong style="font-size:16px;">🚀 Upgrade ke Akun Pro!</strong><br><span style="font-size:13px;">Nikmati fitur Download CSV dan laporan lengkap untuk analisa bisnis Anda.</span></div>';
+            html += '    <button class="button button-primary button-small" onclick="navigasiKeHalaman(\'statusAkun\')"><i class="fas fa-arrow-up"></i> Upgrade Sekarang</button>';
+            html += '  </div>';
+            html += '</div>';
+        }
+        
+        // -------- FILTER BUTTONS --------
+        html += '<div style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">';
+        html += '  <button class="button ' + (filter === 'hari' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'hari\'; renderRekapPenjualan()">Hari Ini</button>';
+        html += '  <button class="button ' + (filter === 'minggu' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'minggu\'; renderRekapPenjualan()">Minggu Ini</button>';
+        html += '  <button class="button ' + (filter === 'bulan' ? 'button-primary' : 'button-secondary') + '" onclick="window._currentRekapFilter=\'bulan\'; renderRekapPenjualan()">Bulan Ini</button>';
+        
+        // -------- TOMBOL DOWNLOAD CSV (HANYA UNTUK PRO) --------
+        if (isPro) {
+            html += '  <button class="button button-success button-small" onclick="downloadLaporanCSV()"><i class="fas fa-file-excel"></i> Download CSV</button>';
+        }
+        html += '  <button class="button button-primary button-small" onclick="renderTransaksiPenjualan()"><i class="fas fa-arrow-left"></i> Kembali</button>';
+        html += '</div>';
+        
+        // -------- TABEL TRANSAKSI --------
+        if (filtered.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi pada periode ini</h3></div></div>';
+        } else {
+            html += '<div class="card"><div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>No</th><th>Tanggal</th><th>Item</th><th>Total</th><th>Diskon</th><th>Bayar</th><th>Metode</th><th>Catatan</th>';
+            html += '</tr></thead><tbody>';
+            var no = 1;
+            for (var i = 0; i < filtered.length; i++) {
+                var t = filtered[i];
+                var diskon = t.diskon || 0;
+                var bayar = (t.grandTotal || t.total);
+                html += '<tr><td>' + (no++) + '</td>';
+                html += '<td>' + new Date(t.tanggal).toLocaleDateString('id-ID') + '</td>';
+                html += '<td>' + t.items.length + ' item</td>';
+                html += '<td>Rp ' + t.total.toLocaleString('id-ID') + '</td>';
+                html += '<td style="color:#d32f2f;">-Rp ' + diskon.toLocaleString('id-ID') + '</td>';
+                html += '<td><strong>Rp ' + bayar.toLocaleString('id-ID') + '</strong></td>';
+                html += '<td>' + t.metodePembayaran + '</td>';
+                html += '<td>' + escapeHtml(t.catatan || '-') + '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+            html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total Pendapatan Bersih: Rp ' + totalPenjualan.toLocaleString('id-ID') + '</div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.3.1 - DOWNLOAD LAPORAN CSV (PRO ONLY)            */
+    /* ========================================================== */
+    
+    /**
+     * Mendownload data transaksi yang sudah difilter dalam format CSV.
+     * Hanya dapat digunakan oleh user PRO.
+     * File CSV dapat dibuka di Excel.
+     */
+    function downloadLaporanCSV() {
+        // -------- CEK STATUS PRO --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        if (!user.isPro) {
+            tampilkanToast('Fitur ini hanya untuk Akun PRO!', 'warning');
+            return;
+        }
+        
+        // -------- AMBIL DATA DAN FILTER --------
+        var semuaTransaksi = JSON.parse(localStorage.getItem('2r_transaksi_penjualan') || '[]');
+        var transaksiSaya = semuaTransaksi.filter(function(t) { return t.tokoId === user.id; });
+        
+        var filter = window._currentRekapFilter || 'hari';
+        var now = new Date();
+        var startDate = new Date();
+        if (filter === 'hari') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (filter === 'minggu') {
+            var day = now.getDay();
+            var diff = now.getDate() - day + (day === 0 ? -6 : 1);
+            startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        } else if (filter === 'bulan') {
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        var filtered = transaksiSaya.filter(function(t) {
+            return new Date(t.tanggal) >= startDate;
+        });
+        
+        if (filtered.length === 0) {
+            tampilkanToast('Tidak ada data untuk periode ini.', 'warning');
+            return;
+        }
+        
+        // -------- BANGUN STRING CSV --------
+        var csv = "Tanggal;Item;Total;Diskon;Bayar;Metode;Catatan\n";
+        for (var i = 0; i < filtered.length; i++) {
+            var t = filtered[i];
+            var diskon = t.diskon || 0;
+            var bayar = (t.grandTotal || t.total);
+            csv += '"' + new Date(t.tanggal).toLocaleDateString('id-ID') + '";';
+            csv += t.items.length + ' item;';
+            csv += t.total + ';';
+            csv += diskon + ';';
+            csv += bayar + ';';
+            csv += '"' + t.metodePembayaran + '";';
+            csv += '"' + (t.catatan || '') + '"\n';
+        }
+        
+        // -------- BUAT BLOB DAN DOWNLOAD --------
+        var blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        var url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = 'Laporan_Penjualan_' + filter + '_' + new Date().toISOString().slice(0,10) + '.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        tampilkanToast('Laporan berhasil didownload!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.3                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 85                                            -->
+<!-- ========================================================== -->
+
 </body>
 </html>
