@@ -2265,7 +2265,8 @@ function simpanDataPribadiUmum() {
     }
     // ===== AKHIR BLOK 7.4.3 =====
     // ============================================================
-// BLOK 7.4.4 - RENDER PROFIL LENGKAP (DENGAN FOTO & NAMA USAHA)
+// ============================================================
+// BLOK 7.4.4 - RENDER PROFIL LENGKAP (FINAL)
 // ============================================================
 function renderProfilLengkap(user, role) {
     var areaKonten = document.getElementById('mainContent');
@@ -2300,7 +2301,7 @@ function renderProfilLengkap(user, role) {
     html += '<div><label class="form-label">Email</label><input type="email" id="editEmailLengkap" class="form-input" value="' + escapeHtml(user.email || '') + '"></div>';
     html += '<div><label class="form-label">Nomor HP</label><input type="tel" id="editHpLengkap" class="form-input" value="' + escapeHtml(user.nomorHp || '') + '"></div></div></div>';
 
-    // Alamat KTP dan Domisili (sama persis seperti sebelumnya)
+    // Alamat KTP dan Domisili
     html += buatAlamatHTML('ktp', 'Alamat Sesuai KTP', user);
     html += buatAlamatHTML('dom', 'Alamat Domisili / Sekarang', user);
 
@@ -2310,7 +2311,7 @@ function renderProfilLengkap(user, role) {
     html += '<div><label class="form-label">Nomor Rekening</label><input type="text" id="profilRekeningLengkap" class="form-input" value="' + escapeHtml(user.nomorRekening || '') + '"></div>';
     html += '<div><label class="form-label">Nama Pemilik Rekening</label><input type="text" id="profilPemilikRekLengkap" class="form-input" value="' + escapeHtml(user.pemilikRekening || '') + '"></div></div></div>';
 
-    // --- TAMBAHAN CARD FOTO PROFIL ---
+    // --- Foto Profil ---
     html += '<div class="card"><div class="card-header">Foto Profil</div>';
     html += '<div class="upload-area" id="uploadFotoLengkap"><div id="fotoPreviewLengkap">';
     if (user.fotoProfil) {
@@ -2321,7 +2322,6 @@ function renderProfilLengkap(user, role) {
     html += '</div><input type="file" id="inputFotoLengkap" accept=".jpg,.jpeg,.png" style="display:none;"></div>';
     html += '<button class="button button-primary margin-top-10" onclick="simpanFotoProfilGlobal()"><i class="fas fa-save"></i> Simpan Foto</button>';
     html += '</div>';
-    // ----------------------------------------
 
     // KTP Upload
     html += '<div class="card"><div class="card-header">Dokumen KTP & Domisili</div>';
@@ -2338,7 +2338,6 @@ function renderProfilLengkap(user, role) {
 
     areaKonten.innerHTML = html;
 
-    // Event listener untuk Foto & KTP
     setTimeout(function() {
         loadDataWilayahTersimpan('ktp', user);
         loadDataWilayahTersimpan('dom', user);
@@ -2359,18 +2358,21 @@ function renderProfilLengkap(user, role) {
 // AKHIR BLOK 7.4.4
 // ============================================================
 // ============================================================
-// BLOK 7.4.5 - SIMPAN PROFIL LENGKAP (DENGAN NAMA USAHA)
+// BLOK 7.4.5 - SIMPAN & HELPER PROFIL LENGKAP (FINAL)
 // ============================================================
+
+// --- 1. Simpan Profil Lengkap + Nama Usaha + Alamat ---
 function simpanProfilLengkap() {
     var user = JSON.parse(localStorage.getItem('2r_user'));
     var dataAkun = getDataAkun();
     
+    // Ambil data dari input form
     user.nama = document.getElementById('editNamaLengkap').value.trim();
-    user.namaUsaha = document.getElementById('editNamaUsahaLengkap').value.trim(); // <-- TAMBAHAN
+    user.namaUsaha = document.getElementById('editNamaUsahaLengkap').value.trim(); 
     user.email = document.getElementById('editEmailLengkap').value.trim();
     user.nomorHp = document.getElementById('editHpLengkap').value.trim();
     
-    // ... (kode alamat KTP dan Domisili tetap sama) ...
+    // --- Ambil Alamat KTP ---
     user.ktpDusun = document.getElementById('ktpDusun').value.trim();
     user.ktpRT = document.getElementById('ktpRT').value.trim();
     user.ktpRW = document.getElementById('ktpRW').value.trim();
@@ -2380,28 +2382,91 @@ function simpanProfilLengkap() {
     user.ktpKabupaten = document.getElementById('ktpKabupaten').value;
     user.ktpProvinsi = document.getElementById('ktpProvinsi').value;
     user.ktpKodepos = document.getElementById('ktpKodepos').value.trim();
-    // ... (lanjut sampai alamat gabung) ...
-    var gabungKTP = (user.ktpDusun ? user.ktpDusun + ', ' : '') + ... + (user.ktpKodepos ? user.ktpKodepos : '');
+    user.ktpProvinsiManual = document.getElementById('ktpProvinsiManual').value.trim();
+    user.ktpKabupatenManual = document.getElementById('ktpKabupatenManual').value.trim();
+    user.ktpKecamatanManual = document.getElementById('ktpKecamatanManual').value.trim();
+    user.ktpDesaManual = document.getElementById('ktpDesaManual').value.trim();
+
+    // Gabung Alamat KTP
+    var gabungKTP = (user.ktpDusun ? user.ktpDusun + ', ' : '') +
+                    (user.ktpRT ? 'RT ' + user.ktpRT + ', ' : '') +
+                    (user.ktpRW ? 'RW ' + user.ktpRW + ', ' : '') +
+                    (user.ktpJalan ? user.ktpJalan + ', ' : '') +
+                    (user.ktpDesa ? user.ktpDesa + ', ' : '') +
+                    (user.ktpKecamatan ? user.ktpKecamatan + ', ' : '') +
+                    (user.ktpKabupaten ? user.ktpKabupaten + ', ' : '') +
+                    (user.ktpProvinsi ? user.ktpProvinsi + ', ' : '') +
+                    (user.ktpKodepos ? user.ktpKodepos : '');
     user.alamatKTP = gabungKTP;
-    // ... (kode Domisili tetap sama) ...
+
+    // --- Ambil Alamat Domisili ---
     user.domDusun = document.getElementById('domDusun').value.trim();
-    // ...
-    var gabungDom = (user.domDusun ? user.domDusun + ', ' : '') + ... + (user.domKodepos ? user.domKodepos : '');
+    user.domRT = document.getElementById('domRT').value.trim();
+    user.domRW = document.getElementById('domRW').value.trim();
+    user.domJalan = document.getElementById('domJalan').value.trim();
+    user.domDesa = document.getElementById('domDesa').value;
+    user.domKecamatan = document.getElementById('domKecamatan').value;
+    user.domKabupaten = document.getElementById('domKabupaten').value;
+    user.domProvinsi = document.getElementById('domProvinsi').value;
+    user.domKodepos = document.getElementById('domKodepos').value.trim();
+    user.domProvinsiManual = document.getElementById('domProvinsiManual').value.trim();
+    user.domKabupatenManual = document.getElementById('domKabupatenManual').value.trim();
+    user.domKecamatanManual = document.getElementById('domKecamatanManual').value.trim();
+    user.domDesaManual = document.getElementById('domDesaManual').value.trim();
+
+    // Gabung Alamat Domisili
+    var gabungDom = (user.domDusun ? user.domDusun + ', ' : '') +
+                    (user.domRT ? 'RT ' + user.domRT + ', ' : '') +
+                    (user.domRW ? 'RW ' + user.domRW + ', ' : '') +
+                    (user.domJalan ? user.domJalan + ', ' : '') +
+                    (user.domDesa ? user.domDesa + ', ' : '') +
+                    (user.domKecamatan ? user.domKecamatan + ', ' : '') +
+                    (user.domKabupaten ? user.domKabupaten + ', ' : '') +
+                    (user.domProvinsi ? user.domProvinsi + ', ' : '') +
+                    (user.domKodepos ? user.domKodepos : '');
     user.alamatDomisili = gabungDom;
     user.alamat = user.alamatDomisili || user.alamatKTP;
     
     if (!user.nama) { tampilkanToast('Nama lengkap wajib diisi!', 'warning'); return; }
 
+    // Simpan ke Database Akun
     for (var i = 0; i < dataAkun.length; i++) {
         if (dataAkun[i].id === user.id) {
             dataAkun[i].nama = user.nama;
-            dataAkun[i].namaUsaha = user.namaUsaha; // <-- SIMPAN NAMA USAHA
+            dataAkun[i].namaUsaha = user.namaUsaha;
             dataAkun[i].email = user.email;
             dataAkun[i].nomorHp = user.nomorHp;
-            // ... (sisa data alamat & lainnya tetap disimpan) ...
-            dataAkun[i].ktpDusun = user.ktpDusun; dataAkun[i].ktpRT = user.ktpRT; 
-            // ...
-            dataAkun[i].alamatDomisili = user.alamatDomisili; dataAkun[i].alamat = user.alamat; 
+            
+            dataAkun[i].ktpDusun = user.ktpDusun;
+            dataAkun[i].ktpRT = user.ktpRT;
+            dataAkun[i].ktpRW = user.ktpRW;
+            dataAkun[i].ktpJalan = user.ktpJalan;
+            dataAkun[i].ktpDesa = user.ktpDesa;
+            dataAkun[i].ktpKecamatan = user.ktpKecamatan;
+            dataAkun[i].ktpKabupaten = user.ktpKabupaten;
+            dataAkun[i].ktpProvinsi = user.ktpProvinsi;
+            dataAkun[i].ktpKodepos = user.ktpKodepos;
+            dataAkun[i].ktpProvinsiManual = user.ktpProvinsiManual;
+            dataAkun[i].ktpKabupatenManual = user.ktpKabupatenManual;
+            dataAkun[i].ktpKecamatanManual = user.ktpKecamatanManual;
+            dataAkun[i].ktpDesaManual = user.ktpDesaManual;
+            dataAkun[i].alamatKTP = user.alamatKTP;
+
+            dataAkun[i].domDusun = user.domDusun;
+            dataAkun[i].domRT = user.domRT;
+            dataAkun[i].domRW = user.domRW;
+            dataAkun[i].domJalan = user.domJalan;
+            dataAkun[i].domDesa = user.domDesa;
+            dataAkun[i].domKecamatan = user.domKecamatan;
+            dataAkun[i].domKabupaten = user.domKabupaten;
+            dataAkun[i].domProvinsi = user.domProvinsi;
+            dataAkun[i].domKodepos = user.domKodepos;
+            dataAkun[i].domProvinsiManual = user.domProvinsiManual;
+            dataAkun[i].domKabupatenManual = user.domKabupatenManual;
+            dataAkun[i].domKecamatanManual = user.domKecamatanManual;
+            dataAkun[i].domDesaManual = user.domDesaManual;
+            dataAkun[i].alamatDomisili = user.alamatDomisili;
+            dataAkun[i].alamat = user.alamat;
             break;
         }
     }
@@ -2414,6 +2479,7 @@ function simpanProfilLengkap() {
     tampilkanToast('Profil berhasil disimpan!', 'success');
 }
 
+// --- 2. Simpan Rekening ---
 function simpanRekeningLengkap() {
     var user = JSON.parse(localStorage.getItem('2r_user'));
     var dataAkun = getDataAkun();
@@ -2428,9 +2494,48 @@ function simpanRekeningLengkap() {
     tampilkanToast('Rekening disimpan!', 'success');
 }
 
-function previewKTPLengkap(file) { /* kode yang sudah ada */ }
-function simpanKTPLengkap() { /* kode yang sudah ada */ }
-function hapusKTPUmum() { /* kode yang sudah ada */ }
+// --- 3. Fungsi Upload & Hapus KTP (Tetap sama seperti sebelumnya) ---
+function previewKTPLengkap(file) {
+    if (!file) return;
+    var pembaca = new FileReader();
+    pembaca.onload = function(e) {
+        document.getElementById('ktpPreviewLengkap').innerHTML = '<img src="' + e.target.result + '" class="preview-image">';
+        localStorage.setItem('2r_ktp_temp_lengkap', e.target.result);
+    };
+    pembaca.readAsDataURL(file);
+}
+
+function simpanKTPLengkap() {
+    var ktp = localStorage.getItem('2r_ktp_temp_lengkap');
+    if (!ktp) { tampilkanToast('Upload KTP dulu!', 'warning'); return; }
+    var user = JSON.parse(localStorage.getItem('2r_user'));
+    var dataAkun = getDataAkun();
+    user.ktp = ktp;
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { dataAkun[i].ktp = ktp; break; }
+    }
+    localStorage.setItem('2r_user', JSON.stringify(user));
+    simpanDataAkun(dataAkun);
+    localStorage.removeItem('2r_ktp_temp_lengkap');
+    tampilkanToast('KTP disimpan!', 'success');
+}
+
+function hapusKTPUmum() {
+    if (!confirm('Yakin ingin menghapus foto KTP?')) return;
+    var user = JSON.parse(localStorage.getItem('2r_user'));
+    var dataAkun = getDataAkun();
+    user.ktp = '';
+    for (var i = 0; i < dataAkun.length; i++) {
+        if (dataAkun[i].id === user.id) { dataAkun[i].ktp = ''; break; }
+    }
+    localStorage.setItem('2r_user', JSON.stringify(user));
+    simpanDataAkun(dataAkun);
+    tampilkanToast('KTP berhasil dihapus!', 'success');
+    var role = localStorage.getItem('2r_user_role');
+    if (role === 'toko' || role === 'ojek' || role === 'pedagang') {
+        renderProfilLengkap(user, role);
+    }
+}
 // ============================================================
 // AKHIR BLOK 7.4.5
 // ============================================================
