@@ -1221,13 +1221,20 @@ function buatSidebarHTML(role) {
 <!-- ===== BLOK 6.2 - JS_NAVIGASI_HALAMAN ===== -->
 <script>
 // ============================================================
-// BLOK 6.2.1 - NAVIGASI KE HALAMAN (LENGKAP - FINAL)
+// BLOK 6.2.1 - NAVIGASI KE HALAMAN (VERSI AMAN)
 // ============================================================
 function navigasiKeHalaman(namaHalaman) {
     var areaKonten = document.getElementById('mainContent');
-    if (!areaKonten) return;
+    if (!areaKonten) {
+        console.warn('Element #mainContent tidak ditemukan!');
+        return;
+    }
 
-    if (namaHalaman === 'dashboard') renderDashboard();
+    // Daftar case navigasi (pastikan semua sudah ada)
+    if (namaHalaman === 'dashboard') {
+        if (typeof renderDashboard === 'function') renderDashboard();
+        else areaKonten.innerHTML = '<div>Dashboard belum siap.</div>';
+    }
     else if (namaHalaman === 'profile') renderProfil();
     else if (namaHalaman === 'daftarAkun') renderDaftarAkun();
     else if (namaHalaman === 'persetujuan') renderPersetujuanAkun();
@@ -1282,7 +1289,14 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'riwayatOrderOjek') renderRiwayatOrderOjek();
     else if (namaHalaman === 'laporanTagihanOjek') renderLaporanTagihanOjek();
     else if (namaHalaman === 'reviewPengajuanAktivasi') renderReviewPengajuan();
-    else if (namaHalaman === 'katalogProduk') renderSemuaProduk();
+    else if (namaHalaman === 'katalogProduk') {
+        // Jika fungsi renderSemuaProduk belum siap, tampilkan pesan
+        if (typeof renderSemuaProduk === 'function') {
+            renderSemuaProduk();
+        } else {
+            areaKonten.innerHTML = '<div class="card"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Katalog Produk sedang dimuat...</h3><p>Fungsi render belum siap. Refresh sebentar lagi.</p></div></div>';
+        }
+    }
     else renderPlaceholder(namaHalaman);
 }
 // ============================================================
@@ -4061,7 +4075,7 @@ function renderPapanInformasi() {
 <script>
 // ============================================================
 // ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (DEFAULT KATALOG - FINAL)
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (NAVIGASI AMAN)
 // ============================================================
 function tampilkanDashboard(user) {
     if (!user || !user.nama) {
@@ -4133,19 +4147,12 @@ function tampilkanDashboard(user) {
 
     inisialisasiSistemTagihan();
 
-    // --- HALAMAN DEFAULT: LANGSUNG RENDER KATALOG PRODUK ---
-    // Cek apakah fungsi renderSemuaProduk ada
-    if (typeof renderSemuaProduk === 'function') {
-        renderSemuaProduk(); // Langsung render ke mainContent
+    // --- HALAMAN DEFAULT: Katalog Produk (jika navigasi aman) ---
+    if (typeof navigasiKeHalaman === 'function') {
+        navigasiKeHalaman('katalogProduk');
     } else {
-        // Jika fungsi belum ada, tampilkan placeholder
-        document.getElementById('mainContent').innerHTML = `
-        <div class="card" style="padding:50px; text-align:center;">
-            <i class="fas fa-boxes" style="font-size:60px; color:#ddd;"></i>
-            <h3>Katalog Produk Belum Siap</h3>
-            <p style="color:#888;">Fungsi renderSemuaProduk belum didefinisikan. Pastikan BLOK 8.57 sudah ditempel.</p>
-        </div>
-        `;
+        // Jika navigasi belum siap, fallback ke dashboard
+        renderDashboard();
     }
 }
 // ============================================================
