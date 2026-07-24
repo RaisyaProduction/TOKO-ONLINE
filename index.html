@@ -11216,14 +11216,14 @@ function ambilLokasiPengajuan() {
 // AKHIR BLOK 8.56
 // ============================================================
 // ============================================================
-// BLOK 8.57 - RENDER KATALOG PRODUK (PERBAIKAN)
+// BLOK 8.57 - RENDER KATALOG PRODUK (SEMUA PRODUK DARI SEMUA TOKO)
 // ============================================================
-
 function renderSemuaProduk() {
     var areaKonten = document.getElementById('mainContent');
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
+    // --- Filter dan Pencarian ---
     var html = `
     <div class="page-header">
         <h2><i class="fas fa-store-alt" style="color:#FF6B00;"></i> Katalog Produk</h2>
@@ -11259,16 +11259,17 @@ function renderSemuaProduk() {
     </div>
     `;
 
+    // --- Grid Produk ---
     html += '<div id="gridKatalog" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; padding:5px;">';
 
     if (semuaProduk.length === 0) {
-        html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk yang diupload</h3><p>Silakan upload produk dari menu Upload Produk Publik.</p></div></div>';
+        html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada produk</h3></div></div>';
     } else {
         for (var i = 0; i < semuaProduk.length; i++) {
             var p = semuaProduk[i];
             var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
 
-            // Cari nama pemilik dengan fallback
+            // Cari nama pemilik
             var pemilik = null;
             for (var j = 0; j < dataAkun.length; j++) {
                 if (dataAkun[j].id === p.ownerId) {
@@ -11276,7 +11277,7 @@ function renderSemuaProduk() {
                     break;
                 }
             }
-            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username || 'Unknown') : 'Toko Tidak Ditemukan';
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
 
             html += `
             <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
@@ -11299,7 +11300,7 @@ function renderSemuaProduk() {
     areaKonten.innerHTML = html;
 }
 
-// --- Fungsi Filter Sama Seperti Sebelumnya ---
+// --- Fungsi Filter (dipanggil dari input/select) ---
 function filterKatalog() {
     var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
     var kategori = document.getElementById('filterKategoriKatalog').value;
@@ -11325,6 +11326,7 @@ function filterKatalog() {
     });
 
     document.getElementById('totalKatalog').textContent = filtered.length;
+
     var grid = document.getElementById('gridKatalog');
     var html = '';
     if (filtered.length === 0) {
@@ -11340,7 +11342,7 @@ function filterKatalog() {
                     break;
                 }
             }
-            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username || 'Unknown') : 'Toko Tidak Ditemukan';
+            var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
             html += `
             <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
