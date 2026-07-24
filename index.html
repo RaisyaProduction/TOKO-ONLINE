@@ -3355,6 +3355,405 @@
 <!-- ========================================================== -->
 <!-- AKHIR BAGIAN 40                                            -->
 <!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 41 - BLOK 8.68.1: JS: renderLandingPage() - HITUNG STATISTIK -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.68.1 - RENDER LANDING PAGE: HITUNG STATISTIK        */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi utama untuk merender seluruh konten dinamis di Landing Page.
+     * Bagian ini khusus menghitung dan menampilkan statistik jumlah
+     * toko, ojek, dan customer berdasarkan data akun yang tersimpan.
+     * 
+     * Fungsi ini akan dipanggil saat:
+     * - Halaman Landing Page dimuat pertama kali.
+     * - User kembali ke Landing Page dari Authentication atau Dashboard.
+     */
+    function renderLandingPage() {
+        // ==========================================================
+        // LANGKAH 1: AMBIL DATA AKUN
+        // ==========================================================
+        
+        var dataAkun = getDataAkun();
+        
+        // ==========================================================
+        // LANGKAH 2: HITUNG STATISTIK BERDASARKAN ROLE
+        // ==========================================================
+        
+        var countToko = 0;
+        var countOjek = 0;
+        var countCustomer = 0;
+        
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            
+            // Role Toko, Pedagang, dan COD Seller dihitung sebagai "Mitra Toko"
+            if (a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') {
+                countToko++;
+            }
+            // Role Ojek dihitung sebagai "Mitra Ojek"
+            else if (a.role === 'ojek') {
+                countOjek++;
+            }
+            // Role Customer dihitung sebagai "Pelanggan"
+            else if (a.role === 'customer') {
+                countCustomer++;
+            }
+            // Role lain (superadmin, staf, dll) tidak dihitung
+        }
+        
+        // ==========================================================
+        // LANGKAH 3: UPDATE TAMPILAN STATISTIK DI HTML
+        // ==========================================================
+        
+        // Update angka Mitra Toko
+        var elToko = document.getElementById('statToko');
+        if (elToko) {
+            elToko.textContent = countToko;
+        }
+        
+        // Update angka Mitra Ojek
+        var elOjek = document.getElementById('statOjek');
+        if (elOjek) {
+            elOjek.textContent = countOjek;
+        }
+        
+        // Update angka Pelanggan
+        var elCustomer = document.getElementById('statCustomer');
+        if (elCustomer) {
+            elCustomer.textContent = countCustomer;
+        }
+
+        // ==========================================================
+        // LANGKAH 4: LANJUT KE BAGIAN BERIKUTNYA
+        // ==========================================================
+        
+        // Bagian 42: Render Preview Mitra Terdekat
+        // Bagian 43: Render Produk Unggulan
+        // (akan ditambahkan di Bagian 42 dan 43)
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.68.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 41                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 42 - BLOK 8.68.2: JS: renderLandingPage() - RENDER PREVIEW MITRA -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.68.2 - RENDER PREVIEW MITRA TERDEKAT                */
+    /* ========================================================== */
+    
+    // -------- SAMBUNGAN DARI BAGIAN 41 --------
+    // Fungsi renderLandingPage() sudah dimulai di Bagian 41.
+    // Sekarang kita akan melanjutkan dengan menambahkan logika
+    // untuk merender preview mitra terdekat.
+    
+    // (Kode ini adalah kelanjutan dari fungsi renderLandingPage() yang sudah ada)
+    
+    function renderLandingPage() {
+        // ==========================================================
+        // (KODE DARI BAGIAN 41 - HITUNG STATISTIK)
+        // ==========================================================
+        var dataAkun = getDataAkun();
+        
+        // ... (kode perhitungan statistik dari Bagian 41) ...
+        
+        // ==========================================================
+        // LANGKAH 5: AMBIL DATA MITRA (TOKO, PEDAGANG, COD SELLER)
+        // ==========================================================
+        
+        var daftarMitra = [];
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            // Hanya ambil role penjual yang aktif
+            if ((a.role === 'toko' || a.role === 'pedagang' || a.role === 'codseller') && a.status === 'AKTIF') {
+                daftarMitra.push(a);
+            }
+        }
+        
+        // ==========================================================
+        // LANGKAH 6: AMBIL 3 MITRA PERTAMA (ATAU KURANG)
+        // ==========================================================
+        
+        // Ambil maksimal 3 mitra pertama untuk ditampilkan
+        var previewMitra = daftarMitra.slice(0, 3);
+        
+        // ==========================================================
+        // LANGKAH 7: BANGUN HTML UNTUK KARTU-KARTU MITRA
+        // ==========================================================
+        
+        var previewHtml = '';
+        
+        if (previewMitra.length === 0) {
+            // Jika belum ada mitra, tampilkan pesan kosong
+            previewHtml = '<div style="grid-column:1/-1; text-align:center; color:#888; padding:20px;">Belum ada mitra terdaftar.</div>';
+        } else {
+            // Loop untuk membuat kartu setiap mitra
+            for (var i = 0; i < previewMitra.length; i++) {
+                var m = previewMitra[i];
+                var nama = m.nama || m.username || 'Mitra 2R';
+                var roleLabel = m.role === 'toko' ? 'Toko' : (m.role === 'pedagang' ? 'Pedagang' : 'COD Seller');
+                var alamat = m.alamatLokasi || m.alamat || 'Lokasi belum diisi';
+                
+                previewHtml += `
+                <div class="preview-card">
+                    <h4><i class="fas fa-store" style="color:#FF6B00; margin-right:8px;"></i> ${escapeHtml(nama)}</h4>
+                    <p><i class="fas fa-map-pin" style="color:#888; margin-right:5px;"></i> ${escapeHtml(alamat.substring(0, 50))}...</p>
+                    <span class="badge-role">${roleLabel}</span>
+                </div>
+                `;
+            }
+        }
+        
+        // ==========================================================
+        // LANGKAH 8: MASUKKAN HTML KE DALAM ELEMEN LANDING PREVIEW
+        // ==========================================================
+        
+        var previewContainer = document.getElementById('landingPreview');
+        if (previewContainer) {
+            previewContainer.innerHTML = previewHtml;
+        }
+
+        // ==========================================================
+        // LANGKAH 9: LANJUT KE BAGIAN BERIKUTNYA (PRODUK UNGGULAN)
+        // ==========================================================
+        
+        // Bagian 43: Render Produk Unggulan
+        // (akan ditambahkan di Bagian 43)
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.68.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 42                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 43 - BLOK 8.68.3: JS: renderLandingPage() - RENDER PRODUK UNGGULAN -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.68.3 - RENDER PRODUK UNGGULAN                       */
+    /* ========================================================== */
+    
+    // -------- SAMBUNGAN DARI BAGIAN 42 --------
+    // Fungsi renderLandingPage() sudah mencakup bagian statistik dan preview mitra.
+    // Sekarang kita akan melanjutkan dengan logika untuk merender produk unggulan.
+    
+    function renderLandingPage() {
+        // ==========================================================
+        // (KODE DARI BAGIAN 41 - HITUNG STATISTIK)
+        // ==========================================================
+        var dataAkun = getDataAkun();
+        // ... (kode perhitungan statistik dari Bagian 41) ...
+        
+        // ==========================================================
+        // (KODE DARI BAGIAN 42 - RENDER PREVIEW MITRA)
+        // ==========================================================
+        // ... (kode render preview mitra dari Bagian 42) ...
+        
+        // ==========================================================
+        // LANGKAH 10: AMBIL DATA PRODUK PUBLIK DAN PENGATURAN
+        // ==========================================================
+        
+        var produkPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+        var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"fitur":[]}');
+        var fiturUnggulan = pengaturan.fitur || [];
+        
+        // ==========================================================
+        // LANGKAH 11: FILTER PRODUK UNGGULAN
+        // ==========================================================
+        
+        var produkUnggulan = [];
+        
+        if (fiturUnggulan.length > 0) {
+            // Jika ada daftar produk unggulan, ambil produk yang sesuai
+            for (var i = 0; i < fiturUnggulan.length; i++) {
+                var id = fiturUnggulan[i];
+                for (var j = 0; j < produkPublik.length; j++) {
+                    if (produkPublik[j].id === id) {
+                        produkUnggulan.push(produkPublik[j]);
+                        break;
+                    }
+                }
+                // Batasi maksimal 4 produk unggulan agar tidak terlalu banyak
+                if (produkUnggulan.length >= 4) break;
+            }
+        }
+        
+        // Jika tidak ada produk unggulan, ambil 4 produk pertama sebagai default
+        if (produkUnggulan.length === 0) {
+            produkUnggulan = produkPublik.slice(0, 4);
+        }
+        
+        // ==========================================================
+        // LANGKAH 12: BANGUN HTML UNTUK KARTU-KARTU PRODUK
+        // ==========================================================
+        
+        var productHtml = '';
+        
+        if (produkUnggulan.length === 0) {
+            // Jika belum ada produk, tampilkan pesan kosong
+            productHtml = '<div style="grid-column:1/-1; text-align:center; color:#888; padding:20px;">Belum ada produk tersedia.</div>';
+        } else {
+            // Loop untuk membuat kartu setiap produk
+            for (var i = 0; i < produkUnggulan.length; i++) {
+                var p = produkUnggulan[i];
+                var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+                var pemilik = null;
+                
+                // Cari nama penjual berdasarkan ownerId
+                for (var j = 0; j < dataAkun.length; j++) {
+                    if (dataAkun[j].id === p.ownerId) {
+                        pemilik = dataAkun[j];
+                        break;
+                    }
+                }
+                var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+                
+                productHtml += `
+                <div class="product-card">
+                    <img src="${gambar}" alt="${escapeHtml(p.judul)}" onerror="this.style.display='none'">
+                    <h4>${escapeHtml(p.judul)}</h4>
+                    <p class="price">Rp ${p.harga.toLocaleString('id-ID')}</p>
+                    <p class="kategori">${escapeHtml(p.kategori)}</p>
+                    <p class="penjual">Dari: ${escapeHtml(namaPemilik)}</p>
+                </div>
+                `;
+            }
+        }
+        
+        // ==========================================================
+        // LANGKAH 13: MASUKKAN HTML KE DALAM ELEMEN LANDING PRODUCTS
+        // ==========================================================
+        
+        var productContainer = document.getElementById('landingProducts');
+        if (productContainer) {
+            productContainer.innerHTML = productHtml;
+        }
+        
+        // ==========================================================
+        // LANGKAH 14: FUNGSI RENDER LANDING PAGE SELESAI
+        // ==========================================================
+        
+        console.log('Landing Page berhasil dirender.');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.68.3                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 43                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 44 - BLOK 8.69.1: JS: klikDaftar()                  -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.69.1 - KLIK DAFTAR                                 */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi yang dipanggil saat tombol "Daftar" ditekan.
+     * Fungsi ini mengarahkan user ke form registrasi dengan
+     * memanggil toggleForm('register').
+     */
+    function klikDaftar() {
+        // Panggil toggleForm dengan parameter 'register'
+        // untuk menampilkan form registrasi dan menyembunyikan Landing Page.
+        toggleForm('register');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.69.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 44                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 45 - BLOK 8.69.2: JS: klikLogin()                   -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.69.2 - KLIK LOGIN                                  */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi yang dipanggil saat tombol "Masuk" ditekan.
+     * Fungsi ini mengarahkan user ke form login dengan
+     * memanggil toggleForm('login').
+     */
+    function klikLogin() {
+        // Panggil toggleForm dengan parameter 'login'
+        // untuk menampilkan form login dan menyembunyikan Landing Page.
+        toggleForm('login');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.69.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 45                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 46 - BLOK 8.69.3: JS: klikChatCS()                  -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.69.3 - KLIK CHAT CS                                */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi yang dipanggil saat tombol "Chat Customer Service" ditekan.
+     * Fungsi ini akan membuka aplikasi WhatsApp dengan nomor CS
+     * yang telah ditentukan, atau membuka halaman chat internal jika tersedia.
+     */
+    function klikChatCS() {
+        // Nomor WhatsApp CS (bisa diganti dengan nomor yang diinginkan)
+        var nomorCS = '6281234567890'; // Contoh nomor
+        var pesan = 'Halo, saya ingin bertanya tentang Toko Online 2R.';
+        
+        // Buat URL WhatsApp dengan pesan yang sudah diencode
+        var urlWA = 'https://api.whatsapp.com/send?phone=' + nomorCS + '&text=' + encodeURIComponent(pesan);
+        
+        // Buka URL di tab baru
+        window.open(urlWA, '_blank');
+        
+        // Tampilkan notifikasi (opsional)
+        tampilkanToast('Membuka WhatsApp untuk chat dengan CS.', 'info');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.69.3                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 46                                            -->
+<!-- ========================================================== -->
 
 </body>
 </html>
