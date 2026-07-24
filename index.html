@@ -12829,6 +12829,150 @@ function renderDashboardHome() {
 // ============================================================
 // AKHIR BLOK 8.66
 // ============================================================
+// ============================================================
+// BLOK 8.66 - RENDER LANDING PAGE (VERSI AMAN TANPA MAP)
+// ============================================================
+function renderDashboardHome() {
+    var areaKonten = document.getElementById('mainContent');
+    var dataAkun = getDataAkun();
+
+    // Ambil data toko & ojek
+    var tokoTerdekat = dataAkun.filter(a => a.role === 'toko' || a.role === 'pedagang').slice(0, 4);
+    var ojekTerdekat = dataAkun.filter(a => a.role === 'ojek').slice(0, 2);
+
+    // --- 1. BUAT HTML UNTUK TOKO TERDEKAT (Menggunakan loop for biasa agar aman) ---
+    var htmlToko = '';
+    if (tokoTerdekat.length === 0) {
+        htmlToko = '<p style="color:rgba(255,255,255,0.7); font-size:14px;">Belum ada toko terdaftar.</p>';
+    } else {
+        for (var i = 0; i < tokoTerdekat.length; i++) {
+            var t = tokoTerdekat[i];
+            htmlToko += `
+            <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:15px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="color:white; margin:0; font-size:15px; font-weight:700;">${t.nama || t.username}</h4>
+                        <p style="color:rgba(255,255,255,0.8); margin:2px 0; font-size:12px;">${t.role === 'toko' ? 'Toko' : 'Pedagang'}</p>
+                        <p style="color:rgba(255,255,255,0.6); margin:0; font-size:12px;"><i class="fas fa-map-marker-alt" style="font-size:10px;"></i> 4.0 km</p>
+                    </div>
+                    <button onclick="toggleForm('register')" style="background:#FF9800; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:12px; font-weight:600;">
+                        <i class="fas fa-edit"></i> Daftar Customer
+                    </button>
+                </div>
+            </div>
+            `;
+        }
+    }
+
+    // --- 2. BUAT HTML UNTUK OJEK TERDEKAT (Menggunakan loop for biasa agar aman) ---
+    var htmlOjek = '';
+    if (ojekTerdekat.length === 0) {
+        htmlOjek = '<p style="color:rgba(255,255,255,0.7); font-size:14px;">Belum ada ojek terdaftar.</p>';
+    } else {
+        for (var j = 0; j < ojekTerdekat.length; j++) {
+            var o = ojekTerdekat[j];
+            htmlOjek += `
+            <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:15px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="color:white; margin:0; font-size:15px; font-weight:700;">${o.nama || o.username}</h4>
+                        <p style="color:rgba(255,255,255,0.8); margin:2px 0; font-size:12px;">Ojek</p>
+                        <p style="color:rgba(255,255,255,0.6); margin:0; font-size:12px;"><i class="fas fa-map-marker-alt" style="font-size:10px;"></i> 5.2 km</p>
+                    </div>
+                    <button onclick="toggleForm('register')" style="background:#FF9800; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:12px; font-weight:600;">
+                        <i class="fas fa-edit"></i> Daftar Customer
+                    </button>
+                </div>
+            </div>
+            `;
+        }
+    }
+
+    // --- 3. GABUNGKAN SEMUA HTML ---
+    var html = `
+    <!-- HEADER ORANGE -->
+    <div style="background:#e65c00; padding:20px 15px; color:white; border-bottom:1px solid rgba(255,255,255,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-shopping-cart" style="font-size:28px;"></i>
+                <div>
+                    <h1 style="font-size:20px; margin:0; font-weight:700;">APP TOKO ONLINE</h1>
+                    <p style="font-size:11px; margin:0; opacity:0.8;">Temukan produk terbaik dari toko terdekat Anda</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('menuToggle').click();" style="background:rgba(255,255,255,0.2); border:none; border-radius:8px; padding:8px 15px; color:white; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+        </div>
+    </div>
+
+    <!-- KONTEN UTAMA -->
+    <div style="background:#e65c00; min-height:100vh; padding:0 15px 80px 15px;">
+
+        <!-- TOMBOL STATIS -->
+        <div style="margin-top:20px;">
+            <button style="width:100%; background:#2196F3; color:white; border:none; padding:12px; border-radius:8px; font-weight:600; box-shadow:0 4px 6px rgba(0,0,0,0.1); cursor:default;">
+                <i class="fas fa-comment-dots"></i> Chat CS (Tanya-tanya)
+            </button>
+        </div>
+        <div style="margin-top:15px;">
+            <button style="width:100%; background:white; color:#e65c00; border:2px solid white; padding:12px; border-radius:8px; font-weight:700; box-shadow:0 4px 6px rgba(0,0,0,0.1); cursor:default;">
+                <i class="fas fa-store"></i> Lihat Semua Toko & Produk
+            </button>
+        </div>
+
+        <!-- GRID 4 MENU -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+            <div style="background:rgba(255,255,255,0.15); backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.2); border-radius:12px; padding:20px 10px; text-align:center; cursor:default; color:white;">
+                <div style="font-size:32px; margin-bottom:5px;"><i class="fas fa-store"></i></div>
+                <h4 style="margin:5px 0; font-size:14px; font-weight:700;">50+ Toko</h4>
+                <p style="font-size:11px; margin:0; opacity:0.8;">Terdaftar</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.15); backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.2); border-radius:12px; padding:20px 10px; text-align:center; cursor:default; color:white;">
+                <div style="font-size:32px; margin-bottom:5px;"><i class="fas fa-motorcycle"></i></div>
+                <h4 style="margin:5px 0; font-size:14px; font-weight:700;">Ojek Online</h4>
+                <p style="font-size:11px; margin:0; opacity:0.8;">Antar jemput</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.15); backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.2); border-radius:12px; padding:20px 10px; text-align:center; cursor:default; color:white;">
+                <div style="font-size:32px; margin-bottom:5px;"><i class="fas fa-box"></i></div>
+                <h4 style="margin:5px 0; font-size:14px; font-weight:700;">COD</h4>
+                <p style="font-size:11px; margin:0; opacity:0.8;">Bayar di tempat</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.15); backdrop-filter:blur(5px); border:1px solid rgba(255,255,255,0.2); border-radius:12px; padding:20px 10px; text-align:center; cursor:default; color:white;">
+                <div style="font-size:32px; margin-bottom:5px;"><i class="fas fa-lock"></i></div>
+                <h4 style="margin:5px 0; font-size:14px; font-weight:700;">Terverifikasi</h4>
+                <p style="font-size:11px; margin:0; opacity:0.8;">Dokumen lengkap</p>
+            </div>
+        </div>
+
+        <!-- TOKO TERDEKAT -->
+        <div style="margin-top:30px;">
+            <h3 style="color:white; font-size:16px; margin-bottom:15px;"><i class="fas fa-store" style="margin-right:8px;"></i> Toko Terdekat</h3>
+            ${htmlToko}
+        </div>
+
+        <!-- OJEK TERDEKAT -->
+        <div style="margin-top:20px;">
+            <h3 style="color:white; font-size:16px; margin-bottom:15px;"><i class="fas fa-motorcycle" style="margin-right:8px;"></i> Ojek Online Terdekat</h3>
+            ${htmlOjek}
+        </div>
+    </div>
+
+    <!-- SEARCH BAR BAWAH -->
+    <div style="position:fixed; bottom:0; left:0; right:0; background:#e65c00; padding:10px 15px; border-top:1px solid rgba(255,255,255,0.2); display:flex; gap:10px; z-index:999;">
+        <div style="flex:1; background:white; border-radius:25px; display:flex; align-items:center; padding:0 15px;">
+            <i class="fas fa-search" style="color:#888; margin-right:8px;"></i>
+            <input type="text" placeholder="Cari produk... (contoh: beras)" style="border:none; outline:none; width:100%; padding:10px 0; font-size:14px;">
+        </div>
+        <button style="background:#FF9800; color:white; border:none; padding:0 20px; border-radius:25px; font-weight:600; font-size:14px; cursor:default;"><i class="fas fa-search"></i> Cari</button>
+    </div>
+    `;
+
+    areaKonten.innerHTML = html;
+}
+// ============================================================
+// AKHIR BLOK 8.66
+// ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
 
