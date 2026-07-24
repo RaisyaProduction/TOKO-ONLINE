@@ -2586,6 +2586,513 @@
 <!-- ========================================================== -->
 <!-- AKHIR BAGIAN 29                                            -->
 <!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 30 - BLOK 5.5: JS: escapeHtml()                     -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 5.5 - ESCAPE HTML (ANTI-XSS)                         */
+    /* ========================================================== */
+    
+    /**
+     * Mengubah karakter berbahaya dalam string menjadi entitas HTML
+     * yang aman untuk ditampilkan di halaman. Mencegah XSS.
+     * 
+     * @param {string} text - String yang akan di-escape.
+     * @returns {string} String yang sudah aman.
+     */
+    function escapeHtml(text) {
+        // Jika text null, undefined, atau string kosong, return string kosong
+        if (!text) return '';
+        
+        // Buat elemen div sementara di memori
+        var div = document.createElement('div');
+        
+        // Set textContent akan otomatis meng-escape karakter berbahaya
+        div.textContent = text;
+        
+        // Ambil innerHTML yang sudah di-escape
+        return div.innerHTML;
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 5.5                                             */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 30                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 31 - BLOK 8.60.1: JS: updateJamTanggal()            -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.60.1 - UPDATE JAM & TANGGAL                        */
+    /* ========================================================== */
+    
+    /**
+     * Memperbarui tampilan jam dan tanggal pada navbar secara real-time.
+     * Fungsi ini membaca objek Date saat ini dan memformatnya
+     * ke dalam string yang sesuai untuk elemen #displayJam dan #displayTanggal.
+     */
+    function updateJamTanggal() {
+        // Ambil elemen jam dan tanggal dari DOM
+        var jamEl = document.getElementById('displayJam');
+        var tanggalEl = document.getElementById('displayTanggal');
+        
+        // Jika elemen tidak ditemukan, hentikan fungsi (mencegah error)
+        if (!jamEl || !tanggalEl) return;
+        
+        // Dapatkan waktu saat ini
+        var now = new Date();
+        
+        // --- Format Jam (HH:MM:SS) ---
+        var jam = now.getHours().toString().padStart(2, '0');
+        var menit = now.getMinutes().toString().padStart(2, '0');
+        var detik = now.getSeconds().toString().padStart(2, '0');
+        jamEl.textContent = jam + ':' + menit + ':' + detik;
+        
+        // --- Format Tanggal (Hari, Tanggal Bulan Tahun) ---
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][now.getDay()];
+        var tanggal = now.getDate().toString().padStart(2, '0');
+        var bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][now.getMonth()];
+        var tahun = now.getFullYear();
+        tanggalEl.textContent = hari + ', ' + tanggal + ' ' + bulan + ' ' + tahun;
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.60.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 31                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 32 - BLOK 8.60.2: JS: setInterval updateJamTanggal  -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.60.2 - SET INTERVAL UPDATE JAM & TANGGAL            */
+    /* ========================================================== */
+    
+    /**
+     * Menjalankan fungsi updateJamTanggal() setiap 1 detik
+     * untuk memperbarui tampilan jam dan tanggal secara real-time.
+     * Selain itu, fungsi ini juga memanggil updateJamTanggal() 
+     * saat pertama kali halaman dimuat agar data langsung muncul.
+     */
+    
+    // Jalankan updateJamTanggal setiap 1000 milidetik (1 detik)
+    setInterval(updateJamTanggal, 1000);
+    
+    // Panggil sekali saat halaman dimuat agar jam dan tanggal
+    // langsung muncul tanpa menunggu 1 detik pertama.
+    updateJamTanggal();
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.60.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 32                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 33 - BLOK 8.61.1: JS: deteksiDanSimpanLokasi()      -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.61.1 - DETEKSI & SIMPAN LOKASI OTOMATIS             */
+    /* ========================================================== */
+    
+    /**
+     * Mendeteksi lokasi GPS pengguna, melakukan reverse geocoding
+     * untuk mendapatkan alamat, lalu menyimpan data lokasi ke akun user.
+     * 
+     * @param {string} userId - ID akun user yang akan disimpan lokasinya.
+     * @param {function} [callback] - Fungsi callback opsional yang dipanggil
+     *                                setelah proses selesai (error atau sukses).
+     */
+    function deteksiDanSimpanLokasi(userId, callback) {
+        // Langkah 1: Cek apakah browser mendukung geolokasi
+        if (!navigator.geolocation) {
+            if (callback) callback('Browser tidak mendukung geolokasi.');
+            return;
+        }
+
+        // Langkah 2: Minta lokasi dari browser
+        navigator.geolocation.getCurrentPosition(
+            // --- Sukses mendapatkan lokasi ---
+            function(pos) {
+                var lat = pos.coords.latitude;
+                var lng = pos.coords.longitude;
+
+                // Langkah 3: Reverse geocoding ke alamat menggunakan Nominatim (OpenStreetMap)
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        var alamat = data.display_name || 'Lokasi tidak diketahui';
+
+                        // Langkah 4: Simpan ke data akun
+                        var dataAkun = getDataAkun();
+                        for (var i = 0; i < dataAkun.length; i++) {
+                            if (dataAkun[i].id === userId) {
+                                dataAkun[i].latitude = lat;
+                                dataAkun[i].longitude = lng;
+                                dataAkun[i].alamatLokasi = alamat;
+                                dataAkun[i].lastUpdateLokasi = new Date().toISOString();
+                                break;
+                            }
+                        }
+                        simpanDataAkun(dataAkun);
+
+                        // Langkah 5: Jika user yang sedang login, update juga di session
+                        var userLogin = JSON.parse(localStorage.getItem('2r_user') || '{}');
+                        if (userLogin.id === userId) {
+                            userLogin.latitude = lat;
+                            userLogin.longitude = lng;
+                            userLogin.alamatLokasi = alamat;
+                            localStorage.setItem('2r_user', JSON.stringify(userLogin));
+                        }
+
+                        tampilkanToast('Lokasi terbaru Anda telah diperbarui!', 'success');
+                        if (callback) callback(null, { lat: lat, lng: lng, alamat: alamat });
+                    })
+                    .catch(function() {
+                        // --- Jika reverse geocoding gagal, tetap simpan koordinat ---
+                        var dataAkun = getDataAkun();
+                        for (var i = 0; i < dataAkun.length; i++) {
+                            if (dataAkun[i].id === userId) {
+                                dataAkun[i].latitude = lat;
+                                dataAkun[i].longitude = lng;
+                                dataAkun[i].alamatLokasi = 'Lat: ' + lat + ', Lng: ' + lng;
+                                dataAkun[i].lastUpdateLokasi = new Date().toISOString();
+                                break;
+                            }
+                        }
+                        simpanDataAkun(dataAkun);
+                        tampilkanToast('Lokasi diperbarui (tanpa alamat).', 'info');
+                        if (callback) callback(null, { lat: lat, lng: lng, alamat: null });
+                    });
+            },
+            // --- Gagal mendapatkan lokasi ---
+            function(err) {
+                tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
+                if (callback) callback('Gagal: ' + err.message);
+            }
+        );
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.61.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 33                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 34 - BLOK 8.61.2: JS: reverseGeocoding()            -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.61.2 - REVERSE GEOCODING (KOORDINAT KE ALAMAT)     */
+    /* ========================================================== */
+    
+    /**
+     * Mengubah koordinat latitude dan longitude menjadi alamat 
+     * menggunakan API Nominatim dari OpenStreetMap.
+     * 
+     * @param {number} lat - Latitude (garis lintang).
+     * @param {number} lng - Longitude (garis bujur).
+     * @returns {Promise<string>} Alamat lengkap dalam format string,
+     *                            atau pesan error jika gagal.
+     */
+    async function reverseGeocoding(lat, lng) {
+        try {
+            // Langkah 1: Bangun URL API Nominatim dengan parameter koordinat
+            var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng;
+            
+            // Langkah 2: Lakukan request HTTP ke API
+            var response = await fetch(url);
+            
+            // Langkah 3: Cek apakah request berhasil (status 200)
+            if (!response.ok) {
+                throw new Error('Gagal menghubungi layanan geocoding. Status: ' + response.status);
+            }
+            
+            // Langkah 4: Parse respons JSON
+            var data = await response.json();
+            
+            // Langkah 5: Ambil alamat dari properti display_name
+            if (data && data.display_name) {
+                return data.display_name;
+            } else {
+                throw new Error('Alamat tidak ditemukan untuk koordinat tersebut.');
+            }
+            
+        } catch (error) {
+            // Langkah 6: Tangani error dan kembalikan pesan yang informatif
+            console.error('Error reverse geocoding:', error.message);
+            return 'Lokasi tidak diketahui (Error: ' + error.message + ')';
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.61.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 34                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 35 - BLOK 8.56.1: JS: ambilLokasiRegister()         -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.56.1 - AMBIL LOKASI UNTUK REGISTER                  */
+    /* ========================================================== */
+    
+    /**
+     * Mengambil lokasi GPS pengguna saat tombol "Ambil Lokasi Otomatis"
+     * pada form register ditekan. Jika berhasil, mengisi input alamat,
+     * latitude, dan longitude di form register.
+     */
+    function ambilLokasiRegister() {
+        // Langkah 1: Cek apakah browser mendukung geolokasi
+        if (!navigator.geolocation) {
+            tampilkanToast('Browser Anda tidak mendukung geolokasi.', 'error');
+            return;
+        }
+        
+        // Langkah 2: Tampilkan notifikasi bahwa proses sedang berjalan
+        tampilkanToast('Sedang mengambil lokasi...', 'info');
+        
+        // Langkah 3: Minta lokasi dari browser
+        navigator.geolocation.getCurrentPosition(
+            // ===== SUKSES MENDAPATKAN LOKASI =====
+            function(pos) {
+                var lat = pos.coords.latitude;
+                var lng = pos.coords.longitude;
+                
+                // Langkah 4: Simpan koordinat ke input tersembunyi di form register
+                document.getElementById('registerLat').value = lat;
+                document.getElementById('registerLng').value = lng;
+                
+                // Langkah 5: Coba reverse geocoding untuk mendapatkan alamat
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        // Jika berhasil mendapatkan alamat
+                        var alamat = data.display_name || 'Lokasi tidak diketahui';
+                        document.getElementById('registerLokasi').value = alamat;
+                        tampilkanToast('Lokasi berhasil diambil!', 'success');
+                    })
+                    .catch(function() {
+                        // Jika reverse geocoding gagal, tampilkan koordinat saja
+                        document.getElementById('registerLokasi').value = 'Lat: ' + lat + ', Lng: ' + lng;
+                        tampilkanToast('Lokasi berhasil diambil (tanpa alamat).', 'success');
+                    });
+            },
+            // ===== GAGAL MENDAPATKAN LOKASI =====
+            function(err) {
+                tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
+            }
+        );
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.56.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 35                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 36 - BLOK 8.56.2: JS: ambilLokasiPengajuan()        -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.56.2 - AMBIL LOKASI UNTUK PENGAJUAN BUKA AKUN       */
+    /* ========================================================== */
+    
+    /**
+     * Mengambil lokasi GPS pengguna saat tombol "Ambil Lokasi Otomatis"
+     * pada form pengajuan buka akun ditekan. Jika berhasil, mengisi input
+     * alamat, latitude, dan longitude di form pengajuan.
+     */
+    function ambilLokasiPengajuan() {
+        // Langkah 1: Cek apakah browser mendukung geolokasi
+        if (!navigator.geolocation) {
+            tampilkanToast('Browser Anda tidak mendukung geolokasi.', 'error');
+            return;
+        }
+        
+        // Langkah 2: Tampilkan notifikasi bahwa proses sedang berjalan
+        tampilkanToast('Sedang mengambil lokasi...', 'info');
+        
+        // Langkah 3: Minta lokasi dari browser
+        navigator.geolocation.getCurrentPosition(
+            // ===== SUKSES MENDAPATKAN LOKASI =====
+            function(pos) {
+                var lat = pos.coords.latitude;
+                var lng = pos.coords.longitude;
+                
+                // Langkah 4: Simpan koordinat ke input tersembunyi di form pengajuan
+                document.getElementById('pengajuanLat').value = lat;
+                document.getElementById('pengajuanLng').value = lng;
+                
+                // Langkah 5: Coba reverse geocoding untuk mendapatkan alamat
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        // Jika berhasil mendapatkan alamat
+                        var alamat = data.display_name || 'Lokasi tidak diketahui';
+                        document.getElementById('pengajuanLokasi').value = alamat;
+                        tampilkanToast('Lokasi berhasil diambil!', 'success');
+                    })
+                    .catch(function() {
+                        // Jika reverse geocoding gagal, tampilkan koordinat saja
+                        document.getElementById('pengajuanLokasi').value = 'Lat: ' + lat + ', Lng: ' + lng;
+                        tampilkanToast('Lokasi berhasil diambil (tanpa alamat).', 'success');
+                    });
+            },
+            // ===== GAGAL MENDAPATKAN LOKASI =====
+            function(err) {
+                tampilkanToast('Gagal mengambil lokasi: ' + err.message, 'error');
+            }
+        );
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.56.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 36                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 37 - BLOK 8.2.1 (MODIFIKASI): JS: toggleForm()      -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.1 - TOGGLE FORM (LOGIN / REGISTER)               */
+    /* ========================================================== */
+    
+    /**
+     * Beralih antara form Login dan Register, serta menyembunyikan
+     * Landing Page saat user masuk ke halaman autentikasi.
+     * 
+     * @param {string} tipe - 'login' untuk menampilkan form login,
+     *                         'register' untuk menampilkan form register.
+     */
+    function toggleForm(tipe) {
+        // -------- LANGKAH 1: SEMBUNYIKAN LANDING PAGE --------
+        var landing = document.getElementById('pageLanding');
+        if (landing) {
+            landing.classList.remove('active');
+            landing.classList.add('hidden');
+        }
+        
+        // -------- LANGKAH 2: TAMPILKAN PAGE AUTHENTICATION --------
+        var auth = document.getElementById('pageAuthentication');
+        if (auth) {
+            auth.classList.add('active');
+            auth.classList.remove('hidden');
+        }
+        
+        // -------- LANGKAH 3: SEMBUNYIKAN AREA ERROR --------
+        var error = document.getElementById('authenticationError');
+        if (error) {
+            error.style.display = 'none';
+        }
+        
+        // -------- LANGKAH 4: AMBIL ELEMEN FORM --------
+        var login = document.getElementById('loginForm');
+        var register = document.getElementById('registerForm');
+        if (!login || !register) return;
+        
+        // -------- LANGKAH 5: TAMPILKAN FORM YANG SESUAI --------
+        if (tipe === 'register') {
+            // Mode Register: tampilkan register, sembunyikan login
+            login.classList.add('hidden-form');
+            register.classList.remove('hidden-form');
+        } else {
+            // Mode Login (default): tampilkan login, sembunyikan register
+            register.classList.add('hidden-form');
+            login.classList.remove('hidden-form');
+        }
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 37                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 38 - BLOK 8.2.2: JS: kembaliKeLanding()             -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.2 - KEMBALI KE LANDING PAGE                      */
+    /* ========================================================== */
+    
+    /**
+     * Kembali ke Landing Page dari Authentication atau Dashboard.
+     * Fungsi ini menyembunyikan pageAuthentication dan pageDashboard,
+     * lalu menampilkan pageLanding dan merender ulang data statistik.
+     */
+    function kembaliKeLanding() {
+        // -------- LANGKAH 1: SEMBUNYIKAN PAGE AUTHENTICATION --------
+        var auth = document.getElementById('pageAuthentication');
+        if (auth) {
+            auth.classList.remove('active');
+            auth.classList.add('hidden');
+        }
+        
+        // -------- LANGKAH 2: SEMBUNYIKAN PAGE DASHBOARD --------
+        var dashboard = document.getElementById('pageDashboard');
+        if (dashboard) {
+            dashboard.classList.remove('active');
+            dashboard.classList.add('hidden');
+        }
+        
+        // -------- LANGKAH 3: TAMPILKAN LANDING PAGE --------
+        var landing = document.getElementById('pageLanding');
+        if (landing) {
+            landing.classList.add('active');
+            landing.classList.remove('hidden');
+        }
+        
+        // -------- LANGKAH 4: RENDER ULANG DATA STATISTIK --------
+        renderLandingPage(); // Fungsi ini akan dibuat di Bagian 41-43
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 38                                            -->
+<!-- ========================================================== -->
 
 </body>
 </html>
