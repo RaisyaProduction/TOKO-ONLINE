@@ -965,10 +965,33 @@
                 <span id="authenticationErrorText"></span>
             </div>
 
+            <!-- ========================================================== -->
+<!-- BAGIAN 11 - BLOK 2.1.3: HTML FORM LOGIN                    -->
+<!-- ========================================================== -->
+
+<div id="pageAuthentication" class="page-content hidden">
+    <div class="authentication-wrapper">
+        <div class="authentication-box">
+
+            <!-- ===== LOGO & JUDUL ===== -->
+            <div class="authentication-logo">
+                <i class="fas fa-store-alt"></i>
+                <h1>Toko Online <span style="color:#FF6B00;">2R</span></h1>
+                <button onclick="kembaliKeLanding()" style="background:none; border:none; color:#FF6B00; cursor:pointer; font-size:14px; margin-top:5px;">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </button>
+            </div>
+            <!-- ===== AKHIR LOGO & JUDUL ===== -->
+
+            <!-- ===== AREA PESAN ERROR ===== -->
+            <div class="authentication-error" id="authenticationError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="authenticationErrorText"></span>
+            </div>
+            <!-- ===== AKHIR AREA PESAN ERROR ===== -->
+
             <!-- ===== BLOK 2.1.3 - FORM LOGIN ===== -->
             <form class="authentication-form" id="loginForm">
-                
-                <!-- ===== INPUT USERNAME ===== -->
                 <div class="form-group">
                     <label>Username</label>
                     <div class="input-group">
@@ -976,8 +999,6 @@
                         <input type="text" id="loginUsername" placeholder="Masukkan username" required>
                     </div>
                 </div>
-
-                <!-- ===== INPUT PASSWORD ===== -->
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-group">
@@ -985,25 +1006,27 @@
                         <input type="password" id="loginPassword" placeholder="Masukkan password" required>
                     </div>
                 </div>
-
-                <!-- ===== TOMBOL SUBMIT ===== -->
                 <button type="submit" class="button-submit">
                     <i class="fas fa-sign-in-alt"></i> Masuk
                 </button>
-
-                <!-- ===== LUPA PASSWORD ===== -->
                 <div style="text-align:right; margin-top:5px;">
                     <a id="tombolLupaPassword" style="color:#FF6B00; cursor:pointer; font-size:13px; font-weight:600;">Lupa Password?</a>
                 </div>
-
-                <!-- ===== FOOTER: LINK KE REGISTER ===== -->
                 <div class="authentication-footer">
                     Belum punya akun?
                     <a onclick="toggleForm('register')">Daftar di sini</a>
                 </div>
-
             </form>
             <!-- ===== AKHIR BLOK 2.1.3 ===== -->
+
+        </div>
+    </div>
+</div>
+<!-- ===== AKHIR PAGE AUTHENTICATION CONTAINER ===== -->
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 11                                            -->
+<!-- ========================================================== -->
 
             <!-- ===== FORM REGISTER (akan ditambahkan di Bagian 12) ===== -->
             <form class="authentication-form hidden-form" id="registerForm">
