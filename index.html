@@ -843,7 +843,8 @@ function buatSidebarHTML(role) {
                     { halaman: 'notepad', icon: 'fa-sticky-note', label: 'Notepad+' },
                     { halaman: 'katalogProduk', icon: 'fa-th-list', label: 'Katalog Produk' },
                     { halaman: 'reviewPengajuanAktivasi', icon: 'fa-check-double', label: 'Review Aktivasi' },
-                    { halaman: 'manajemenKatalog', icon: 'fa-tools', label: 'Manajemen Katalog' }
+                    { halaman: 'manajemenKatalog', icon: 'fa-tools', label: 'Manajemen Katalog' },
+                    { halaman: 'penataanProduk', icon: 'fa-edit', label: 'Penataan Produk' }
                 ]
             }
         ],
@@ -1284,6 +1285,7 @@ function navigasiKeHalaman(namaHalaman) {
     else if (namaHalaman === 'reviewPengajuanAktivasi') renderReviewPengajuan();
     else if (namaHalaman === 'katalogProduk') renderSemuaProduk();
     else if (namaHalaman === 'manajemenKatalog') renderManajemenKatalog();
+    else if (namaHalaman === 'penataanProduk') renderPenataanProduk();
     else renderPlaceholder(namaHalaman);
 }
 // ============================================================
@@ -4062,7 +4064,7 @@ function renderPapanInformasi() {
 <script>
 // ============================================================
 // ============================================================
-// BLOK 8.6.1 - TAMPILKAN DASHBOARD (NAVIGASI AMAN)
+// BLOK 8.6.1 - TAMPILKAN DASHBOARD (DEFAULT KATALOG)
 // ============================================================
 function tampilkanDashboard(user) {
     if (!user || !user.nama) {
@@ -4134,12 +4136,19 @@ function tampilkanDashboard(user) {
 
     inisialisasiSistemTagihan();
 
-    // --- HALAMAN DEFAULT: Katalog Produk (jika navigasi aman) ---
-    if (typeof navigasiKeHalaman === 'function') {
-        navigasiKeHalaman('katalogProduk');
+    // --- HALAMAN DEFAULT: KATALOG PRODUK UNTUK SEMUA ROLE ---
+    // Pastikan fungsi renderSemuaProduk tersedia
+    if (typeof renderSemuaProduk === 'function') {
+        renderSemuaProduk(); // Tampilkan katalog
     } else {
-        // Jika navigasi belum siap, fallback ke dashboard
-        renderDashboard();
+        // Jika fungsi belum ada, tampilkan placeholder
+        document.getElementById('mainContent').innerHTML = `
+        <div class="card" style="padding:50px; text-align:center;">
+            <i class="fas fa-boxes" style="font-size:60px; color:#ddd;"></i>
+            <h3>Katalog Produk Belum Siap</h3>
+            <p style="color:#888;">Fungsi renderSemuaProduk belum didefinisikan.</p>
+        </div>
+        `;
     }
 }
 // ============================================================
@@ -11210,7 +11219,7 @@ function ambilLokasiPengajuan() {
 // ============================================================
 // ============================================================
 // ============================================================
-// BLOK 8.57 - RENDER KATALOG PRODUK (FINAL - DI AKHIR FILE)
+// BLOK 8.57 - RENDER KATALOG PRODUK (DENGAN PENGATURAN URUTAN, UKURAN, UNGGULAN)
 // ============================================================
 
 function renderSemuaProduk() {
@@ -11218,6 +11227,24 @@ function renderSemuaProduk() {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
+    // --- Ambil pengaturan katalog ---
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    var ukuran = pengaturan.ukuran || 'sedang';
+    var fitur = pengaturan.fitur || [];
+
+    // Urutkan produk sesuai urutan yang disimpan (jika ada)
+    if (pengaturan.urutan && pengaturan.urutan.length > 0) {
+        semuaProduk.sort(function(a, b) {
+            var idxA = pengaturan.urutan.indexOf(a.id);
+            var idxB = pengaturan.urutan.indexOf(b.id);
+            if (idxA === -1) idxA = 9999;
+            if (idxB === -1) idxB = 9999;
+            return idxA - idxB;
+        });
+    }
+    // --- Selesai pengaturan ---
+
+    // --- HTML Filter ---
     var html = `
     <div class="page-header">
         <h2><i class="fas fa-store-alt" style="color:#FF6B00;"></i> Katalog Produk</h2>
@@ -11253,6 +11280,7 @@ function renderSemuaProduk() {
     </div>
     `;
 
+    // --- Grid Produk ---
     html += '<div id="gridKatalog" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px; padding:5px;">';
 
     if (semuaProduk.length === 0) {
@@ -11261,6 +11289,8 @@ function renderSemuaProduk() {
         for (var i = 0; i < semuaProduk.length; i++) {
             var p = semuaProduk[i];
             var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
+
+            // Cari nama pemilik
             var pemilik = null;
             for (var j = 0; j < dataAkun.length; j++) {
                 if (dataAkun[j].id === p.ownerId) {
@@ -11269,10 +11299,21 @@ function renderSemuaProduk() {
                 }
             }
             var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+
+            // --- Terapkan ukuran gambar ---
+            var styleUkuran = '';
+            if (ukuran === 'kecil') styleUkuran = 'max-height:150px;';
+            else if (ukuran === 'besar') styleUkuran = 'max-height:350px;';
+            else styleUkuran = 'max-height:250px;';
+
+            // --- Badge unggulan ---
+            var badgeUnggulan = fitur.includes(p.id) ? '<span class="badge badge-success" style="position:absolute; top:5px; right:5px;">⭐ Unggulan</span>' : '';
+
             html += `
-            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+                ${badgeUnggulan}
                 <div>
-                    <img src="${gambar}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
+                    <img src="${gambar}" style="width:100%; ${styleUkuran} object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
                     <h4 style="font-size:15px; margin:5px 0;">${escapeHtml(p.judul)}</h4>
                     <p style="color:#FF6B00; font-weight:600;">Rp ${p.harga.toLocaleString('id-ID')}</p>
                     <p style="font-size:12px; color:#888;">${escapeHtml(p.kategori)}</p>
@@ -11290,6 +11331,7 @@ function renderSemuaProduk() {
     areaKonten.innerHTML = html;
 }
 
+// --- Fungsi Filter (dipanggil dari input/select) ---
 function filterKatalog() {
     var search = document.getElementById('searchKatalog').value.toLowerCase().trim();
     var kategori = document.getElementById('filterKategoriKatalog').value;
@@ -11298,6 +11340,11 @@ function filterKatalog() {
     var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
     var dataAkun = getDataAkun();
 
+    // --- Ambil pengaturan untuk urutan (agar filter tetap mempertahankan urutan) ---
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    var fitur = pengaturan.fitur || [];
+
+    // Filter produk
     var filtered = semuaProduk.filter(function(p) {
         if (search && !p.judul.toLowerCase().includes(search)) return false;
         if (kategori && p.kategori !== kategori) return false;
@@ -11314,12 +11361,30 @@ function filterKatalog() {
         return true;
     });
 
+    // Urutkan hasil filter sesuai urutan yang disimpan
+    if (pengaturan.urutan && pengaturan.urutan.length > 0) {
+        filtered.sort(function(a, b) {
+            var idxA = pengaturan.urutan.indexOf(a.id);
+            var idxB = pengaturan.urutan.indexOf(b.id);
+            if (idxA === -1) idxA = 9999;
+            if (idxB === -1) idxB = 9999;
+            return idxA - idxB;
+        });
+    }
+
     document.getElementById('totalKatalog').textContent = filtered.length;
+
     var grid = document.getElementById('gridKatalog');
     var html = '';
     if (filtered.length === 0) {
         html = '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-box-open"></i><h3>Tidak ada produk yang cocok</h3></div></div>';
     } else {
+        var ukuran = pengaturan.ukuran || 'sedang';
+        var styleUkuran = '';
+        if (ukuran === 'kecil') styleUkuran = 'max-height:150px;';
+        else if (ukuran === 'besar') styleUkuran = 'max-height:350px;';
+        else styleUkuran = 'max-height:250px;';
+
         for (var i = 0; i < filtered.length; i++) {
             var p = filtered[i];
             var gambar = (p.gambar && p.gambar.length > 0) ? p.gambar[0] : '';
@@ -11331,10 +11396,13 @@ function filterKatalog() {
                 }
             }
             var namaPemilik = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var badgeUnggulan = fitur.includes(p.id) ? '<span class="badge badge-success" style="position:absolute; top:5px; right:5px;">⭐ Unggulan</span>' : '';
+
             html += `
-            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between;">
+            <div class="card" style="padding:15px; text-align:center; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+                ${badgeUnggulan}
                 <div>
-                    <img src="${gambar}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
+                    <img src="${gambar}" style="width:100%; ${styleUkuran} object-fit:cover; border-radius:8px; margin-bottom:10px;" onerror="this.style.display='none'">
                     <h4 style="font-size:15px; margin:5px 0;">${escapeHtml(p.judul)}</h4>
                     <p style="color:#FF6B00; font-weight:600;">Rp ${p.harga.toLocaleString('id-ID')}</p>
                     <p style="font-size:12px; color:#888;">${escapeHtml(p.kategori)}</p>
@@ -11773,6 +11841,202 @@ function deteksiDanSimpanLokasi(userId, callback) {
 }
 // ============================================================
 // AKHIR BLOK 8.61
+// ============================================================
+// ============================================================
+// BLOK 8.63 - PENATAAN PRODUK (SuperAdmin)
+// ============================================================
+
+function renderPenataanProduk() {
+    var role = localStorage.getItem('2r_user_role');
+    if (role !== 'superadmin') {
+        tampilkanToast('Hanya SuperAdmin!', 'error');
+        return;
+    }
+    var areaKonten = document.getElementById('mainContent');
+    var semuaProduk = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+    var dataAkun = getDataAkun();
+
+    // Ambil preferensi tata letak yang tersimpan (urutan, ukuran, fitur)
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+
+    var html = `
+    <div class="page-header">
+        <h2><i class="fas fa-cogs" style="color:#FF6B00;"></i> Penataan Produk (Katalog)</h2>
+        <p>Atur urutan tampilan, ukuran gambar, dan tandai produk unggulan.</p>
+    </div>
+    <div class="card">
+        <div class="card-header">Pengaturan Umum</div>
+        <div class="grid-2">
+            <div><label class="form-label">Ukuran Gambar</label>
+                <select id="ukuranGambar" class="form-input" onchange="simpanPengaturanKatalog()">
+                    <option value="kecil" ${pengaturan.ukuran === 'kecil' ? 'selected' : ''}>Kecil (150px)</option>
+                    <option value="sedang" ${pengaturan.ukuran === 'sedang' ? 'selected' : ''}>Sedang (250px)</option>
+                    <option value="besar" ${pengaturan.ukuran === 'besar' ? 'selected' : ''}>Besar (350px)</option>
+                </select>
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+                <button class="button button-primary" onclick="simpanPengaturanKatalog()"><i class="fas fa-save"></i> Simpan Pengaturan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Urutan & Fitur Produk</div>
+        <p style="font-size:13px; color:#888;">Seret atau gunakan tombol panah untuk mengatur urutan. Centang untuk menjadikan produk "Unggulan".</p>
+        <div class="table-container">
+            <table class="table" id="tabelPenataan">
+                <thead>
+                    <tr>
+                        <th style="width:40px;">No</th>
+                        <th>Produk</th>
+                        <th>Penjual</th>
+                        <th style="text-align:center;">Unggulan</th>
+                        <th style="text-align:center;">Aksi Urutan</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    // Buat daftar produk dengan urutan yang tersimpan (jika ada)
+    var daftarUrut = pengaturan.urutan && pengaturan.urutan.length > 0 ? pengaturan.urutan : semuaProduk.map(p => p.id);
+    // Filter produk yang masih ada
+    var produkTersedia = [];
+    for (var i = 0; i < daftarUrut.length; i++) {
+        var id = daftarUrut[i];
+        var produk = null;
+        for (var j = 0; j < semuaProduk.length; j++) {
+            if (semuaProduk[j].id === id) { produk = semuaProduk[j]; break; }
+        }
+        if (produk) produkTersedia.push(produk);
+    }
+    // Tambahkan produk yang belum ada di urutan
+    for (var i = 0; i < semuaProduk.length; i++) {
+        var p = semuaProduk[i];
+        if (!daftarUrut.includes(p.id)) {
+            produkTersedia.push(p);
+        }
+    }
+
+    if (produkTersedia.length === 0) {
+        html += `<tr><td colspan="5" style="text-align:center; padding:30px; color:#888;">Belum ada produk.</td></tr>`;
+    } else {
+        for (var i = 0; i < produkTersedia.length; i++) {
+            var p = produkTersedia[i];
+            var pemilik = null;
+            for (var k = 0; k < dataAkun.length; k++) {
+                if (dataAkun[k].id === p.ownerId) { pemilik = dataAkun[k]; break; }
+            }
+            var namaPenjual = pemilik ? (pemilik.nama || pemilik.username) : 'Unknown';
+            var isUnggulan = pengaturan.fitur && pengaturan.fitur.includes(p.id) ? 'checked' : '';
+            var isFirst = i === 0;
+            var isLast = i === produkTersedia.length - 1;
+
+            html += `
+            <tr>
+                <td>${i+1}</td>
+                <td><strong>${escapeHtml(p.judul)}</strong></td>
+                <td>${escapeHtml(namaPenjual)}</td>
+                <td style="text-align:center;">
+                    <input type="checkbox" class="chk-unggulan" data-id="${p.id}" ${isUnggulan} onchange="simpanUnggulan()">
+                </td>
+                <td style="text-align:center; white-space:nowrap;">
+                    <button class="button button-primary button-extra-small" onclick="pindahProduk(${i}, -1)" ${isFirst ? 'disabled' : ''}><i class="fas fa-arrow-up"></i></button>
+                    <button class="button button-primary button-extra-small" onclick="pindahProduk(${i}, 1)" ${isLast ? 'disabled' : ''}><i class="fas fa-arrow-down"></i></button>
+                </td>
+            </tr>
+            `;
+        }
+    }
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:10px; text-align:right;">
+            <button class="button button-success" onclick="simpanUrutanProduk()"><i class="fas fa-save"></i> Simpan Urutan & Unggulan</button>
+            <button class="button button-danger" onclick="resetUrutanProduk()"><i class="fas fa-undo"></i> Reset ke Default</button>
+        </div>
+    </div>
+    `;
+
+    areaKonten.innerHTML = html;
+}
+
+// ---------- FUNGSI BANTUAN ----------
+
+function simpanPengaturanKatalog() {
+    var ukuran = document.getElementById('ukuranGambar').value;
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.ukuran = ukuran;
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    tampilkanToast('Pengaturan ukuran disimpan!', 'success');
+}
+
+function simpanUnggulan() {
+    var checkboxes = document.querySelectorAll('.chk-unggulan');
+    var fitur = [];
+    checkboxes.forEach(function(cb) {
+        if (cb.checked) {
+            fitur.push(cb.getAttribute('data-id'));
+        }
+    });
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.fitur = fitur;
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    tampilkanToast('Produk unggulan diperbarui!', 'success');
+}
+
+function pindahProduk(index, arah) {
+    var tbody = document.querySelector('#tabelPenataan tbody');
+    var rows = tbody.querySelectorAll('tr');
+    if (rows.length <= 1) return;
+    var newIndex = index + arah;
+    if (newIndex < 0 || newIndex >= rows.length) return;
+    tbody.insertBefore(rows[index + arah], rows[index]);
+    var allRows = tbody.querySelectorAll('tr');
+    for (var i = 0; i < allRows.length; i++) {
+        var td = allRows[i].querySelector('td:first-child');
+        if (td) td.textContent = i + 1;
+    }
+    updateArrowButtons();
+}
+
+function updateArrowButtons() {
+    var rows = document.querySelectorAll('#tabelPenataan tbody tr');
+    rows.forEach(function(row, idx) {
+        var btns = row.querySelectorAll('button');
+        if (btns.length === 2) {
+            btns[0].disabled = idx === 0;
+            btns[1].disabled = idx === rows.length - 1;
+        }
+    });
+}
+
+function simpanUrutanProduk() {
+    var rows = document.querySelectorAll('#tabelPenataan tbody tr');
+    var urutan = [];
+    rows.forEach(function(row) {
+        var cb = row.querySelector('.chk-unggulan');
+        if (cb) {
+            urutan.push(cb.getAttribute('data-id'));
+        }
+    });
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.urutan = urutan;
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    tampilkanToast('Urutan produk disimpan!', 'success');
+}
+
+function resetUrutanProduk() {
+    if (!confirm('Reset urutan produk ke default (berdasarkan waktu upload)?')) return;
+    var pengaturan = JSON.parse(localStorage.getItem('2r_pengaturan_katalog') || '{"urutan":[],"ukuran":"sedang","fitur":[]}');
+    pengaturan.urutan = [];
+    localStorage.setItem('2r_pengaturan_katalog', JSON.stringify(pengaturan));
+    renderPenataanProduk();
+    tampilkanToast('Urutan direset!', 'success');
+}
+// ============================================================
+// AKHIR BLOK 8.63
 // ============================================================
 </script>
 <!-- ===== AKHIR BAGIAN 8 ===== -->
