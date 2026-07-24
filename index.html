@@ -10661,6 +10661,2706 @@
 <!-- ========================================================== -->
 <!-- AKHIR BAGIAN 85                                            -->
 <!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 86 - BLOK 8.9.4: JS: renderPengeluaran()            -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.4 - RENDER REKAP PENGELUARAN                     */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman rekap pengeluaran.
+     * Halaman ini menampilkan:
+     * - Total pengeluaran.
+     * - Form tambah pengeluaran (tanggal, kategori, jumlah, catatan).
+     * - Tabel daftar pengeluaran dengan tombol hapus.
+     * 
+     * Data pengeluaran disimpan di localStorage dengan key '2r_pengeluaran'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Rekap Pengeluaran".
+     */
+    function renderPengeluaran() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PENGELUARAN --------
+        var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+        var pengeluaranSaya = semuaPengeluaran.filter(function(p) { return p.tokoId === user.id; });
+        
+        // -------- HITUNG TOTAL PENGELUARAN --------
+        var totalPengeluaran = 0;
+        for (var i = 0; i < pengeluaranSaya.length; i++) {
+            totalPengeluaran += pengeluaranSaya[i].jumlah;
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Rekap Pengeluaran</h2>';
+        html += '<p>Total pengeluaran: <strong>Rp ' + totalPengeluaran.toLocaleString('id-ID') + '</strong></p></div>';
+        
+        // ==========================================================
+        // BAGIAN 1: FORM TAMBAH PENGELUARAN
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Tambah Pengeluaran</div>';
+        html += '  <div class="grid-2">';
+        
+        // -------- TANGGAL --------
+        html += '    <div><label class="form-label">Tanggal</label>';
+        html += '      <input type="date" id="pengTanggal" class="form-input" value="' + new Date().toISOString().slice(0, 10) + '">';
+        html += '    </div>';
+        
+        // -------- KATEGORI --------
+        html += '    <div><label class="form-label">Kategori</label>';
+        html += '      <select id="pengKategori" class="form-input">';
+        html += '        <option value="Belanja Bahan Baku">Belanja Bahan Baku</option>';
+        html += '        <option value="Operasional">Operasional</option>';
+        html += '        <option value="Transportasi">Transportasi</option>';
+        html += '        <option value="Lainnya">Lainnya</option>';
+        html += '      </select>';
+        html += '    </div>';
+        html += '  </div>';
+        
+        html += '  <div class="grid-2">';
+        
+        // -------- JUMLAH --------
+        html += '    <div><label class="form-label">Jumlah (Rp)</label>';
+        html += '      <input type="number" id="pengJumlah" class="form-input" placeholder="0">';
+        html += '    </div>';
+        
+        // -------- CATATAN --------
+        html += '    <div><label class="form-label">Catatan</label>';
+        html += '      <input type="text" id="pengCatatan" class="form-input" placeholder="Opsional">';
+        html += '    </div>';
+        html += '  </div>';
+        
+        // -------- TOMBOL SIMPAN --------
+        html += '  <button class="button button-primary margin-top-10" onclick="simpanPengeluaran()">';
+        html += '    <i class="fas fa-save"></i> Simpan Pengeluaran';
+        html += '  </button>';
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 2: DAFTAR PENGELUARAN
+        // ==========================================================
+        
+        if (pengeluaranSaya.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-file-invoice"></i><h3>Belum ada pengeluaran</h3></div></div>';
+        } else {
+            html += '<div class="card"><div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>No</th><th>Tanggal</th><th>Kategori</th><th>Jumlah</th><th>Catatan</th><th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            var no = 1;
+            for (var i = 0; i < pengeluaranSaya.length; i++) {
+                var p = pengeluaranSaya[i];
+                html += '<tr><td>' + (no++) + '</td>';
+                html += '<td>' + new Date(p.tanggal).toLocaleDateString('id-ID') + '</td>';
+                html += '<td>' + p.kategori + '</td>';
+                html += '<td>Rp ' + p.jumlah.toLocaleString('id-ID') + '</td>';
+                html += '<td>' + escapeHtml(p.catatan || '-') + '</td>';
+                html += '<td><button class="button button-danger button-extra-small" onclick="hapusPengeluaran(' + i + ')"><i class="fas fa-trash"></i></button></td></tr>';
+            }
+            html += '</tbody></table></div>';
+            html += '<div style="margin-top:10px; font-weight:700; text-align:right;">Total: Rp ' + totalPengeluaran.toLocaleString('id-ID') + '</div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.4.1 - SIMPAN PENGELUARAN                          */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan pengeluaran baru ke localStorage.
+     * Mengambil data dari form, melakukan validasi, dan menyimpan.
+     * 
+     * Fungsi ini dipanggil saat tombol "Simpan Pengeluaran" ditekan.
+     */
+    function simpanPengeluaran() {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var tanggal = document.getElementById('pengTanggal').value;
+        var kategori = document.getElementById('pengKategori').value;
+        var jumlah = parseFloat(document.getElementById('pengJumlah').value) || 0;
+        var catatan = document.getElementById('pengCatatan').value.trim();
+        
+        // -------- VALIDASI --------
+        if (jumlah <= 0) {
+            tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+            return;
+        }
+        
+        // -------- BUAT OBJEK PENGELUARAN --------
+        var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+        semuaPengeluaran.push({
+            id: 'OUT-' + Date.now(),
+            tokoId: user.id,
+            tanggal: tanggal,
+            kategori: kategori,
+            jumlah: jumlah,
+            catatan: catatan,
+            createdAt: new Date().toISOString()
+        });
+        
+        // -------- SIMPAN KE LOCALSTORAGE --------
+        localStorage.setItem('2r_pengeluaran', JSON.stringify(semuaPengeluaran));
+        
+        // -------- TAMPILKAN NOTIFIKASI DAN RENDER ULANG --------
+        tampilkanToast('Pengeluaran berhasil disimpan!', 'success');
+        renderPengeluaran();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.4.2 - HAPUS PENGELUARAN                           */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus pengeluaran berdasarkan index.
+     * 
+     * @param {number} index - Index pengeluaran yang akan dihapus.
+     */
+    function hapusPengeluaran(index) {
+        if (!confirm('Yakin ingin menghapus pengeluaran ini?')) return;
+        
+        var semuaPengeluaran = JSON.parse(localStorage.getItem('2r_pengeluaran') || '[]');
+        semuaPengeluaran.splice(index, 1);
+        localStorage.setItem('2r_pengeluaran', JSON.stringify(semuaPengeluaran));
+        
+        renderPengeluaran();
+        tampilkanToast('Pengeluaran dihapus!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.4                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 86                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 87 - BLOK 8.9.5: JS: renderModalCash()              -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.5 - RENDER MODAL CASH & BELANJA                  */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman modal cash & belanja.
+     * Halaman ini menampilkan:
+     * - Saldo kas saat ini.
+     * - Form tambah modal (jumlah dan keterangan).
+     * - Form catat belanja modal (jumlah dan keterangan).
+     * - Tabel riwayat kas dengan tombol edit dan hapus.
+     * 
+     * Data disimpan di localStorage dengan key '2r_modal_cash_[userId]'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Modal Cash".
+     */
+    function renderModalCash() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA MODAL CASH --------
+        var modalKey = '2r_modal_cash_' + user.id;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Modal Cash & Belanja</h2>';
+        html += '<p>Saldo Kas Saat Ini: <strong style="font-size:24px; color:#FF6B00;">Rp ' + (modalData.saldo || 0).toLocaleString('id-ID') + '</strong></p></div>';
+        
+        // ==========================================================
+        // BAGIAN 1: FORM TAMBAH MODAL
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Tambah Modal Kas</div>';
+        html += '  <div class="grid-2">';
+        html += '    <div><label class="form-label">Jumlah Tambahan</label>';
+        html += '      <input type="number" id="modalTambah" class="form-input" placeholder="0">';
+        html += '    </div>';
+        html += '    <div><label class="form-label">Keterangan</label>';
+        html += '      <input type="text" id="modalKeteranganTambah" class="form-input" placeholder="Misal: Setoran modal awal">';
+        html += '    </div>';
+        html += '  </div>';
+        html += '  <button class="button button-primary margin-top-10" onclick="tambahModalCash()"><i class="fas fa-plus"></i> Tambah Modal</button>';
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 2: FORM CATAT BELANJA MODAL
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Catat Belanja Modal (Mengurangi Kas)</div>';
+        html += '  <div class="grid-2">';
+        html += '    <div><label class="form-label">Jumlah Belanja</label>';
+        html += '      <input type="number" id="modalBelanja" class="form-input" placeholder="0">';
+        html += '    </div>';
+        html += '    <div><label class="form-label">Keterangan</label>';
+        html += '      <input type="text" id="modalKeteranganBelanja" class="form-input" placeholder="Misal: Beli bahan baku">';
+        html += '    </div>';
+        html += '  </div>';
+        html += '  <button class="button button-primary margin-top-10" onclick="catatBelanjaModal()"><i class="fas fa-minus"></i> Catat Belanja</button>';
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 3: RIWAYAT KAS
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Riwayat Kas</div>';
+        if (modalData.riwayat && modalData.riwayat.length === 0) {
+            html += '  <div class="empty-state"><i class="fas fa-coins"></i><h3>Belum ada riwayat</h3></div>';
+        } else {
+            html += '  <div class="table-container">';
+            html += '    <table class="table">';
+            html += '      <thead><tr>';
+            html += '        <th>Tanggal</th><th>Jenis</th><th>Jumlah</th><th>Saldo Setelah</th><th>Keterangan</th><th>Aksi</th>';
+            html += '      </tr></thead>';
+            html += '      <tbody>';
+            
+            var riwayat = modalData.riwayat || [];
+            riwayat.sort(function(a, b) {
+                return new Date(b.tanggal) - new Date(a.tanggal);
+            });
+            
+            for (var i = 0; i < riwayat.length; i++) {
+                var r = riwayat[i];
+                var sign = (r.jenis === 'Penjualan' || r.jenis === 'Tambahan Modal') ? '+' : '-';
+                var color = (sign === '+') ? 'green' : 'red';
+                html += '      <tr>';
+                html += '        <td>' + new Date(r.tanggal).toLocaleDateString('id-ID') + '</td>';
+                html += '        <td>' + r.jenis + '</td>';
+                html += '        <td style="color:' + color + ';">' + sign + ' Rp ' + r.jumlah.toLocaleString('id-ID') + '</td>';
+                html += '        <td>Rp ' + r.saldoSetelah.toLocaleString('id-ID') + '</td>';
+                html += '        <td>' + escapeHtml(r.keterangan || '-') + '</td>';
+                // -------- TOMBOL EDIT & HAPUS (HANYA UNTUK TAMBAHAN MODAL DAN BELANJA MODAL) --------
+                if (r.jenis === 'Tambahan Modal' || r.jenis === 'Belanja Modal') {
+                    html += '        <td>';
+                    html += '          <button class="button button-primary button-extra-small" onclick="editModalCash(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
+                    html += '          <button class="button button-danger button-extra-small" onclick="hapusModalCash(' + i + ')"><i class="fas fa-trash"></i> Hapus</button>';
+                    html += '        </td>';
+                } else {
+                    html += '        <td><span style="color:#999; font-size:12px;">Otomatis</span></td>';
+                }
+                html += '      </tr>';
+            }
+            html += '      </tbody></table></div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.5.1 - TAMBAH MODAL CASH                           */
+    /* ========================================================== */
+    
+    /**
+     * Menambahkan modal cash ke saldo.
+     * Mengambil input dari form tambah modal, validasi, dan memperbarui data.
+     * 
+     * Fungsi ini dipanggil saat tombol "Tambah Modal" ditekan.
+     */
+    function tambahModalCash() {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var jumlah = parseFloat(document.getElementById('modalTambah').value) || 0;
+        var keterangan = document.getElementById('modalKeteranganTambah').value.trim();
+        
+        // -------- VALIDASI --------
+        if (jumlah <= 0) {
+            tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+            return;
+        }
+        
+        // -------- AMBIL DATA MODAL --------
+        var modalKey = '2r_modal_cash_' + user.id;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        
+        // -------- UPDATE SALDO DAN RIWAYAT --------
+        modalData.saldo = (modalData.saldo || 0) + jumlah;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Tambahan Modal',
+            jumlah: jumlah,
+            saldoSetelah: modalData.saldo,
+            keterangan: keterangan || 'Tambahan modal'
+        });
+        
+        // -------- SIMPAN DAN RENDER ULANG --------
+        localStorage.setItem(modalKey, JSON.stringify(modalData));
+        tampilkanToast('Modal berhasil ditambahkan!', 'success');
+        renderModalCash();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.5.2 - CATAT BELANJA MODAL                         */
+    /* ========================================================== */
+    
+    /**
+     * Mencatat belanja modal yang mengurangi saldo kas.
+     * Mengambil input dari form catat belanja, validasi, dan memperbarui data.
+     * 
+     * Fungsi ini dipanggil saat tombol "Catat Belanja" ditekan.
+     */
+    function catatBelanjaModal() {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        
+        // -------- AMBIL NILAI DARI FORM --------
+        var jumlah = parseFloat(document.getElementById('modalBelanja').value) || 0;
+        var keterangan = document.getElementById('modalKeteranganBelanja').value.trim();
+        
+        // -------- VALIDASI --------
+        if (jumlah <= 0) {
+            tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+            return;
+        }
+        
+        // -------- AMBIL DATA MODAL --------
+        var modalKey = '2r_modal_cash_' + user.id;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        
+        // -------- CEK SALDO --------
+        if ((modalData.saldo || 0) < jumlah) {
+            tampilkanToast('Saldo tidak cukup! Saldo saat ini: Rp ' + modalData.saldo.toLocaleString('id-ID'), 'error');
+            return;
+        }
+        
+        // -------- UPDATE SALDO DAN RIWAYAT --------
+        modalData.saldo = (modalData.saldo || 0) - jumlah;
+        modalData.riwayat.push({
+            tanggal: new Date().toISOString(),
+            jenis: 'Belanja Modal',
+            jumlah: jumlah,
+            saldoSetelah: modalData.saldo,
+            keterangan: keterangan || 'Belanja modal'
+        });
+        
+        // -------- SIMPAN DAN RENDER ULANG --------
+        localStorage.setItem(modalKey, JSON.stringify(modalData));
+        tampilkanToast('Belanja modal berhasil dicatat!', 'success');
+        renderModalCash();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.5.3 - EDIT MODAL CASH                             */
+    /* ========================================================== */
+    
+    /**
+     * Mengedit riwayat modal cash (Tambahan Modal atau Belanja Modal).
+     * Menampilkan prompt untuk mengedit jumlah dan keterangan, lalu memperbarui data.
+     * 
+     * @param {number} index - Index riwayat yang akan diedit.
+     */
+    function editModalCash(index) {
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var modalKey = '2r_modal_cash_' + user.id;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        
+        // -------- VALIDASI INDEX --------
+        if (!modalData.riwayat || index >= modalData.riwayat.length) {
+            tampilkanToast('Data tidak ditemukan!', 'error');
+            return;
+        }
+        var item = modalData.riwayat[index];
+        
+        // -------- CEK JENIS (HANYA TAMBAHAN MODAL ATAU BELANJA MODAL) --------
+        if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
+            tampilkanToast('Item ini tidak dapat diedit!', 'warning');
+            return;
+        }
+        
+        // -------- PROMPT EDIT JUMLAH --------
+        var newJumlah = prompt('Edit jumlah (Rp):', item.jumlah);
+        if (newJumlah === null) return;
+        newJumlah = parseFloat(newJumlah);
+        if (isNaN(newJumlah) || newJumlah <= 0) {
+            tampilkanToast('Jumlah harus lebih dari 0!', 'warning');
+            return;
+        }
+        
+        // -------- PROMPT EDIT KETERANGAN --------
+        var newKeterangan = prompt('Edit keterangan:', item.keterangan || '');
+        if (newKeterangan === null) return;
+        
+        // -------- HITUNG SELISIH DAN UPDATE SALDO --------
+        var selisih = newJumlah - item.jumlah;
+        modalData.saldo = (modalData.saldo || 0) + selisih;
+        
+        // -------- UPDATE ITEM --------
+        item.jumlah = newJumlah;
+        item.saldoSetelah = modalData.saldo;
+        item.keterangan = newKeterangan.trim() || item.keterangan;
+        
+        // -------- SIMPAN DAN RENDER ULANG --------
+        localStorage.setItem(modalKey, JSON.stringify(modalData));
+        tampilkanToast('Riwayat berhasil diperbarui!', 'success');
+        renderModalCash();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.5.4 - HAPUS MODAL CASH                            */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus riwayat modal cash (Tambahan Modal atau Belanja Modal).
+     * Melakukan rollback saldo sebelum menghapus item.
+     * 
+     * @param {number} index - Index riwayat yang akan dihapus.
+     */
+    function hapusModalCash(index) {
+        // -------- KONFIRMASI --------
+        if (!confirm('Yakin ingin menghapus riwayat ini?')) return;
+        
+        // -------- AMBIL DATA USER --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var modalKey = '2r_modal_cash_' + user.id;
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        
+        // -------- VALIDASI INDEX --------
+        if (!modalData.riwayat || index >= modalData.riwayat.length) {
+            tampilkanToast('Data tidak ditemukan!', 'error');
+            return;
+        }
+        var item = modalData.riwayat[index];
+        
+        // -------- CEK JENIS (HANYA TAMBAHAN MODAL ATAU BELANJA MODAL) --------
+        if (item.jenis !== 'Tambahan Modal' && item.jenis !== 'Belanja Modal') {
+            tampilkanToast('Item ini tidak dapat dihapus!', 'warning');
+            return;
+        }
+        
+        // -------- ROLLBACK SALDO --------
+        if (item.jenis === 'Tambahan Modal') {
+            modalData.saldo = (modalData.saldo || 0) - item.jumlah;
+        } else { // Belanja Modal
+            modalData.saldo = (modalData.saldo || 0) + item.jumlah;
+        }
+        
+        // -------- HAPUS ITEM DARI RIWAYAT --------
+        modalData.riwayat.splice(index, 1);
+        
+        // -------- SIMPAN DAN RENDER ULANG --------
+        localStorage.setItem(modalKey, JSON.stringify(modalData));
+        tampilkanToast('Riwayat berhasil dihapus!', 'success');
+        renderModalCash();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.5                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 87                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 88 - BLOK 8.9.6: JS: renderLogStok()                -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.6 - RENDER LOG STOK (RIWAYAT PERUBAHAN STOK)     */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman log stok (riwayat perubahan stok produk).
+     * Halaman ini menampilkan:
+     * - Tabel log stok dengan kolom Waktu, Produk, Perubahan, Keterangan.
+     * - Data diurutkan dari yang terbaru.
+     * - Hanya menampilkan 50 data terbaru.
+     * 
+     * Data log stok disimpan di localStorage dengan key '2r_log_stok'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Log Stok".
+     */
+    function renderLogStok() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA LOG STOK --------
+        var logKey = '2r_log_stok';
+        var dataLog = JSON.parse(localStorage.getItem(logKey) || '[]');
+        var logSaya = dataLog.filter(function(l) { return l.tokoId === user.id; });
+        logSaya.sort(function(a, b) { return new Date(b.waktu) - new Date(a.waktu); });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Log / Riwayat Stok</h2>';
+        html += '<p>Catatan perubahan stok produk (Penjualan, Hapus, Edit).</p></div>';
+        
+        // -------- JIKA TIDAK ADA LOG --------
+        if (logSaya.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-history"></i><h3>Belum ada perubahan stok</h3></div></div>';
+            areaKonten.innerHTML = html;
+            return;
+        }
+        
+        // -------- TABEL LOG STOK --------
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr>';
+        html += '<th>Waktu</th><th>Produk</th><th>Perubahan</th><th>Keterangan</th>';
+        html += '</tr></thead><tbody>';
+        
+        var max = Math.min(logSaya.length, 50);
+        for (var i = 0; i < max; i++) {
+            var l = logSaya[i];
+            var warna = l.perubahan > 0 ? 'color:#2e7d32;' : 'color:#d32f2f;';
+            var tanda = l.perubahan > 0 ? '+' : '';
+            html += '<tr>';
+            html += '<td>' + new Date(l.waktu).toLocaleString('id-ID') + '</td>';
+            html += '<td>' + escapeHtml(l.produkNama) + '</td>';
+            html += '<td style="' + warna + ' font-weight:600;">' + tanda + l.perubahan + '</td>';
+            html += '<td>' + escapeHtml(l.keterangan) + '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        
+        // -------- INFORMASI JUMLAH DATA --------
+        if (logSaya.length > 50) {
+            html += '<div style="text-align:right; font-size:12px; color:#888;">';
+            html += 'Menampilkan 50 data terbaru dari ' + logSaya.length + ' total.';
+            html += '</div>';
+        }
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.6.1 - SIMPAN LOG STOK (FUNGSI HELPER)            */
+    /* ========================================================== */
+    
+    /**
+     * Fungsi helper untuk menyimpan log stok ke localStorage.
+     * Fungsi ini dipanggil dari berbagai tempat (transaksi, edit, hapus produk)
+     * untuk mencatat perubahan stok.
+     * 
+     * @param {number|string} produkId - ID produk.
+     * @param {string} produkNama - Nama produk.
+     * @param {number} perubahan - Nilai perubahan (positif = tambah, negatif = kurang).
+     * @param {string} keterangan - Deskripsi perubahan.
+     */
+    function simpanLogStok(produkId, produkNama, perubahan, keterangan) {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var logKey = '2r_log_stok';
+        var dataLog = JSON.parse(localStorage.getItem(logKey) || '[]');
+        
+        var logBaru = {
+            id: Date.now(),
+            tokoId: user.id,
+            produkId: produkId,
+            produkNama: produkNama,
+            perubahan: perubahan,
+            stokAkhir: 0, // akan diisi jika perlu, bisa dihitung ulang
+            keterangan: keterangan,
+            waktu: new Date().toISOString()
+        };
+        
+        dataLog.push(logBaru);
+        
+        // -------- BATASI LOG MAKSIMAL 1000 ENTRI --------
+        if (dataLog.length > 1000) {
+            dataLog.splice(0, dataLog.length - 1000);
+        }
+        
+        localStorage.setItem(logKey, JSON.stringify(dataLog));
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.6                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 88                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 89 - BLOK 8.9.7: JS: renderHutangPiutang()          -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.9.7 - RENDER HUTANG PIUTANG                        */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman hutang piutang pelanggan.
+     * Halaman ini menampilkan:
+     * - Total piutang yang belum lunas.
+     * - Tabel daftar hutang dengan kolom: Tanggal, Pelanggan, Total Hutang,
+     *   Sisa Hutang, Status, dan Aksi (Bayar, Hapus).
+     * 
+     * Data hutang disimpan di localStorage dengan key '2r_hutang_piutang'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Hutang Piutang".
+     */
+    function renderHutangPiutang() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA HUTANG --------
+        var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+        var hutangSaya = dataHutang.filter(function(h) { return h.tokoId === user.id; });
+        hutangSaya.sort(function(a, b) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        
+        // -------- HITUNG TOTAL PIUTANG BELUM LUNAS --------
+        var totalPiutang = 0;
+        for (var i = 0; i < hutangSaya.length; i++) {
+            if (hutangSaya[i].status === 'Belum Lunas') {
+                totalPiutang += hutangSaya[i].sisaHutang;
+            }
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Hutang Piutang Pelanggan</h2>';
+        html += '<p>Total Piutang Belum Lunas: <strong style="color:#d32f2f; font-size:20px;">Rp ' + totalPiutang.toLocaleString('id-ID') + '</strong></p></div>';
+        
+        // -------- JIKA TIDAK ADA DATA --------
+        if (hutangSaya.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-hand-holding-usd"></i><h3>Belum ada data hutang</h3></div></div>';
+            areaKonten.innerHTML = html;
+            return;
+        }
+        
+        // -------- TABEL DAFTAR HUTANG --------
+        html += '<div class="card"><div class="table-container"><table class="table"><thead><tr>';
+        html += '<th>Tanggal</th><th>Pelanggan</th><th>Total Hutang</th><th>Sisa Hutang</th><th>Status</th><th>Aksi</th>';
+        html += '</tr></thead><tbody>';
+        
+        for (var i = 0; i < hutangSaya.length; i++) {
+            var h = hutangSaya[i];
+            var badge = h.status === 'Lunas' ? 'badge-success' : 'badge-warning';
+            var disabled = h.status === 'Lunas' ? 'disabled style="opacity:0.5;"' : '';
+            
+            html += '<tr>';
+            html += '<td>' + new Date(h.tanggalTransaksi).toLocaleDateString('id-ID') + '</td>';
+            html += '<td>' + escapeHtml(h.namaPelanggan) + '</td>';
+            html += '<td>Rp ' + h.jumlahHutang.toLocaleString('id-ID') + '</td>';
+            html += '<td>Rp ' + h.sisaHutang.toLocaleString('id-ID') + '</td>';
+            html += '<td><span class="badge ' + badge + '">' + h.status + '</span></td>';
+            html += '<td style="display:flex; gap:4px; flex-wrap:wrap;">';
+            html += '  <button class="button button-success button-extra-small" onclick="bayarHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-check"></i> Bayar</button>';
+            html += '  <button class="button button-danger button-extra-small" onclick="hapusHutang(\'' + h.id + '\')" ' + disabled + '><i class="fas fa-trash"></i> Hapus</button>';
+            html += '</td>';
+            html += '</tr>';
+        }
+        html += '</tbody></table></div></div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.7.1 - BAYAR HUTANG                                */
+    /* ========================================================== */
+    
+    /**
+     * Melakukan pembayaran hutang (sebagian atau lunas).
+     * Menampilkan prompt untuk memasukkan nominal pembayaran.
+     * Jika nominal melebihi sisa hutang, akan dilunasi otomatis.
+     * 
+     * @param {string} idHutang - ID hutang yang akan dibayar.
+     */
+    function bayarHutang(idHutang) {
+        // -------- PROMPT NOMINAL PEMBAYARAN --------
+        var nominalBayar = prompt('Masukkan nominal yang akan dibayarkan (Rp):');
+        if (nominalBayar === null) return;
+        var bayar = parseFloat(nominalBayar);
+        if (isNaN(bayar) || bayar <= 0) {
+            tampilkanToast('Nominal tidak valid!', 'warning');
+            return;
+        }
+        
+        // -------- AMBIL DATA HUTANG --------
+        var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+        var index = -1;
+        for (var i = 0; i < dataHutang.length; i++) {
+            if (dataHutang[i].id === idHutang) {
+                index = i;
+                break;
+            }
+        }
+        if (index === -1) {
+            tampilkanToast('Data hutang tidak ditemukan!', 'error');
+            return;
+        }
+        
+        var hutang = dataHutang[index];
+        if (hutang.status === 'Lunas') {
+            tampilkanToast('Hutang sudah lunas!', 'warning');
+            return;
+        }
+        
+        // -------- VALIDASI DAN PROSES PEMBAYARAN --------
+        if (bayar > hutang.sisaHutang) {
+            if (!confirm('Nominal bayar (' + bayar + ') melebihi sisa hutang (' + hutang.sisaHutang + '). Apakah akan membayar lunas?')) {
+                return;
+            }
+            bayar = hutang.sisaHutang;
+        }
+        
+        hutang.sisaHutang -= bayar;
+        if (hutang.sisaHutang <= 0) {
+            hutang.status = 'Lunas';
+            hutang.sisaHutang = 0;
+            tampilkanToast('Hutang atas nama ' + hutang.namaPelanggan + ' telah LUNAS!', 'success');
+        } else {
+            tampilkanToast('Pembayaran Rp ' + bayar.toLocaleString('id-ID') + ' berhasil. Sisa hutang: Rp ' + hutang.sisaHutang.toLocaleString('id-ID'), 'success');
+        }
+        
+        // -------- SIMPAN PERUBAHAN DAN RENDER ULANG --------
+        localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataHutang));
+        renderHutangPiutang();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.9.7.2 - HAPUS HUTANG                                */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus data hutang secara permanen.
+     * 
+     * @param {string} idHutang - ID hutang yang akan dihapus.
+     */
+    function hapusHutang(idHutang) {
+        if (!confirm('Yakin ingin menghapus data hutang ini? Data tidak dapat dikembalikan.')) return;
+        
+        var dataHutang = JSON.parse(localStorage.getItem('2r_hutang_piutang') || '[]');
+        var dataBaru = [];
+        for (var i = 0; i < dataHutang.length; i++) {
+            if (dataHutang[i].id !== idHutang) {
+                dataBaru.push(dataHutang[i]);
+            }
+        }
+        localStorage.setItem('2r_hutang_piutang', JSON.stringify(dataBaru));
+        tampilkanToast('Data hutang berhasil dihapus!', 'success');
+        renderHutangPiutang();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.9.7                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 89                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 90 - BLOK 8.10.1: JS: renderChat()                  -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.10.1 - RENDER DAFTAR PERCAKAPAN (INBOX)            */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman daftar percakapan (inbox).
+     * Halaman ini menampilkan:
+     * - Daftar lawan bicara yang pernah berinteraksi.
+     * - Pesan terakhir dari setiap percakapan.
+     * - Waktu pesan terakhir.
+     * - Tombol "Balas" untuk membuka ruang chat.
+     * - Form untuk memulai percakapan baru (dropdown + input manual).
+     * 
+     * Data pesan disimpan di localStorage dengan key '2r_chat_messages'.
+     * Data akun diambil dari getDataAkun().
+     * SuperAdmin tidak ditampilkan dalam daftar lawan bicara.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Chat".
+     */
+    function renderChat() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA AKUN DAN PESAN --------
+        var dataAkun = getDataAkun();
+        var semuaPesan = JSON.parse(localStorage.getItem('2r_chat_messages') || '[]');
+        
+        // -------- FILTER PESAN MILIK USER SAAT INI --------
+        var pesanSaya = semuaPesan.filter(function(p) {
+            return p.pengirim === user.id || p.penerima === user.id;
+        });
+        
+        // -------- KUMPULKAN ID LAWAN BICARA --------
+        var daftarLawan = {};
+        for (var i = 0; i < pesanSaya.length; i++) {
+            var idLawan = (pesanSaya[i].pengirim === user.id) ? pesanSaya[i].penerima : pesanSaya[i].pengirim;
+            var roleLawan = '';
+            for (var k = 0; k < dataAkun.length; k++) {
+                if (dataAkun[k].id === idLawan) {
+                    roleLawan = dataAkun[k].role;
+                    break;
+                }
+            }
+            // -------- JANGAN TAMPILKAN SUPERADMIN --------
+            if (roleLawan === 'superadmin') continue;
+            
+            if (!daftarLawan[idLawan]) {
+                daftarLawan[idLawan] = {
+                    id: idLawan,
+                    pesanTerakhir: pesanSaya[i],
+                    waktu: new Date(pesanSaya[i].waktu)
+                };
+            } else {
+                if (new Date(pesanSaya[i].waktu) > daftarLawan[idLawan].waktu) {
+                    daftarLawan[idLawan].pesanTerakhir = pesanSaya[i];
+                    daftarLawan[idLawan].waktu = new Date(pesanSaya[i].waktu);
+                }
+            }
+        }
+        
+        // -------- URUTKAN DARI YANG TERBARU --------
+        var listLawan = Object.values(daftarLawan);
+        listLawan.sort(function(a, b) {
+            return b.waktu - a.waktu;
+        });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Chat</h2>';
+        html += '<p>Daftar percakapan Anda. ID lawan bicara ditampilkan untuk memudahkan balasan.</p></div>';
+        
+        // -------- DAFTAR PERCAKAPAN --------
+        if (listLawan.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-comments"></i>';
+            html += '<h3>Belum ada percakapan</h3>';
+            html += '<p>Silakan pilih ID tujuan di bawah (SuperAdmin tidak ditampilkan).</p></div></div>';
+        } else {
+            html += '<div class="card"><div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>ID Lawan</th><th>Pesan Terakhir</th><th>Waktu</th><th>Aksi</th>';
+            html += '</tr></thead><tbody>';
+            
+            for (var i = 0; i < listLawan.length; i++) {
+                var lawan = listLawan[i];
+                var namaLawan = lawan.id;
+                for (var j = 0; j < dataAkun.length; j++) {
+                    if (dataAkun[j].id === lawan.id) {
+                        namaLawan = dataAkun[j].nama || dataAkun[j].username;
+                        break;
+                    }
+                }
+                var isiPesan = lawan.pesanTerakhir.isi;
+                var waktu = new Date(lawan.pesanTerakhir.waktu).toLocaleString('id-ID');
+                html += '<tr><td><strong>' + escapeHtml(lawan.id) + '</strong> (' + escapeHtml(namaLawan) + ')</td>';
+                html += '<td>' + escapeHtml(isiPesan.length > 50 ? isiPesan.substring(0, 50) + '...' : isiPesan) + '</td>';
+                html += '<td>' + waktu + '</td>';
+                html += '<td><button class="button button-primary button-small" onclick="bukaChat(\'' + lawan.id + '\')"><i class="fas fa-reply"></i> Balas</button></td></tr>';
+            }
+            html += '</tbody></table></div></div>';
+        }
+        
+        // -------- FORM MULAI PERCAKAPAN BARU --------
+        var opsiDropdown = '<option value="">-- Pilih ID Tujuan --</option>';
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            if (a.id !== user.id && a.role !== 'superadmin') {
+                var tampilan = a.id + ' - ' + a.nama + ' (' + a.role + ')';
+                opsiDropdown += '<option value="' + a.id + '">' + escapeHtml(tampilan) + '</option>';
+            }
+        }
+        
+        html += '<div class="card"><div class="card-header">Mulai Percakapan Baru</div>';
+        html += '  <div class="grid-2">';
+        html += '    <div><label class="form-label">Pilih ID Tujuan (Atau Ketik Manual)</label>';
+        html += '      <select id="chatTargetId" class="form-input" onchange="document.getElementById(\'chatManualInput\').value = this.value">';
+        html += opsiDropdown;
+        html += '      </select>';
+        html += '      <div style="margin-top:5px;"><input type="text" id="chatManualInput" class="form-input" placeholder="Ketik ID manual" oninput="document.getElementById(\'chatTargetId\').value = this.value"></div>';
+        html += '    </div>';
+        html += '    <div style="display:flex; align-items:flex-end;"><button class="button button-primary" onclick="bukaChat(document.getElementById(\'chatTargetId\').value)"><i class="fas fa-arrow-right"></i> Buka Chat</button></div>';
+        html += '  </div>';
+        html += '</div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.10.1.1 - BUKA CHAT (NAVIGASI KE RUANG CHAT)        */
+    /* ========================================================== */
+    
+    /**
+     * Membuka ruang chat dengan lawan bicara tertentu.
+     * Jika ID target valid, akan memanggil renderChatRoom(targetId).
+     * Jika ID kosong, akan kembali ke daftar chat.
+     * 
+     * @param {string} targetId - ID lawan bicara yang akan diajak chat.
+     */
+    function bukaChat(targetId) {
+        if (!targetId || targetId.trim() === '') {
+            renderChat();
+            return;
+        }
+        renderChatRoom(targetId.trim());
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.10.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 90                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 91 - BLOK 8.10.2: JS: renderChatRoom()              -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.10.2 - RENDER RUANG CHAT (DENGAN LAWAN TERTENTU)   */
+    /* ========================================================== */
+    
+    /**
+     * Merender ruang chat dengan lawan bicara tertentu.
+     * Halaman ini menampilkan:
+     * - Header dengan nama lawan bicara dan tombol kembali.
+     * - Daftar pesan yang diurutkan dari yang terlama.
+     * - Input pesan dan tombol kirim.
+     * - Tombol cepat balas (mengisi template pesan).
+     * - Scroll otomatis ke bawah saat halaman dimuat atau pesan baru dikirim.
+     * 
+     * @param {string} targetId - ID lawan bicara.
+     */
+    function renderChatRoom(targetId) {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- VALIDASI ID TARGET --------
+        if (!targetId || targetId.trim() === '') {
+            tampilkanToast('ID tujuan tidak boleh kosong!', 'warning');
+            return;
+        }
+        if (targetId === user.id) {
+            tampilkanToast('Anda tidak bisa chat dengan diri sendiri!', 'warning');
+            return;
+        }
+        
+        // -------- VALIDASI APAKAH ID TARGET ADA DI DATABASE --------
+        var dataAkun = getDataAkun();
+        var targetValid = false;
+        var namaTarget = targetId;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === targetId) {
+                targetValid = true;
+                namaTarget = dataAkun[i].nama || dataAkun[i].username;
+                break;
+            }
+        }
+        if (!targetValid) {
+            tampilkanToast('ID tujuan tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL SEMUA PESAN DAN FILTER OBROLAN --------
+        var semuaPesan = JSON.parse(localStorage.getItem('2r_chat_messages') || '[]');
+        var obrolan = semuaPesan.filter(function(p) {
+            return (p.pengirim === user.id && p.penerima === targetId) ||
+                   (p.pengirim === targetId && p.penerima === user.id);
+        });
+        obrolan.sort(function(a, b) {
+            return new Date(a.waktu) - new Date(b.waktu);
+        });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '';
+        html += '<div class="page-header"><h2>Chat dengan ' + escapeHtml(namaTarget) + '</h2>';
+        html += '<p>ID Lawan: <strong>' + escapeHtml(targetId) + '</strong></p>';
+        html += '<button class="button button-primary button-small" onclick="renderChat()"><i class="fas fa-arrow-left"></i> Kembali ke Daftar</button></div>';
+        
+        // -------- KONTAINER PESAN --------
+        html += '<div class="card" style="max-height:400px; overflow-y:auto; margin-bottom:10px;" id="chatRoomContainer">';
+        if (obrolan.length === 0) {
+            html += '<div class="empty-state" style="padding:20px;"><i class="fas fa-comment-dots"></i>';
+            html += '<h3>Belum ada pesan</h3><p>Mulai chat dengan mengirim pesan di bawah.</p></div>';
+        } else {
+            for (var i = 0; i < obrolan.length; i++) {
+                var p = obrolan[i];
+                var isMe = (p.pengirim === user.id);
+                var waktu = new Date(p.waktu).toLocaleString('id-ID');
+                html += '<div style="display:flex; flex-direction:' + (isMe ? 'row-reverse' : 'row') + '; margin-bottom:10px;">';
+                html += '<div style="max-width:70%; background:' + (isMe ? '#e3f2fd' : '#f1f8e9') + '; padding:10px 15px; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">';
+                html += '<div style="font-size:12px; color:#888; margin-bottom:3px;">' + (isMe ? 'Anda' : escapeHtml(p.pengirim)) + ' • ' + waktu + '</div>';
+                html += '<div style="font-size:14px;">' + escapeHtml(p.isi) + '</div>';
+                html += '</div></div>';
+            }
+        }
+        html += '</div>';
+        
+        // -------- FORM PENGIRIMAN PESAN --------
+        html += '<div class="card"><div class="grid-2" style="gap:10px;">';
+        html += '  <div><input type="text" id="pesanInput" class="form-input" placeholder="Ketik pesan..." style="width:100%;"></div>';
+        html += '  <div style="display:flex; gap:5px;">';
+        html += '    <button class="button button-primary" onclick="kirimPesan(\'' + targetId + '\')"><i class="fas fa-paper-plane"></i> Kirim</button>';
+        html += '    <button class="button button-success button-small" onclick="document.getElementById(\'pesanInput\').value=\'ID: ' + user.id + ' - Halo, ada yang bisa dibantu?\'">Cepat Balas</button>';
+        html += '  </div>';
+        html += '</div></div>';
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+        
+        // -------- SCROLL KE BAWAH SETELAH DIMUAT --------
+        setTimeout(function() {
+            var container = document.getElementById('chatRoomContainer');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+            var input = document.getElementById('pesanInput');
+            if (input) {
+                input.focus();
+            }
+        }, 100);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.10.2.1 - KIRIM PESAN                                */
+    /* ========================================================== */
+    
+    /**
+     * Mengirim pesan ke lawan bicara.
+     * Mengambil isi pesan dari input, memvalidasi, menyimpan ke localStorage,
+     * dan merender ulang ruang chat.
+     * 
+     * @param {string} targetId - ID penerima pesan.
+     */
+    function kirimPesan(targetId) {
+        // -------- AMBIL DATA USER DAN INPUT --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var input = document.getElementById('pesanInput');
+        if (!input) return;
+        var isi = input.value.trim();
+        
+        // -------- VALIDASI --------
+        if (!isi) {
+            tampilkanToast('Pesan tidak boleh kosong!', 'warning');
+            return;
+        }
+        if (targetId === user.id) {
+            tampilkanToast('Tidak bisa mengirim ke diri sendiri!', 'warning');
+            return;
+        }
+        
+        // -------- BUAT OBJEK PESAN BARU --------
+        var pesanBaru = {
+            id: Date.now(),
+            pengirim: user.id,
+            penerima: targetId,
+            isi: isi,
+            waktu: new Date().toISOString()
+        };
+        
+        // -------- SIMPAN KE LOCALSTORAGE --------
+        var semuaPesan = JSON.parse(localStorage.getItem('2r_chat_messages') || '[]');
+        semuaPesan.push(pesanBaru);
+        localStorage.setItem('2r_chat_messages', JSON.stringify(semuaPesan));
+        
+        // -------- NOTIFIKASI DAN RENDER ULANG --------
+        tampilkanToast('Pesan terkirim!', 'success');
+        renderChatRoom(targetId);
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.10.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 91                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 92 - BLOK 8.11.1: JS: renderPapanInformasi()        -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.11.1 - RENDER PAPAN INFORMASI                      */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman Papan Informasi.
+     * Halaman ini menampilkan semua pengumuman dalam bentuk grid kartu.
+     * Setiap kartu berisi gambar (jika ada), judul, deskripsi, dan waktu.
+     * Hanya SuperAdmin yang dapat menambah, mengedit, dan menghapus pengumuman.
+     * 
+     * Data pengumuman disimpan di localStorage dengan key '2r_announcements'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Papan Informasi".
+     */
+    function renderPapanInformasi() {
+        // -------- AMBIL ROLE DAN ELEMEN KONTEN --------
+        var role = localStorage.getItem('2r_user_role');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA PENGUMUMAN --------
+        var dataAnn = JSON.parse(localStorage.getItem('2r_announcements') || '[]');
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Papan Informasi</h2>';
+        html += '<p>Pengumuman resmi dari Staf Admin / SuperAdmin.</p></div>';
+        
+        // -------- TOMBOL TAMBAH PENGUMUMAN (HANYA SUPERADMIN) --------
+        if (role === 'superadmin') {
+            html += '<div style="margin-bottom:20px;">';
+            html += '<button class="button button-primary" onclick="bukaFormAnnouncement()"><i class="fas fa-plus"></i> Tambah Pengumuman</button>';
+            html += '</div>';
+        }
+        
+        // ==========================================================
+        // BAGIAN 1: GRID KARTU PENGUMUMAN
+        // ==========================================================
+        
+        if (dataAnn.length === 0) {
+            html += '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><i class="fas fa-bullhorn"></i><h3>Belum ada pengumuman</h3></div></div>';
+        } else {
+            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:25px; padding:10px 0;">';
+            
+            for (var i = 0; i < dataAnn.length; i++) {
+                var a = dataAnn[i];
+                
+                // -------- KARTU PENGUMUMAN --------
+                html += '<div style="background:white; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #e9ecef; overflow:hidden; display:flex; flex-direction:column; transition:transform 0.2s;">';
+                html += '  <div style="height:300px; background:#f8f9fa; display:flex; justify-content:center; align-items:center; border-bottom:1px solid #f0f0f0;">';
+                if (a.gambar) {
+                    html += '    <img src="' + a.gambar + '" style="width:100%; height:100%; object-fit:contain; cursor:pointer;" onclick="previewGambar(\'' + a.gambar + '\',\'Preview Pengumuman\')">';
+                } else {
+                    html += '    <div style="color:#ccc;"><i class="fas fa-image" style="font-size:48px;"></i></div>';
+                }
+                html += '  </div>';
+                html += '  <div style="padding:20px 20px 15px 20px; flex:1; display:flex; flex-direction:column;">';
+                html += '    <h3 style="font-size:18px; font-weight:700; color:#333; margin:0 0 8px 0;">' + escapeHtml(a.judul) + '</h3>';
+                html += '    <p style="font-size:14px; color:#666; line-height:1.6; margin:0; flex:1;">' + escapeHtml(a.deskripsi) + '</p>';
+                html += '    <div style="margin-top:10px; font-size:12px; color:#999;">' + (a.waktu ? new Date(a.waktu).toLocaleDateString('id-ID') : '') + '</div>';
+                html += '  </div>';
+                
+                // -------- TOMBOL AKSI (SUPERADMIN SAJA) --------
+                if (role === 'superadmin') {
+                    html += '  <div style="padding:10px 20px 20px 20px; border-top:1px solid #f0f0f0; display:flex; gap:10px; justify-content:flex-end;">';
+                    html += '    <button class="button button-primary button-extra-small" onclick="editAnnouncement(' + i + ')"><i class="fas fa-edit"></i> Edit</button>';
+                    html += '    <button class="button button-danger button-extra-small" onclick="hapusAnnouncement(' + i + ')"><i class="fas fa-trash"></i> Hapus</button>';
+                    html += '  </div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+        
+        // ==========================================================
+        // BAGIAN 2: FORM TAMBAH/EDIT PENGUMUMAN (SUPERADMIN SAJA)
+        // ==========================================================
+        
+        if (role === 'superadmin') {
+            html += '<div id="formAnnouncementContainer" class="hidden" style="margin-top:30px;">';
+            html += '<div class="card"><div class="card-header"><span id="formAnnouncementTitle">Tambah Pengumuman Baru</span>';
+            html += '<button class="button button-danger button-small" onclick="tutupFormAnnouncement()"><i class="fas fa-times"></i> Tutup</button></div>';
+            html += '  <div class="grid-2">';
+            html += '    <div><label class="form-label">Judul Pengumuman</label><input type="text" id="annJudul" class="form-input" placeholder="Judul pengumuman"></div>';
+            html += '    <div><label class="form-label">Gambar (Maks 500KB)</label>';
+            html += '      <input type="file" id="annGambar" accept=".jpg,.jpeg,.png" style="display:none;">';
+            html += '      <button class="button button-primary button-small" onclick="document.getElementById(\'annGambar\').click();">Pilih Gambar</button>';
+            html += '      <span id="annNamaGambar" style="font-size:12px;color:#888;margin-left:10px;">Belum ada gambar</span>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '  <div class="form-group"><label class="form-label">Keterangan / Teks</label>';
+            html += '    <textarea id="annDeskripsi" class="form-input" rows="4" placeholder="Isi detail pengumuman..."></textarea>';
+            html += '  </div>';
+            html += '  <input type="hidden" id="annEditIndex" value="-1">';
+            html += '  <button class="button button-primary margin-top-10" onclick="simpanAnnouncement()"><i class="fas fa-save"></i> Simpan Pengumuman</button>';
+            html += '</div></div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+        
+        // ==========================================================
+        // BAGIAN 3: SETUP EVENT LISTENER UPLOAD GAMBAR
+        // ==========================================================
+        
+        setTimeout(function() {
+            var inputGambar = document.getElementById('annGambar');
+            if (inputGambar) {
+                // Clone untuk menghindari event listener ganda
+                var newInput = inputGambar.cloneNode(true);
+                inputGambar.parentNode.replaceChild(newInput, inputGambar);
+                
+                newInput.addEventListener('change', function(e) {
+                    var file = e.target.files[0];
+                    if (file) {
+                        if (file.size > 500 * 1024) {
+                            tampilkanToast('Ukuran gambar terlalu besar! Maksimal 500KB.', 'error');
+                            document.getElementById('annNamaGambar').textContent = 'Gagal upload (terlalu besar)';
+                            this.value = '';
+                            localStorage.removeItem('2r_announcement_gambar_temp');
+                            return;
+                        }
+                        document.getElementById('annNamaGambar').textContent = 'Sedang memproses...';
+                        var reader = new FileReader();
+                        reader.onload = function(ev) {
+                            localStorage.setItem('2r_announcement_gambar_temp', ev.target.result);
+                            document.getElementById('annNamaGambar').textContent = file.name + ' (Siap)';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }, 300);
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.1.1 - BUKA FORM PENGUMUMAN                       */
+    /* ========================================================== */
+    
+    /**
+     * Membuka form tambah pengumuman.
+     * Mengatur judul form menjadi "Tambah Pengumuman Baru",
+     * mereset nilai input, dan menampilkan form.
+     */
+    function bukaFormAnnouncement() {
+        var container = document.getElementById('formAnnouncementContainer');
+        if (!container) return;
+        container.classList.remove('hidden');
+        document.getElementById('formAnnouncementTitle').textContent = 'Tambah Pengumuman Baru';
+        document.getElementById('annEditIndex').value = '-1';
+        document.getElementById('annJudul').value = '';
+        document.getElementById('annDeskripsi').value = '';
+        document.getElementById('annNamaGambar').textContent = 'Belum ada gambar';
+        localStorage.removeItem('2r_announcement_gambar_temp');
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.1.2 - TUTUP FORM PENGUMUMAN                      */
+    /* ========================================================== */
+    
+    /**
+     * Menutup form tambah/edit pengumuman.
+     */
+    function tutupFormAnnouncement() {
+        var container = document.getElementById('formAnnouncementContainer');
+        if (container) container.classList.add('hidden');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.1.3 - SIMPAN PENGUMUMAN                          */
+    /* ========================================================== */
+    
+    /**
+     * Menyimpan data pengumuman (tambah baru atau edit).
+     * Mengambil data dari form, menyimpan ke localStorage,
+     * lalu merender ulang halaman.
+     */
+    function simpanAnnouncement() {
+        try {
+            // -------- AMBIL NILAI DARI FORM --------
+            var judul = document.getElementById('annJudul').value.trim();
+            var deskripsi = document.getElementById('annDeskripsi').value.trim();
+            var gambarTemp = localStorage.getItem('2r_announcement_gambar_temp') || '';
+            var editIndex = parseInt(document.getElementById('annEditIndex').value);
+            
+            // -------- VALIDASI --------
+            if (!judul || !deskripsi) {
+                tampilkanToast('Judul dan teks keterangan wajib diisi!', 'warning');
+                return;
+            }
+            
+            // -------- AMBIL DATA PENGUMUMAN --------
+            var dataAnn = JSON.parse(localStorage.getItem('2r_announcements') || '[]');
+            
+            if (editIndex === -1) {
+                // -------- TAMBAH BARU --------
+                dataAnn.push({
+                    id: Date.now(),
+                    judul: judul,
+                    deskripsi: deskripsi,
+                    gambar: gambarTemp,
+                    waktu: new Date().toISOString()
+                });
+                tampilkanToast('Pengumuman berhasil ditambahkan!', 'success');
+            } else {
+                // -------- EDIT DATA --------
+                if (editIndex < dataAnn.length) {
+                    dataAnn[editIndex].judul = judul;
+                    dataAnn[editIndex].deskripsi = deskripsi;
+                    if (gambarTemp) {
+                        dataAnn[editIndex].gambar = gambarTemp;
+                    }
+                    tampilkanToast('Pengumuman berhasil diperbarui!', 'success');
+                } else {
+                    tampilkanToast('Data tidak ditemukan!', 'error');
+                    return;
+                }
+            }
+            
+            // -------- SIMPAN KE LOCALSTORAGE --------
+            localStorage.setItem('2r_announcements', JSON.stringify(dataAnn));
+            localStorage.removeItem('2r_announcement_gambar_temp');
+            
+            // -------- TUTUP FORM DAN RENDER ULANG --------
+            tutupFormAnnouncement();
+            renderPapanInformasi();
+            
+        } catch (error) {
+            console.error('ERROR PAPAN INFORMASI:', error);
+            tampilkanToast('Terjadi error: ' + error.message, 'error');
+        }
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.1.4 - EDIT PENGUMUMAN                            */
+    /* ========================================================== */
+    
+    /**
+     * Membuka form edit pengumuman dengan data yang sudah ada.
+     * 
+     * @param {number} index - Index pengumuman yang akan diedit.
+     */
+    function editAnnouncement(index) {
+        var dataAnn = JSON.parse(localStorage.getItem('2r_announcements') || '[]');
+        if (index < 0 || index >= dataAnn.length) {
+            tampilkanToast('Pengumuman tidak ditemukan!', 'error');
+            return;
+        }
+        var a = dataAnn[index];
+        
+        var container = document.getElementById('formAnnouncementContainer');
+        if (!container) return;
+        
+        container.classList.remove('hidden');
+        document.getElementById('formAnnouncementTitle').textContent = 'Edit Pengumuman';
+        document.getElementById('annEditIndex').value = index;
+        document.getElementById('annJudul').value = a.judul;
+        document.getElementById('annDeskripsi').value = a.deskripsi;
+        document.getElementById('annNamaGambar').textContent = a.gambar ? 'Gambar sudah ada' : 'Belum ada gambar';
+        localStorage.removeItem('2r_announcement_gambar_temp');
+        container.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.1.5 - HAPUS PENGUMUMAN                           */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus pengumuman berdasarkan index.
+     * 
+     * @param {number} index - Index pengumuman yang akan dihapus.
+     */
+    function hapusAnnouncement(index) {
+        if (!confirm('Yakin ingin menghapus pengumuman ini?')) return;
+        
+        var dataAnn = JSON.parse(localStorage.getItem('2r_announcements') || '[]');
+        dataAnn.splice(index, 1);
+        localStorage.setItem('2r_announcements', JSON.stringify(dataAnn));
+        renderPapanInformasi();
+        tampilkanToast('Pengumuman berhasil dihapus!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.11.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 92                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 93 - BLOK 8.11.2: JS: renderNotifikasi()            -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.11.2 - RENDER NOTIFIKASI                            */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman notifikasi untuk user yang sedang login.
+     * Halaman ini menampilkan:
+     * - Daftar notifikasi milik user, diurutkan dari terbaru.
+     * - Indikator belum dibaca (warna latar berbeda).
+     * - Tombol "Tandai Semua Dibaca" (jika ada yang belum dibaca).
+     * - Tombol "Buat Notifikasi Demo" untuk pengujian.
+     * - Setiap notifikasi memiliki tombol "Tandai Dibaca" (jika belum) dan "Hapus".
+     * 
+     * Data notifikasi disimpan di localStorage dengan key '2r_notifikasi'.
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Notifikasi".
+     */
+    function renderNotifikasi() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA NOTIFIKASI --------
+        var dataNotif = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+        // Filter hanya notifikasi milik user yang login
+        var notifSaya = dataNotif.filter(function(n) { return n.userId === user.id; });
+        // Urutkan dari yang terbaru
+        notifSaya.sort(function(a, b) {
+            return new Date(b.waktu) - new Date(a.waktu);
+        });
+        
+        // -------- HITUNG NOTIFIKASI BELUM DIBACA --------
+        var belumDibaca = 0;
+        for (var i = 0; i < notifSaya.length; i++) {
+            if (!notifSaya[i].sudahDibaca) belumDibaca++;
+        }
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Notifikasi</h2><p>Pemberitahuan penting untuk Anda.</p>';
+        
+        // -------- TOMBOL AKSI --------
+        html += '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">';
+        if (belumDibaca > 0) {
+            html += '  <button class="button button-success button-small" onclick="tandaiSemuaDibaca()"><i class="fas fa-check-double"></i> Tandai Semua Dibaca (' + belumDibaca + ')</button>';
+        }
+        html += '  <button class="button button-primary button-small" onclick="buatNotifikasiDemo()"><i class="fas fa-plus"></i> Buat Notifikasi Demo</button>';
+        html += '</div></div>';
+        
+        // -------- DAFTAR NOTIFIKASI --------
+        if (notifSaya.length === 0) {
+            html += '<div class="card"><div class="empty-state"><i class="fas fa-bell"></i><h3>Belum ada notifikasi</h3></div></div>';
+        } else {
+            html += '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">';
+            for (var i = 0; i < notifSaya.length; i++) {
+                var n = notifSaya[i];
+                // -------- TENTUKAN WARNA DAN IKON BERDASARKAN TIPE --------
+                var colorClass = 'info';
+                var icon = 'fa-info-circle';
+                var bgColor = '#e3f2fd';
+                var textColor = '#1976d2';
+                if (n.tipe === 'success') {
+                    colorClass = 'success';
+                    icon = 'fa-check-circle';
+                    bgColor = '#e8f5e9';
+                    textColor = '#2e7d32';
+                } else if (n.tipe === 'warning') {
+                    colorClass = 'warning';
+                    icon = 'fa-exclamation-triangle';
+                    bgColor = '#fff3e0';
+                    textColor = '#e65100';
+                } else if (n.tipe === 'error') {
+                    colorClass = 'danger';
+                    icon = 'fa-times-circle';
+                    bgColor = '#ffebee';
+                    textColor = '#c62828';
+                }
+                
+                // -------- TENTUKAN KELAS KARTU BERDASARKAN STATUS BACA --------
+                var cardClass = n.sudahDibaca ? 'notif-item-read' : 'notif-item-unread';
+                var waktu = new Date(n.waktu).toLocaleString('id-ID');
+                
+                html += `
+                <div class="card ${cardClass}" style="display:flex; flex-direction:column; padding:20px; transition:0.3s;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="notif-icon-box" style="background:${bgColor}; color:${textColor};">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                            <strong style="font-size:15px;">${escapeHtml(n.judul)}</strong>
+                        </div>
+                        <span style="font-size:11px; color:#999;">${waktu}</span>
+                    </div>
+                    <p style="font-size:14px; color:#555; margin:0 0 15px 0; line-height:1.5; flex:1;">${escapeHtml(n.pesan)}</p>
+                    
+                    <div style="display:flex; gap:8px; justify-content:flex-end; border-top:1px solid #f0f0f0; padding-top:12px;">
+                        ${!n.sudahDibaca ? `<button class="button button-success button-extra-small" onclick="tandaiDibaca('${n.id}')"><i class="fas fa-check"></i> Tandai Dibaca</button>` : ''}
+                        <button class="button button-danger button-extra-small" onclick="hapusNotifikasi('${n.id}')"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>
+                `;
+            }
+            html += '</div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.2.1 - TANDAI SEMUA DIBACA                       */
+    /* ========================================================== */
+    
+    /**
+     * Menandai semua notifikasi milik user sebagai sudah dibaca.
+     */
+    function tandaiSemuaDibaca() {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var dataNotif = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+        for (var i = 0; i < dataNotif.length; i++) {
+            if (dataNotif[i].userId === user.id) {
+                dataNotif[i].sudahDibaca = true;
+            }
+        }
+        localStorage.setItem('2r_notifikasi', JSON.stringify(dataNotif));
+        renderNotifikasi();
+        tampilkanToast('Semua notifikasi telah ditandai dibaca!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.2.2 - TANDAI SATU NOTIFIKASI                    */
+    /* ========================================================== */
+    
+    /**
+     * Menandai satu notifikasi sebagai sudah dibaca.
+     * 
+     * @param {string} id - ID notifikasi yang akan ditandai.
+     */
+    function tandaiDibaca(id) {
+        var dataNotif = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+        for (var i = 0; i < dataNotif.length; i++) {
+            if (dataNotif[i].id === id) {
+                dataNotif[i].sudahDibaca = true;
+                break;
+            }
+        }
+        localStorage.setItem('2r_notifikasi', JSON.stringify(dataNotif));
+        renderNotifikasi();
+        tampilkanToast('Notifikasi ditandai dibaca!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.2.3 - HAPUS NOTIFIKASI                          */
+    /* ========================================================== */
+    
+    /**
+     * Menghapus satu notifikasi.
+     * 
+     * @param {string} id - ID notifikasi yang akan dihapus.
+     */
+    function hapusNotifikasi(id) {
+        if (!confirm('Yakin ingin menghapus notifikasi ini?')) return;
+        var dataNotif = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+        var dataBaru = [];
+        for (var i = 0; i < dataNotif.length; i++) {
+            if (dataNotif[i].id !== id) {
+                dataBaru.push(dataNotif[i]);
+            }
+        }
+        localStorage.setItem('2r_notifikasi', JSON.stringify(dataBaru));
+        renderNotifikasi();
+        tampilkanToast('Notifikasi berhasil dihapus!', 'success');
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.11.2.4 - BUAT NOTIFIKASI DEMO                       */
+    /* ========================================================== */
+    
+    /**
+     * Membuat notifikasi demo untuk pengujian.
+     * Notifikasi akan dikirim ke user yang sedang login.
+     * Tipe dan konten dipilih secara acak.
+     */
+    function buatNotifikasiDemo() {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var role = localStorage.getItem('2r_user_role') || 'Pengguna';
+        var judul, pesan, tipe;
+        var acak = Math.floor(Math.random() * 3);
+        if (acak === 0) {
+            judul = 'Selamat Datang!';
+            pesan = 'Anda berhasil login sebagai ' + role + '. Selamat beraktivitas di Toko Online 2R!';
+            tipe = 'success';
+        } else if (acak === 1) {
+            judul = 'Pengumuman Sistem';
+            pesan = 'Aplikasi akan melakukan pemeliharaan pada pukul 02:00. Mohon persiapkan data Anda.';
+            tipe = 'warning';
+        } else {
+            judul = 'Notifikasi Demo';
+            pesan = 'Ini adalah contoh notifikasi untuk menguji fitur notifikasi Anda.';
+            tipe = 'info';
+        }
+        var dataNotif = JSON.parse(localStorage.getItem('2r_notifikasi') || '[]');
+        dataNotif.push({
+            id: Date.now() + Math.random(),
+            userId: user.id,
+            judul: judul,
+            pesan: pesan,
+            tipe: tipe,
+            sudahDibaca: false,
+            waktu: new Date().toISOString()
+        });
+        localStorage.setItem('2r_notifikasi', JSON.stringify(dataNotif));
+        renderNotifikasi();
+        tampilkanToast('Notifikasi demo baru dibuat!', 'info');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.11.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 93                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 94 - BLOK 8.12.1: JS: renderStatusAkun()            -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.12.1 - RENDER STATUS AKUN & TAGIHAN                */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman status akun dan tagihan untuk user yang login.
+     * Halaman ini menampilkan:
+     * - Info akun: ID, Role, Status (dengan badge), Akun Pro (badge).
+     * - Tombol Upgrade ke Pro (jika belum Pro).
+     * - Riwayat tagihan bulanan (bulan, tahun, jumlah, status).
+     * - Jika akun SUSPEN: rekening pembayaran dan tombol konfirmasi.
+     * 
+     * Data diambil dari:
+     * - localStorage '2r_user' (session)
+     * - getDataAkun() (database)
+     * - localStorage '2r_tagihan' (data tagihan)
+     * - localStorage '2r_rekening' (rekening master)
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Status Akun".
+     */
+    function renderStatusAkun() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA AKUN DARI DATABASE --------
+        var dataAkun = getDataAkun();
+        var userData = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                userData = dataAkun[i];
+                break;
+            }
+        }
+        if (!userData) {
+            tampilkanToast('Data akun tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL DATA TAGIHAN --------
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
+        tagihanSaya.sort(function(a, b) {
+            // Urutkan dari yang terbaru (berdasarkan ID atau timestamp)
+            return new Date(b.id) - new Date(a.id);
+        });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
+        if (userData.status === 'SUSPEN') {
+            html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
+        }
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 1: INFO AKUN
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Info Akun</div>';
+        html += '<div class="grid-2">';
+        html += '  <div><strong>ID Akun:</strong> ' + user.id + '</div>';
+        html += '  <div><strong>Role:</strong> ' + user.role + '</div>';
+        html += '  <div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div>';
+        html += '  <div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
+        html += '</div>';
+        
+        // -------- TOMBOL UPGRADE KE PRO (JIKA BELUM PRO) --------
+        if (!userData.isPro) {
+            html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
+            html += '  <button class="button button-primary" onclick="upgradeKePro()"><i class="fas fa-crown"></i> Upgrade ke Akun Pro (Rp 50.000)</button>';
+            html += '  <p style="font-size:12px; color:#888; margin-top:5px;">Keuntungan: Batas upload 50 produk, chat prioritas, dan layanan ekstra.</p>';
+            html += '</div>';
+        }
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 2: RIWAYAT TAGIHAN
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
+        if (tagihanSaya.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
+        } else {
+            html += '<div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th>';
+            html += '</tr></thead><tbody>';
+            for (var i = 0; i < tagihanSaya.length; i++) {
+                var t = tagihanSaya[i];
+                var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+                html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 3: PEMBAYARAN TAGIHAN (JIKA SUSPEN)
+        // ==========================================================
+        
+        if (userData.status === 'SUSPEN') {
+            html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
+            html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
+            var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
+            html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
+            html += '  <strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
+            html += '  <strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
+            html += '  <strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
+            html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
+            html += '</div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.12.1.1 - UPGRADE KE PRO                             */
+    /* ========================================================== */
+    
+    /**
+     * Melakukan upgrade akun ke PRO.
+     * Mengubah status isPro menjadi true, membuat tagihan bulan ini,
+     * dan menampilkan notifikasi.
+     */
+    function upgradeKePro() {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var dataAkun = getDataAkun();
+        var userData = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                userData = dataAkun[i];
+                break;
+            }
+        }
+        if (!userData) {
+            tampilkanToast('Data akun tidak ditemukan!', 'error');
+            return;
+        }
+        if (userData.isPro) {
+            tampilkanToast('Anda sudah menjadi Akun Pro!', 'info');
+            return;
+        }
+
+        if (!confirm('Anda akan melakukan upgrade ke Akun Pro dengan biaya Rp 50.000. Lanjutkan?')) return;
+
+        userData.isPro = true;
+        userData.status = 'AKTIF';
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                dataAkun[i].isPro = true;
+                dataAkun[i].status = 'AKTIF';
+                break;
+            }
+        }
+        simpanDataAkun(dataAkun);
+        
+        // Update session
+        var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+        userLogin.isPro = true;
+        userLogin.status = 'AKTIF';
+        localStorage.setItem('2r_user', JSON.stringify(userLogin));
+
+        // Buat tagihan bulan ini (jika belum ada)
+        var sekarang = new Date();
+        var bulanIni = sekarang.getMonth() + 1;
+        var tahunIni = sekarang.getFullYear();
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        var sudahAda = false;
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
+                sudahAda = true;
+                break;
+            }
+        }
+        if (!sudahAda) {
+            var hargaPro = parseFloat(localStorage.getItem('2r_harga_akun_pro') || '50000');
+            dataTagihan.push({
+                id: 'TAG-' + Date.now(),
+                akunId: user.id,
+                bulan: bulanIni,
+                tahun: tahunIni,
+                jumlahTagihan: hargaPro,
+                status: 'BELUM_BAYAR'
+            });
+            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        }
+
+        tampilkanToast('Selamat! Anda kini menjadi Akun PRO. Tagihan bulan ini akan ditagihkan.', 'success');
+        renderStatusAkun();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.12.1.2 - KONFIRMASI PEMBAYARAN                      */
+    /* ========================================================== */
+    
+    /**
+     * Mengonfirmasi pembayaran tagihan (simulasi).
+     * Mengubah status tagihan menjadi LUNAS dan status akun menjadi AKTIF,
+     * lalu melakukan reload halaman.
+     */
+    function konfirmasiPembayaran() {
+        if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
+        
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var dataAkun = getDataAkun();
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        
+        // Cari tagihan belum bayar milik user, ubah menjadi LUNAS
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
+                dataTagihan[i].status = 'LUNAS';
+                break;
+            }
+        }
+        // Ubah status akun menjadi AKTIF
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                dataAkun[i].status = 'AKTIF';
+                break;
+            }
+        }
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        simpanDataAkun(dataAkun);
+        
+        // Update session
+        var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+        userLogin.status = 'AKTIF';
+        localStorage.setItem('2r_user', JSON.stringify(userLogin));
+        
+        tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
+        location.reload();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.12.1                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 94                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 95 - BLOK 8.12.2: JS: renderStatusAkunGabungan()    -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.12.2 - RENDER STATUS AKUN GABUNGAN (TOKO & OJEK)   */
+    /* ========================================================== */
+    
+    /**
+     * Merender halaman status akun gabungan untuk semua role bisnis.
+     * Halaman ini menampilkan:
+     * - Info akun: ID, Role, Status, Akun Pro, Ojek Pro (jika role ojek).
+     * - Tombol upgrade ke Pro (Toko/Pedagang/COD) atau Ojek Pro.
+     * - Riwayat tagihan bulanan.
+     * - Jika akun SUSPEN: rekening pembayaran dan tombol konfirmasi.
+     * 
+     * Fungsi ini menggabungkan logika untuk Toko dan Ojek, serta
+     * role bisnis lainnya (Pedagang, COD Seller).
+     * 
+     * Fungsi ini dipanggil saat user mengklik menu "Status Akun".
+     */
+    function renderStatusAkunGabungan() {
+        // -------- AMBIL DATA USER DAN ELEMEN KONTEN --------
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var areaKonten = document.getElementById('mainContent');
+        if (!areaKonten) return;
+        
+        // -------- AMBIL DATA AKUN DARI DATABASE --------
+        var dataAkun = getDataAkun();
+        var userData = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                userData = dataAkun[i];
+                break;
+            }
+        }
+        if (!userData) {
+            tampilkanToast('Akun tidak ditemukan!', 'error');
+            return;
+        }
+        
+        // -------- AMBIL DATA TAGIHAN --------
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        var tagihanSaya = dataTagihan.filter(function(t) { return t.akunId === user.id; });
+        tagihanSaya.sort(function(a, b) {
+            return new Date(b.id) - new Date(a.id);
+        });
+        
+        // -------- HEADER HALAMAN --------
+        var html = '<div class="page-header"><h2>Status Akun & Tagihan</h2>';
+        if (userData.status === 'SUSPEN') {
+            html += '<p style="color:#d32f2f; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Akun Anda sedang DISUSPEN karena tagihan belum dibayar.</p>';
+        }
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 1: INFO AKUN
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Info Akun</div>';
+        html += '<div class="grid-2">';
+        html += '  <div><strong>ID Akun:</strong> ' + user.id + '</div>';
+        html += '  <div><strong>Role:</strong> ' + user.role + '</div>';
+        html += '  <div><strong>Status:</strong> <span class="badge ' + (userData.status === 'SUSPEN' ? 'badge-danger' : 'badge-success') + '">' + (userData.status || 'AKTIF') + '</span></div>';
+        html += '  <div><strong>Akun Pro:</strong> ' + (userData.isPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
+        // Jika role Ojek, tampilkan status Ojek Pro
+        if (user.role === 'ojek') {
+            html += '  <div><strong>Ojek Pro:</strong> ' + (userData.isOjekPro ? '<span class="badge badge-success">PRO</span>' : 'Biasa') + '</div>';
+        }
+        html += '</div>';
+        
+        // -------- TOMBOL UPGRADE (SESUAI ROLE) --------
+        if (user.role === 'toko' || user.role === 'pedagang' || user.role === 'codseller') {
+            if (!userData.isPro) {
+                html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
+                html += '  <button class="button button-primary" onclick="upgradeKePro()"><i class="fas fa-crown"></i> Upgrade ke Akun Pro (Rp 50.000)</button>';
+                html += '  <p style="font-size:12px; color:#888; margin-top:5px;">Keuntungan: Batas upload 50 produk, chat prioritas, dan layanan ekstra.</p>';
+                html += '</div>';
+            }
+        }
+        if (user.role === 'ojek') {
+            if (!userData.isOjekPro) {
+                html += '<div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">';
+                html += '  <button class="button button-primary" onclick="upgradeOjekKePro()"><i class="fas fa-motorcycle"></i> Upgrade ke Ojek Pro (Rp 25.000/bulan + fee order)</button>';
+                html += '  <p style="font-size:12px; color:#888; margin-top:5px;">Keuntungan: Mendapatkan order lebih banyak dan fee per order.</p>';
+                html += '</div>';
+            }
+        }
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 2: RIWAYAT TAGIHAN
+        // ==========================================================
+        
+        html += '<div class="card"><div class="card-header">Riwayat Tagihan</div>';
+        if (tagihanSaya.length === 0) {
+            html += '<div class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada tagihan</h3></div>';
+        } else {
+            html += '<div class="table-container"><table class="table"><thead><tr>';
+            html += '<th>Bulan</th><th>Tahun</th><th>Jumlah</th><th>Status</th>';
+            html += '</tr></thead><tbody>';
+            for (var i = 0; i < tagihanSaya.length; i++) {
+                var t = tagihanSaya[i];
+                var badge = t.status === 'LUNAS' ? 'badge-success' : 'badge-danger';
+                html += '<tr><td>' + t.bulan + '</td><td>' + t.tahun + '</td><td>Rp ' + t.jumlahTagihan.toLocaleString('id-ID') + '</td><td><span class="badge ' + badge + '">' + t.status + '</span></td></tr>';
+            }
+            html += '</tbody></table></div>';
+        }
+        html += '</div>';
+        
+        // ==========================================================
+        // BAGIAN 3: PEMBAYARAN TAGIHAN (JIKA SUSPEN)
+        // ==========================================================
+        
+        if (userData.status === 'SUSPEN') {
+            html += '<div class="card" style="border:2px solid #f44336;"><div class="card-header" style="color:#f44336;">Pembayaran Tagihan</div>';
+            html += '<p>Untuk mengaktifkan kembali akun Anda, silakan bayar tagihan melalui transfer ke rekening berikut:</p>';
+            var dataRekening = JSON.parse(localStorage.getItem('2r_rekening') || '{}');
+            html += '<div style="background:#f8f9fa; padding:15px; border-radius:8px; margin:10px 0;">';
+            html += '  <strong>Bank:</strong> ' + (dataRekening.namaBank || 'BCA') + '<br>';
+            html += '  <strong>No. Rek:</strong> ' + (dataRekening.nomor || '1234567890') + '<br>';
+            html += '  <strong>a.n:</strong> ' + (dataRekening.namaPemilik || 'Toko Online 2R') + '</div>';
+            html += '<button class="button button-success" onclick="konfirmasiPembayaran()"><i class="fas fa-check"></i> Saya Sudah Bayar</button>';
+            html += '</div>';
+        }
+        
+        // -------- MASUKKAN HTML KE KONTEN --------
+        areaKonten.innerHTML = html;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.12.2.1 - UPGRADE OJEK KE PRO                        */
+    /* ========================================================== */
+    
+    /**
+     * Melakukan upgrade Ojek ke PRO.
+     * Mengubah status isOjekPro menjadi true, membuat tagihan bulan ini,
+     * dan menampilkan notifikasi.
+     */
+    function upgradeOjekKePro() {
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var dataAkun = getDataAkun();
+        var userData = null;
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                userData = dataAkun[i];
+                break;
+            }
+        }
+        if (!userData) {
+            tampilkanToast('Data akun tidak ditemukan!', 'error');
+            return;
+        }
+        if (userData.isOjekPro) {
+            tampilkanToast('Anda sudah menjadi Ojek Pro!', 'info');
+            return;
+        }
+
+        if (!confirm('Anda akan upgrade ke Ojek Pro dengan biaya Rp 25.000/bulan + fee per order. Lanjutkan?')) return;
+
+        userData.isOjekPro = true;
+        userData.status = 'AKTIF';
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                dataAkun[i].isOjekPro = true;
+                dataAkun[i].status = 'AKTIF';
+                break;
+            }
+        }
+        simpanDataAkun(dataAkun);
+        
+        // Update session
+        var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+        userLogin.isOjekPro = true;
+        userLogin.status = 'AKTIF';
+        localStorage.setItem('2r_user', JSON.stringify(userLogin));
+
+        // Buat tagihan bulan ini (jika belum ada)
+        var sekarang = new Date();
+        var bulanIni = sekarang.getMonth() + 1;
+        var tahunIni = sekarang.getFullYear();
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        var sudahAda = false;
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === user.id && dataTagihan[i].bulan === bulanIni && dataTagihan[i].tahun === tahunIni) {
+                sudahAda = true;
+                break;
+            }
+        }
+        if (!sudahAda) {
+            var hargaProOjek = parseFloat(localStorage.getItem('2r_harga_ojek_pro') || '25000');
+            dataTagihan.push({
+                id: 'TAG-' + Date.now(),
+                akunId: user.id,
+                bulan: bulanIni,
+                tahun: tahunIni,
+                jumlahTagihan: hargaProOjek,
+                status: 'BELUM_BAYAR'
+            });
+            localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        }
+
+        tampilkanToast('Selamat! Anda kini menjadi Ojek PRO. Tagihan bulan ini akan ditagihkan.', 'success');
+        renderStatusAkunGabungan();
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.12.2.2 - KONFIRMASI PEMBAYARAN (SAMA SEPERTI SEBELUMNYA) */
+    /* ========================================================== */
+    
+    /**
+     * Mengonfirmasi pembayaran tagihan (simulasi).
+     * Mengubah status tagihan menjadi LUNAS dan status akun menjadi AKTIF,
+     * lalu melakukan reload halaman.
+     */
+    function konfirmasiPembayaran() {
+        if (!confirm('Apakah Anda yakin sudah melakukan pembayaran? (Ini adalah simulasi, untuk demo)')) return;
+        
+        var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+        var dataAkun = getDataAkun();
+        var dataTagihan = JSON.parse(localStorage.getItem('2r_tagihan') || '[]');
+        
+        // Cari tagihan belum bayar milik user, ubah menjadi LUNAS
+        for (var i = 0; i < dataTagihan.length; i++) {
+            if (dataTagihan[i].akunId === user.id && dataTagihan[i].status === 'BELUM_BAYAR') {
+                dataTagihan[i].status = 'LUNAS';
+                break;
+            }
+        }
+        // Ubah status akun menjadi AKTIF
+        for (var i = 0; i < dataAkun.length; i++) {
+            if (dataAkun[i].id === user.id) {
+                dataAkun[i].status = 'AKTIF';
+                break;
+            }
+        }
+        localStorage.setItem('2r_tagihan', JSON.stringify(dataTagihan));
+        simpanDataAkun(dataAkun);
+        
+        // Update session
+        var userLogin = JSON.parse(localStorage.getItem('2r_user'));
+        userLogin.status = 'AKTIF';
+        localStorage.setItem('2r_user', JSON.stringify(userLogin));
+        
+        tampilkanToast('Pembayaran berhasil dikonfirmasi! Akun Anda sudah kembali AKTIF.', 'success');
+        location.reload();
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.12.2                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 95                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 96 - BLOK 8.58: JS: inisialisasiDataDemo()          -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.58 - INISIALISASI DATA DEMO LENGKAP                */
+    /* ========================================================== */
+    
+    /**
+     * Membuat data demo awal untuk pengujian aplikasi.
+     * Fungsi ini akan:
+     * - Mengecek apakah data demo sudah pernah diinisialisasi (flag '2r_demo_initialized').
+     * - Membuat akun demo: Toko, Pedagang, COD Seller, Ojek.
+     * - Membuat produk gudang untuk akun Toko demo.
+     * - Membuat produk publik untuk akun Toko demo.
+     * - Menginisialisasi modal cash untuk akun Toko demo.
+     * - Menandai bahwa data demo sudah diinisialisasi.
+     * 
+     * Fungsi ini dipanggil saat aplikasi dijalankan (di DOMContentLoaded).
+     */
+    function inisialisasiDataDemo() {
+        // -------- CEK APAKAH DATA DEMO SUDAH PERNAH DIINISIALISASI --------
+        if (localStorage.getItem('2r_demo_initialized')) {
+            return; // Sudah diinisialisasi, tidak perlu lagi
+        }
+
+        // -------- AMBIL DATA AKUN SAAT INI --------
+        var dataAkun = getDataAkun();
+        var sudahAdaToko = false;
+        var sudahAdaPedagang = false;
+        var sudahAdaCod = false;
+        var sudahAdaOjek = false;
+
+        // -------- CEK APAKAH AKUN DEMO SUDAH ADA --------
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            if (a.username === 'tokodemo') sudahAdaToko = true;
+            if (a.username === 'pedagangdemo') sudahAdaPedagang = true;
+            if (a.username === 'coddemo') sudahAdaCod = true;
+            if (a.username === 'ojekdemo') sudahAdaOjek = true;
+        }
+
+        // ==========================================================
+        // BAGIAN 1: BUAT AKUN TOKO DEMO (JIKA BELUM ADA)
+        // ==========================================================
+        
+        if (!sudahAdaToko) {
+            var toko = {
+                id: 'TOKO-DEMO',
+                role: 'toko',
+                username: 'tokodemo',
+                password: '123456', // akan di-hash saat login (migrasi otomatis)
+                nama: 'Toko Demo 2R',
+                email: 'tokodemo@2r.com',
+                nomorHp: '081234567890',
+                alamat: 'Jl. Merdeka No. 1, Jakarta',
+                alamatLokasi: 'Jl. Merdeka No. 1, Jakarta',
+                latitude: '-6.2088',
+                longitude: '106.8456',
+                namaBank: 'BCA',
+                nomorRekening: '1234567890',
+                pemilikRekening: 'Toko Demo 2R',
+                status: 'AKTIF',
+                fitur: {
+                    transaksi1: true,
+                    transaksi2: true,
+                    transaksi3: true,
+                    paketTransaksi: ['paket1', 'paket2', 'paket3']
+                },
+                isPro: true,
+                waktuRegistrasi: new Date().toISOString()
+            };
+            dataAkun.push(toko);
+        }
+
+        // ==========================================================
+        // BAGIAN 2: BUAT AKUN PEDAGANG DEMO (JIKA BELUM ADA)
+        // ==========================================================
+        
+        if (!sudahAdaPedagang) {
+            var pedagang = {
+                id: 'PEDAGANG-DEMO',
+                role: 'pedagang',
+                username: 'pedagangdemo',
+                password: '123456',
+                nama: 'Pedagang Demo 2R',
+                email: 'pedagangdemo@2r.com',
+                nomorHp: '081234567891',
+                alamat: 'Jl. Pasar Baru No. 2, Bandung',
+                alamatLokasi: 'Jl. Pasar Baru No. 2, Bandung',
+                latitude: '-6.9175',
+                longitude: '107.6191',
+                namaBank: 'Mandiri',
+                nomorRekening: '9876543210',
+                pemilikRekening: 'Pedagang Demo 2R',
+                status: 'AKTIF',
+                fitur: {
+                    transaksi1: true,
+                    transaksi2: true,
+                    transaksi3: true,
+                    paketTransaksi: ['paket1', 'paket2', 'paket3']
+                },
+                isPro: true,
+                waktuRegistrasi: new Date().toISOString()
+            };
+            dataAkun.push(pedagang);
+        }
+
+        // ==========================================================
+        // BAGIAN 3: BUAT AKUN COD SELLER DEMO (JIKA BELUM ADA)
+        // ==========================================================
+        
+        if (!sudahAdaCod) {
+            var cod = {
+                id: 'COD-DEMO',
+                role: 'codseller',
+                username: 'coddemo',
+                password: '123456',
+                nama: 'COD Seller Demo 2R',
+                email: 'coddemo@2r.com',
+                nomorHp: '081234567892',
+                alamat: 'Jl. Sudirman No. 3, Surabaya',
+                alamatLokasi: 'Jl. Sudirman No. 3, Surabaya',
+                latitude: '-7.2575',
+                longitude: '112.7521',
+                namaBank: 'BNI',
+                nomorRekening: '5432109876',
+                pemilikRekening: 'COD Seller Demo 2R',
+                status: 'AKTIF',
+                fitur: {
+                    transaksi1: true,
+                    transaksi2: true,
+                    transaksi3: true,
+                    paketTransaksi: ['paket1', 'paket2', 'paket3']
+                },
+                isPro: true,
+                waktuRegistrasi: new Date().toISOString()
+            };
+            dataAkun.push(cod);
+        }
+
+        // ==========================================================
+        // BAGIAN 4: BUAT AKUN OJEK DEMO (JIKA BELUM ADA)
+        // ==========================================================
+        
+        if (!sudahAdaOjek) {
+            var ojek = {
+                id: 'OJEK-DEMO',
+                role: 'ojek',
+                username: 'ojekdemo',
+                password: '123456',
+                nama: 'Ojek Demo 2R',
+                email: 'ojekdemo@2r.com',
+                nomorHp: '081234567893',
+                alamat: 'Jl. Gatot Subroto No. 4, Yogyakarta',
+                alamatLokasi: 'Jl. Gatot Subroto No. 4, Yogyakarta',
+                latitude: '-7.7956',
+                longitude: '110.3695',
+                namaBank: 'BRI',
+                nomorRekening: '1357902468',
+                pemilikRekening: 'Ojek Demo 2R',
+                status: 'AKTIF',
+                fitur: {
+                    orderAntar: true
+                },
+                isOjekPro: true,
+                waktuRegistrasi: new Date().toISOString()
+            };
+            dataAkun.push(ojek);
+        }
+
+        // ==========================================================
+        // BAGIAN 5: SIMPAN DATA AKUN
+        // ==========================================================
+        
+        simpanDataAkun(dataAkun);
+
+        // ==========================================================
+        // BAGIAN 6: BUAT PRODUK GUDANG UNTUK TOKO DEMO (JIKA BELUM ADA)
+        // ==========================================================
+        
+        var semuaProdukGudang = JSON.parse(localStorage.getItem('2r_produk_gudang') || '[]');
+        var produkGudangToko = semuaProdukGudang.filter(function(p) { return p.tokoId === 'TOKO-DEMO'; });
+        
+        if (produkGudangToko.length === 0) {
+            var produkGudang = [
+                {
+                    id: Date.now() + 1,
+                    tokoId: 'TOKO-DEMO',
+                    namaProduk: 'Beras 5kg',
+                    kodeProduk: 'BR-001',
+                    hargaBeli: 50000,
+                    hargaJual: 65000,
+                    jumlahStok: 20,
+                    jenis: 'Makanan',
+                    satuan: 'Kardus',
+                    tanggalKadaluarsa: '2027-01-01',
+                    fotoProduk: [],
+                    tanggalInput: new Date().toISOString().slice(0, 10),
+                    namaPenginput: 'Demo',
+                    totalTerjual: 0
+                },
+                {
+                    id: Date.now() + 2,
+                    tokoId: 'TOKO-DEMO',
+                    namaProduk: 'Minyak Goreng 1L',
+                    kodeProduk: 'MG-002',
+                    hargaBeli: 13000,
+                    hargaJual: 15000,
+                    jumlahStok: 50,
+                    jenis: 'Makanan',
+                    satuan: 'Liter',
+                    tanggalKadaluarsa: '2026-12-01',
+                    fotoProduk: [],
+                    tanggalInput: new Date().toISOString().slice(0, 10),
+                    namaPenginput: 'Demo',
+                    totalTerjual: 0
+                },
+                {
+                    id: Date.now() + 3,
+                    tokoId: 'TOKO-DEMO',
+                    namaProduk: 'Gula Pasir 1kg',
+                    kodeProduk: 'GP-003',
+                    hargaBeli: 14000,
+                    hargaJual: 17000,
+                    jumlahStok: 30,
+                    jenis: 'Makanan',
+                    satuan: 'Kg',
+                    tanggalKadaluarsa: '2027-06-01',
+                    fotoProduk: [],
+                    tanggalInput: new Date().toISOString().slice(0, 10),
+                    namaPenginput: 'Demo',
+                    totalTerjual: 0
+                }
+            ];
+            semuaProdukGudang = semuaProdukGudang.concat(produkGudang);
+            localStorage.setItem('2r_produk_gudang', JSON.stringify(semuaProdukGudang));
+        }
+
+        // ==========================================================
+        // BAGIAN 7: BUAT PRODUK PUBLIK UNTUK TOKO DEMO (JIKA BELUM ADA)
+        // ==========================================================
+        
+        var semuaProdukPublik = JSON.parse(localStorage.getItem('2r_produk_publik') || '[]');
+        var produkPublikToko = semuaProdukPublik.filter(function(p) { return p.ownerId === 'TOKO-DEMO'; });
+        
+        if (produkPublikToko.length === 0) {
+            var produkPublik = [
+                {
+                    id: Date.now() + 4,
+                    ownerId: 'TOKO-DEMO',
+                    judul: 'Beras 5kg Premium',
+                    deskripsi: 'Beras berkualitas tinggi, pulen, dan harum. Cocok untuk keluarga.',
+                    harga: 65000,
+                    kategori: 'Makanan',
+                    gambar: [],
+                    tanggalUpload: new Date().toISOString()
+                },
+                {
+                    id: Date.now() + 5,
+                    ownerId: 'TOKO-DEMO',
+                    judul: 'Minyak Goreng 1L',
+                    deskripsi: 'Minyak goreng kemasan botol, jernih dan sehat.',
+                    harga: 15000,
+                    kategori: 'Makanan',
+                    gambar: [],
+                    tanggalUpload: new Date().toISOString()
+                },
+                {
+                    id: Date.now() + 6,
+                    ownerId: 'TOKO-DEMO',
+                    judul: 'Gula Pasir 1kg',
+                    deskripsi: 'Gula pasir putih bersih, manisnya pas.',
+                    harga: 17000,
+                    kategori: 'Makanan',
+                    gambar: [],
+                    tanggalUpload: new Date().toISOString()
+                }
+            ];
+            semuaProdukPublik = semuaProdukPublik.concat(produkPublik);
+            localStorage.setItem('2r_produk_publik', JSON.stringify(semuaProdukPublik));
+        }
+
+        // ==========================================================
+        // BAGIAN 8: INISIALISASI MODAL CASH UNTUK TOKO DEMO
+        // ==========================================================
+        
+        var modalKey = '2r_modal_cash_TOKO-DEMO';
+        var modalData = JSON.parse(localStorage.getItem(modalKey) || '{"saldo":0,"riwayat":[]}');
+        if (modalData.saldo === 0) {
+            modalData.saldo = 1000000;
+            modalData.riwayat.push({
+                tanggal: new Date().toISOString(),
+                jenis: 'Tambahan Modal',
+                jumlah: 1000000,
+                saldoSetelah: 1000000,
+                keterangan: 'Modal awal dari SuperAdmin'
+            });
+            localStorage.setItem(modalKey, JSON.stringify(modalData));
+        }
+
+        // ==========================================================
+        // BAGIAN 9: TANDAI BAHWA DATA DEMO SUDAH DIINISIALISASI
+        // ==========================================================
+        
+        localStorage.setItem('2r_demo_initialized', 'true');
+
+        // ==========================================================
+        // BAGIAN 10: TAMPILKAN NOTIFIKASI
+        // ==========================================================
+        
+        tampilkanToast('Data demo berhasil diinisialisasi!', 'success');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.58                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 96                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 97 - BLOK 8.60: JS: UPDATE JAM & TANGGAL (GABUNGAN) -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.60 - JAM & TANGGAL REAL-TIME                       */
+    /* ========================================================== */
+    
+    /**
+     * Memperbarui tampilan jam (HH:MM:SS) dan tanggal (Hari, Tanggal Bulan Tahun)
+     * pada elemen #displayJam dan #displayTanggal di navbar.
+     * Fungsi ini dipanggil setiap detik melalui setInterval.
+     */
+    function updateJamTanggal() {
+        // -------- AMBIL ELEMEN DARI DOM --------
+        var jamEl = document.getElementById('displayJam');
+        var tanggalEl = document.getElementById('displayTanggal');
+        
+        // -------- JIKA ELEMEN TIDAK DITEMUKAN, HENTIKAN (CEGAH ERROR) --------
+        if (!jamEl || !tanggalEl) return;
+        
+        // -------- DAPATKAN WAKTU SAAT INI --------
+        var now = new Date();
+        
+        // -------- FORMAT JAM (HH:MM:SS) --------
+        var jam = now.getHours().toString().padStart(2, '0');
+        var menit = now.getMinutes().toString().padStart(2, '0');
+        var detik = now.getSeconds().toString().padStart(2, '0');
+        jamEl.textContent = jam + ':' + menit + ':' + detik;
+        
+        // -------- FORMAT TANGGAL (Hari, Tanggal Bulan Tahun) --------
+        var hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][now.getDay()];
+        var tanggal = now.getDate().toString().padStart(2, '0');
+        var bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][now.getMonth()];
+        var tahun = now.getFullYear();
+        tanggalEl.textContent = hari + ', ' + tanggal + ' ' + bulan + ' ' + tahun;
+    }
+
+    /* ========================================================== */
+    /* BLOK 8.60.2 - SET INTERVAL UPDATE JAM & TANGGAL            */
+    /* ========================================================== */
+    
+    /**
+     * Menjalankan updateJamTanggal() setiap 1000 milidetik (1 detik)
+     * dan memanggilnya sekali saat pertama kali untuk tampilan instan.
+     */
+    setInterval(updateJamTanggal, 1000);
+    updateJamTanggal(); // Panggil langsung agar tidak menunggu 1 detik
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.60                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 97                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 98 - BLOK 8.69.4: JS: bukaChatCS()                  -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.69.4 - BUKA CHAT CUSTOMER SERVICE                  */
+    /* ========================================================== */
+    
+    /**
+     * Membuka jendela chat dengan Customer Service.
+     * Fungsi ini akan:
+     * - Mencari ID SuperAdmin atau Staf Admin dari data akun.
+     * - Jika ditemukan, membuka ruang chat internal dengan ID tersebut.
+     * - Jika tidak ditemukan, membuka WhatsApp sebagai fallback.
+     * 
+     * Fungsi ini adalah internal helper yang dapat dipanggil dari
+     * berbagai tempat, termasuk tombol "Chat CS" di Landing Page.
+     */
+    function bukaChatCS() {
+        // -------- AMBIL DATA AKUN --------
+        var dataAkun = getDataAkun();
+        var csId = null;
+        var csNama = null;
+        
+        // -------- CARI ID SUPERADMIN ATAU STAF ADMIN --------
+        for (var i = 0; i < dataAkun.length; i++) {
+            var a = dataAkun[i];
+            // Prioritaskan SuperAdmin, lalu Staf Admin
+            if (a.role === 'superadmin') {
+                csId = a.id;
+                csNama = a.nama || a.username;
+                break;
+            } else if (a.role === 'staf_admin' && csId === null) {
+                csId = a.id;
+                csNama = a.nama || a.username;
+                // Jangan break, terus cari SuperAdmin
+            }
+        }
+        
+        // -------- JIKA DITEMUKAN, BUKA CHAT INTERNAL --------
+        if (csId) {
+            // Ambil user yang sedang login
+            var user = JSON.parse(localStorage.getItem('2r_user') || '{}');
+            if (user.id) {
+                // Navigasi ke ruang chat dengan CS
+                if (typeof renderChatRoom === 'function') {
+                    renderChatRoom(csId);
+                    tampilkanToast('Membuka chat dengan Customer Service (' + csNama + ')', 'info');
+                    return;
+                }
+            }
+        }
+        
+        // -------- FALLBACK: BUKA WHATSAPP --------
+        // Jika tidak ada CS internal atau fungsi chat belum tersedia, gunakan WhatsApp
+        var nomorCS = '6281234567890'; // Nomor CS (bisa diganti)
+        var pesan = 'Halo, saya ingin bertanya tentang Toko Online 2R.';
+        var urlWA = 'https://api.whatsapp.com/send?phone=' + nomorCS + '&text=' + encodeURIComponent(pesan);
+        window.open(urlWA, '_blank');
+        tampilkanToast('Membuka WhatsApp untuk chat dengan CS.', 'info');
+    }
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.69.4                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 98                                            -->
+<!-- ========================================================== -->
+<!-- ========================================================== -->
+<!-- BAGIAN 99 - BLOK 8.2.9: DOMContentLoaded (INISIALISASI)    -->
+<!-- ========================================================== -->
+
+<script>
+    /* ========================================================== */
+    /* BLOK 8.2.9 - INISIALISASI SAAT DOKUMEN DIMUAT             */
+    /* ========================================================== */
+    
+    /**
+     * Event listener yang dijalankan saat seluruh struktur DOM selesai dimuat.
+     * Fungsi ini akan:
+     * - Menginisialisasi akun SuperAdmin (jika belum ada).
+     * - Menginisialisasi data demo (jika belum ada).
+     * - Merender Landing Page sebagai halaman utama.
+     * - Memastikan jam dan tanggal langsung muncul.
+     * 
+     * Inisialisasi ini hanya dijalankan sekali saat aplikasi pertama kali dijalankan.
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ==========================================================
+        // LANGKAH 1: INISIALISASI SUPERADMIN
+        // ==========================================================
+        
+        // Memastikan selalu ada akun SuperAdmin untuk mengelola sistem
+        if (typeof inisialisasiSuperAdmin === 'function') {
+            inisialisasiSuperAdmin();
+        }
+        
+        // ==========================================================
+        // LANGKAH 2: INISIALISASI DATA DEMO (UNTUK PENGUJIAN)
+        // ==========================================================
+        
+        // Membuat data demo (akun, produk, modal) agar aplikasi siap digunakan
+        if (typeof inisialisasiDataDemo === 'function') {
+            inisialisasiDataDemo();
+        }
+        
+        // ==========================================================
+        // LANGKAH 3: RENDER LANDING PAGE
+        // ==========================================================
+        
+        // Menampilkan Landing Page dengan data statistik yang sudah dihitung
+        if (typeof renderLandingPage === 'function') {
+            renderLandingPage();
+        }
+        
+        // ==========================================================
+        // LANGKAH 4: PERBARUI JAM DAN TANGGAL (PERTAMA KALI)
+        // ==========================================================
+        
+        // Jam dan tanggal sudah diperbarui oleh setInterval di Bagian 97,
+        // tetapi kita panggil sekali lagi untuk memastikan tampilan instan.
+        if (typeof updateJamTanggal === 'function') {
+            updateJamTanggal();
+        }
+        
+        // ==========================================================
+        // LANGKAH 5: CEK STATUS LOGIN (JIKA USER SUDAH LOGIN)
+        // ==========================================================
+        
+        // Jika user sudah login (ada session), arahkan ke dashboard
+        var user = JSON.parse(localStorage.getItem('2r_user') || 'null');
+        if (user && user.id) {
+            // User sudah login, tampilkan dashboard
+            if (typeof tampilkanDashboard === 'function') {
+                tampilkanDashboard(user);
+            }
+        }
+        
+        // ==========================================================
+        // (OPSIONAL) LOG INISIALISASI
+        // ==========================================================
+        
+        console.log('Aplikasi Toko Online 2R telah diinisialisasi.');
+        console.log('Landing Page siap, SuperAdmin dan data demo telah dibuat.');
+    });
+
+    /* ========================================================== */
+    /* AKHIR BLOK 8.2.9                                           */
+    /* ========================================================== */
+</script>
+
+<!-- ========================================================== -->
+<!-- AKHIR BAGIAN 99                                            -->
+<!-- ========================================================== -->
 
 </body>
 </html>
